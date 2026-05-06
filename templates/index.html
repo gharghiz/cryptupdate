@@ -19,7 +19,7 @@
   ::-webkit-scrollbar-track{background:#09090b}
   ::-webkit-scrollbar-thumb{background:#27272a;border-radius:4px}
 
-  @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}
+  @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
   .mob-ticker{animation:ticker-scroll 30s linear infinite}
 
   @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
@@ -78,7 +78,7 @@
     <span id="mob-bnb" class="text-zinc-500">BNB —</span>
     <span id="mob-xrp" class="text-zinc-500">XRP —</span>
     <span id="mob-btc2" class="text-zinc-500">BTC —</span>
-    <span id="mob-eth2" class="text-500">ETH —</span>
+    <span id="mob-eth2" class="text-zinc-500">ETH —</span>
     <span id="mob-sol2" class="text-zinc-500">SOL —</span>
     <span id="mob-bnb2" class="text-zinc-500">BNB —</span>
     <span id="mob-xrp2" class="text-zinc-500">XRP —</span>
@@ -109,7 +109,7 @@
       <div class="w-px h-4 bg-zinc-800 hidden sm:block"></div>
       <div class="flex items-center gap-2">
         <span class="text-zinc-600">⚡</span>
-        <span class="text-zinc-300 font-mono text-xs" id="hero-btc">BTC —</span>
+        <span class="text-zinc-500 font-mono text-xs" id="hero-btc">BTC —</span>
       </div>
     </div>
   </div>
@@ -135,7 +135,7 @@
   {% if search %}
   <div class="flex items-center gap-2 mb-6 -mt-2">
     <span class="text-sm text-zinc-400">Results for "<span class="text-blue-400 font-medium">{{ search }}"</span></span>
-    <a href="/" class="text-xs text-zinc-600 hover:text-zinc-400 underline underline-offset-2">Clear search</a>
+    <a href="/" class="text-xs text-zinc-600 hover:text-zinc-400 underline underline-offset-2">Clear</a>
   </div>
   {% endif %}
 
@@ -148,16 +148,14 @@
         <div class="absolute top-0 left-0 right-0 h-1 bg-red-500"></div>
         <div class="flex items-center gap-2 mb-3">
           <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-red-500 text-white">BREAKING</span>
-          <span class="text-xs text-zinc-500">{{ item.posted_at.substring(0, 16) }}</span>
-          <span class="text-[11px] text-zinc-600">•</span>
-          <span class="text-[11px] text-zinc-600">{{ item.source }}</span>
+          <span class="text-xs text-zinc-500">{{ item.posted_at[:16].replace('T',' ') }} UTC</span>
+          <span class="text-[11px] text-zinc-600">• {{ item.source }}</span>
         </div>
         <h2 class="text-lg font-bold text-zinc-100 leading-relaxed mb-2">{{ item.title }}</h2>
         {% if item.summary %}<p class="text-sm text-zinc-500 leading-relaxed">{{ item.summary }}</p>{% endif %}
       </a>
     {% endif %}
   {% endfor %}
-  {% set _ = ns.update(featured_id='') %}
 
   <!-- News Grid -->
   <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -165,10 +163,10 @@
       {% if item.id == ns.featured_id %}
         {# Skip featured item #}
       {% else %}
-      <a href="/news/{{ item.id }}" rel="noopener" class="news-card block rounded-xl border border-zinc-800/50 bg-zinc-900/40 p-5 mb-4">
+      <a href="/news/{{ item.id }}" rel="noopener" class="news-card block rounded-xl border border-zinc-800/50 bg-zinc-900/40 p-5">
         <div class="flex items-center gap-2 mb-3">
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">{{ item.category or 'market' }}</span>
-          <span class="text-[11px] text-zinc-600">{{ item.posted_at.substring(0, 16) }}</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">{{ item.category }}</span>
+          <span class="text-[11px] text-zinc-600">{{ item.posted_at[:16].replace('T',' ') }}</span>
           <span class="text-[11px] text-zinc-700">•</span>
           <span class="text-[11px] text-zinc-600">{{ item.source }}</span>
         </div>
@@ -177,7 +175,7 @@
         <p class="text-sm text-zinc-500 leading-relaxed line-clamp-2 mb-3">{{ item.summary }}</p>
         {% endif %}
         <div class="flex items-center justify-between text-[11px] text-zinc-600 pt-3 border-t border-zinc-800/40">
-          <span>{{ item.posted_at.substring(0, 10) }}</span>
+          <span>{{ item.posted_at[:10] }}</span>
           {% if item.sentiment %}
           <span class="px-2 py-0.5 rounded text-[10px] font-medium
             {% if 'Bullish' in item.sentiment %}bg-emerald-500/10 text-emerald-400
@@ -190,7 +188,7 @@
     {% endfor %}
   </div>
 
-  <!-- Infinite Scroll -->
+  <!-- Load More -->
   <div id="load-more-wrap" class="flex justify-center mt-8 hidden">
     <button id="load-more-btn" class="load-btn px-6 py-3 rounded-xl border border-zinc-800 text-sm text-zinc-400 hover:text-zinc-200 font-medium">
       <span id="load-more-text">Load More</span>
@@ -242,7 +240,7 @@
         <span class="text-sm font-semibold text-zinc-200" id="gVol">—</span>
       </div>
       <div class="flex items-center justify-between">
-        <span class="text-sm text-zinc-500">BTC Dominance</span>
+        <span class="text idg-sm text-zinc-500">BTC Dominance</span>
         <span class="text-sm font-semibold text-zinc-200" id="gBtc">—</span>
       </div>
     </div>
@@ -303,7 +301,6 @@
 
 </div>
 </div>
-</div>
 </main>
 
 <!-- ===== MOBILE-ONLY SECTIONS ===== -->
@@ -333,6 +330,7 @@
       <h3 class="text-base font-bold text-white mb-2">Get Alerts First</h3>
       <p class="text-xs text-zinc-500 mb-4 text-center">AI news to Telegram before the web.</p>
       <a href="https://t.me/CryptositNews" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20 w-full justify-center">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
         Join
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
       </a>
@@ -368,22 +366,15 @@
 
 <!-- ===== SCRIPTS ===== -->
 <script>
-(function() {
+(function(){
   var B = '{{ site_url }}';
   var currentPage = 1;
   var loading = false;
-  var allLoaded =;
+  var allLoaded = false;
 
-  function $(id) { return document.getElementById(id); }
-
-  function fmtP(p) {
-    if (!p || p < 0) return '$—';
-    return p >= 1 ? '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '$' + p.toFixed(6);
-  }
-  function fmtC(c) {
-    if (c == null) return '—';
-    return (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
-  }
+  function $(id){ return document.getElementById(id); }
+  function fmtP(p){ return p >= 1 ? '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '$' + p.toFixed(6); }
+  function fmtC(c){ if(c == null) return '—'; return (c >= 0 ? '+' : '') + c.toFixed(2) + '%'; }
 
   function updateMobTicker(data) {
     var coins = [
@@ -394,7 +385,7 @@
     ];
     for (var i = 0; i < coins.length; i++) {
       var el = $(coins[i].id);
-      if (!el || !data || !data[coins[i].s]) continue;
+      if (!el || !data[coins[i].s]) continue;
       var d = data[coins[i].s];
       var cls = d.change >= 0 ? 'text-emerald-400' : 'text-red-400';
       var arrow = d.change >= 0 ? '↑' : '↓';
@@ -405,10 +396,8 @@
 
   function updateMobPrices(data) {
     var coins = [
-      {s:'BTC', n:'Bitcoin', c:'amber', i:'₿'},
-      {s:'ETH', n:'Ethereum', c:'blue', i:'Ξ'},
-      {s:'SOL', n:'Solana', c:'purple', i:'◎'},
-      {s:'BNB', n:'BNB', c:'yellow', i:'◆'},
+      {s:'BTC', n:'Bitcoin', c:'amber', i:'₿'}, {s:'ETH', n:'Ethereum', c:'blue', i:'Ξ'},
+      {s:'SOL', n:'Solana', c:'purple', i:'◎'}, {s:'BNB', n:'BNB', c:'yellow', i:'◆'},
       {s:'XRP', n:'XRP', c:'slate', i:'✕'}
     ];
     var html = '';
@@ -417,20 +406,15 @@
       if (!d) continue;
       var cls = d.change >= 0 ? 'text-emerald-400' : 'text-red-400';
       var bg = d.change >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10';
-      html += '<div class="px-3 py-2.5 text-center">'
-        + '<div class="text-[11px] text-zinc-500 mb-0.5">' + co.n + '</div>'
-        + '<div class="text-base font-bold text-zinc-200">' + fmtP(d.price) + '</div>'
-        + '<div class="text-[11px] font-semibold font-mono ' + cls + ' ' + bg + ' px-2 py-0.5 rounded mt-1">' + fmtC(d.change) + '</div></div></div>';
+      html += '<div class="px-3 py-2.5 text-center"><div class="text-[11px] text-zinc-500 mb-0.5">' + co.n + '</div><div class="text-base font-bold text-zinc-200">' + fmtP(d.price) + '</div><div class="text-[11px] font-semibold font-mono ' + cls + ' ' + bg + ' px-2 py-0.5 rounded mt-1">' + fmtC(d.change) + '</div></div>';
     }
     $('mob-prices-box').innerHTML = html;
   }
 
   function loadPrices(data) {
     var coins = [
-      {s:'BTC', n:'Bitcoin', c:'amber', i:'₿'},
-      {s:'ETH', n:'Ethereum', c:'blue', i:'Ξ'},
-      {s:'SOL', n:'Solana', c:'purple', i:'◎'},
-      {s:'BNB', n:'BNB', c:'yellow', i:'◆'},
+      {s:'BTC', n:'Bitcoin', c:'amber', i:'₿'}, {s:'ETH', n:'Ethereum', c:'blue', i:'Ξ'},
+      {s:'SOL', n:'Solana', c:'purple', i:'◎'}, {s:'BNB', n:'BNB', c:'yellow', i:'◆'},
       {s:'XRP', n:'XRP', c:'slate', i:'✕'}
     ];
     var html = '';
@@ -443,10 +427,11 @@
         + '<div class="flex items-center gap-3">'
         + '<div class="w-8 h-8 rounded-lg bg-' + co.c + '-500/10 flex items-center justify-center text-' + co.c + '-400 text-sm font-bold">' + co.i + '</div>'
         + '<div><div class="text-sm font-semibold text-zinc-200">' + co.n + '</div>'
-        + '<div class="text-[11px] text-zinc-600 font-mono">' + co.s + '</div></div></div></div>'
+        + '<div class="text-[11px] text-zinc-600 font-mono">' + co.s + '</div></div></div>'
         + '<div class="text-right">'
         + '<div class="text-sm font-semibold text-zinc-200 font-mono">' + fmtP(d.price) + '</div>'
-        + '<div class="text-[11px] font-semibold font-mono ' + cls + ' ' + bg + ' px-2 py-0.5 rounded mt-0.5">' + fmtC(d.change) + '</div></div></div></div>';
+        + '<div class="text-[11px] font-semibold font-mono ' + cls + ' ' + bg + ' px-2 py-0.5 rounded mt-0.5">' + fmtC(d.change) + '</div>'
+        + '</div></div>';
     }
     $('pricesBox').innerHTML = html;
   }
@@ -459,16 +444,11 @@
     else if (v <= 55) { color = 'text-yellow-300'; bg = 'bg-yellow-500/20'; }
     else if (v <= 75) { color = 'text-emerald-400'; bg = 'bg-emerald-500/20'; }
     else { color = 'text-emerald-300'; bg = 'bg-emerald-500/20'; }
-    
-    // Desktop
-    if ($('fgVal')) $('fgVal').textContent = v;
-    if ($('fgLabel')) $('fgLabel').textContent = l;
-    if ($('mobFgVal')) $('mobFgVal').textContent = v;
-    if ($('mobFgLabel')) $('mobFgLabel').textContent = l;
+    $('fgVal').textContent = v;
+    $('fgLabel').className = 'text-sm font-semibold ' + color;
   }
 
   function loadGlobal(data) {
-    if (!data) return;
     $('gMcap').textContent = data.market_cap || '—';
     $('gVol').textContent = data.volume || '—';
     $('gBtc').textContent = (data.btc_dom || '—') + '%';
@@ -481,38 +461,24 @@
   }
 
   function loadTrending(data) {
-    if (!data || !data.length) {
-      $('trendingBox').innerHTML = '<div class="px-5 py-3 text-center text-xs text-zinc-700">Rate limited</div>';
-      return;
-    }
+    if (!data || !data.length) { $('trendingBox').innerHTML = '<div class="px-5 py-3 text-center text-xs text-zinc-700">Rate limited</div>'; return; }
     var html = '';
     for (var i = 0; i < Math.min(data.length, 6); i++) {
       var c = data[i], cls = c.change >= 0 ? 'text-emerald-400' : 'text-red-400';
       html += '<a href="#" class="flex items-center justify-between px-5 py-3 hover:bg-zinc-800/20 transition-colors">'
-        + '<div class="flex items-center gap-2">'
-        + (c.image ? '<img src="' + c.image + '" class="w-6 h-6 rounded-full loading="lazy" alt="">' : '')
+        + '<div class="flex items-center gap-3">'
+        + (c.image ? '<img src="' + c.image + '" class="w-6 h-6 rounded-full" loading="lazy" alt="">' : '')
         + '<div><div class="text-xs font-semibold text-zinc-300">' + c.name + '</div>'
-        + '<div class="text-[10px] text-zinc-600 font-mono">' + c.symbol + '</div></div></div></div>'
-        + '<div class="text-right"><div class="text-xs font-mono text-zinc-400">' + fmtP(c.price) + '</div>'
+        + '<div class="text-[10px] text-zinc-600 font-mono">' + c.symbol + '</div></div></div>'
+        + '<div class="text-right text-right"><div class="text-xs font-mono text-zinc-400">' + fmtP(c.price) + '</div>'
         + '<div class="text-[11px] font-bold font-mono ' + cls + '">' + fmtC(c.change) + '</div></div></div></a>';
     }
     $('trendingBox').innerHTML = html;
   }
 
-  // === API Helper ===
-  function api(url) {
-    return fetch(url).then(function(r) {
-      if (!r.ok) return null;
-      return r.json();
-    }).catch(function() {
-      return null;
-    });
-  }
-
-  // === Hero Stats (API-driven, not parsing titles) ===
   function loadHeroStats() {
-    var p1 = api('/api/news?page=1&per_page=1');
-    var p2 = api('/api/global');
+    var p1 = g('/api/news?per_page=1');
+    var p2 = g('/api/global');
     Promise.all([p1, p2]).then(function(results) {
       var news = results[0], global = results[1];
       if (news && news.news) {
@@ -526,10 +492,11 @@
         if (global.btc_dom) {
           var el3 = $('hero-btc');
           if (el3) {
-            var d = data.btc_dom;
-            if (d) {
-              var cls = d >= 0 ? 'text-emerald-400' : 'text-red-400';
-              el3.innerHTML = 'BTC <span class="' + cls + ' font-mono text-xs ml-1">$' + fmtP(d) + ' (' + fmtC(d) + ')</span>';
+            var btcD = (news && news.news && news.news[0]) ? news.news[0].title.toLowerCase().includes('bitcoin') : null;
+            if (btcD) {
+              var price = btcD.price || 0;
+              var cls = btcD.change >= 0 ? 'text-emerald-400' : 'text-red-400';
+              el3.innerHTML = 'BTC <span class="' + cls + ' font-mono text-xs ml-1">$' + fmtP(price) + ' (' + fmtC(btcD.change) + ')</span>';
               el3.className = 'text-zinc-300 font-mono text-xs ' + cls;
             }
           }
@@ -547,23 +514,23 @@
     $('load-more-btn').classList.add('hidden');
 
     currentPage++;
-    var search = "{{ search }}";
-    var tab = "{{ active_tab }}";
+    var params = 'page=' + currentPage + '&per_page=20';
+    var search = '{{ search }}';
+    var tab = '{{ active_tab }}';
+    if (search) params += '&q=' + encodeURIComponent(search);
+    if (tab && tab != 'all') params += '&tab=' + encodeURIComponent(tab);
 
-    var url = B + '/api/news?page=' + currentPage + '&per_page=20';
-    if (search) url += '&q=' + encodeURIComponent(search);
-    if (tab && tab !== 'all') url += '&tab=' + encodeURIComponent(tab);
-
-    api(url).then(function(data) {
+    g(B + '/api/news?' + params).then(function(r) {
+      return r.ok ? r.json() : null;
+    }).then(function(data) {
       if (!data || !data.news || data.news.length === 0) {
         allLoaded = true;
         $('load-more-wrap').classList.add('hidden');
         return;
       }
       currentPage = data.page;
-      allLoaded = (data.page >= data.total);
-
       var grid = $('news-grid');
+
       data.news.forEach(function(item) {
         var card = document.createElement('a');
         card.href = '/news/' + item.id;
@@ -577,23 +544,23 @@
           var sc = 'bg-zinc-800 text-zinc-500';
           if ('Bullish' in item.sentiment) sc = 'bg-emerald-500/10 text-emerald-400';
           else if ('Bearish' in item.sentiment) sc = 'bg-red-500/10 text-red-400';
-          else sc = 'bg-zinc-800 text-zinc-500';
           sentHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-medium ' + sc + '">' + item.sentiment + '</span>';
         }
 
         card.innerHTML = '<div class="flex items-center gap-2 mb-3">'
-          + '<span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">' + (item.category or 'market') + '</span>'
-          + '<span class="text-[11px] text-zinc-600">' + item.posted_at.substring(0, 16) + '</span>'
+          + '<span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">' + (item.category || 'market') + '</span>'
+          + '<span class="text-[11px] text-zinc-600">' + item.posted_at[:16].replace('T',' ') + '</span>'
           + '<span class="text-[11px] text-zinc-700">•</span>'
           + '<span class="text-[11px] text-zinc-600">' + item.source + '</span></div>'
           + '<h2 class="text-[15px] font-semibold text-zinc-100 leading-relaxed mb-3 line-clamp-2">' + item.title + '</h2>'
           + (item.summary ? '<p class="text-sm text-zinc-500 leading-relaxed line-clamp-2 mb-3">' + item.summary + '</p>' : '')
           + '<div class="flex items-center justify-between text-[11px] text-zinc-600 pt-3 border-t border-zinc-800/40">'
-          + '<span>' + item.posted_at.substring(0, 10) + '</span>'
+          + '<span>' + item.posted_at[:10] + '</span>'
           + sentHtml
           + '</div>';
 
         grid.appendChild(card);
+        // Trigger animation
         requestAnimationFrame(function() {
           card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
           card.style.opacity = '1';
@@ -607,34 +574,42 @@
       $('loading-spinner').classList.add('hidden');
     }).catch(function() {
       loading = false;
-      $('load-more-text').textContent = 'Error loading';
+      $('load-more-text').textContent = 'Error loading more news';
       $('load-more-wrap').classList.remove('hidden');
       $('loading-spinner').classList.add('hidden');
     });
   }
 
   // Intersection Observer for infinite scroll
+  var observer = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting) loadMoreNews();
+  }, { rootMargin: '200px' });
+
   var loadMoreWrap = $('load-more-wrap');
   if (loadMoreWrap) {
     observer.observe(loadMoreWrap);
   }
 
+  // === Fetch Helpers ===
+  function g(url, cb) {
+    fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) { if (d && !d.error) cb(d); }).catch(function() {});
+  }
+
   // === Init ===
   function init() {
-    api(B + '/api/prices', function(d) {
+    g(B + '/api/prices', function(d) {
       updateMobTicker(d);
       loadPrices(d);
     });
-    api(B + '/api/fear-greed', loadFG);
-    api(B + '/api/global', function(data) { loadGlobal(data); loadHeroStats(); });
-    api(B + '/api/trending', loadTrending);
+    g(B + '/api/fear-greed', loadFG);
+    g(B + '/api/global', function(d) { loadGlobal(d); loadHeroStats(); });
+    g(B + '/api/trending', loadTrending);
 
     // Initial page
     currentPage = 1;
     allLoaded = false;
     loading = false;
-
-    api(B + '/api/news?page=1&per_page=20' + (tab !== 'all' ? '&tab=' + tab : '') + (search ? '&q=' + search : ''))
+    g(B + '/api/news?page=1&per_page=20' + (('{{ active_tab }}' !== 'all' ? '&tab={{ active_tab }}' : '') + (('{{ search }}' ? '&q={{ search }}' : ''))
     ).then(function(data) {
       if (!data || !data.news) return;
       if (data.page >= data.total) allLoaded = true;
@@ -657,19 +632,18 @@
           var sc = 'bg-zinc-800 text-zinc-500';
           if ('Bullish' in item.sentiment) sc = 'bg-emerald-500/10 text-emerald-400';
           else if ('Bearish' in item.sentiment) sc = 'bg-red-500/10 text-red-400';
-          else sc = 'bg-zinc-800 text-zinc-500';
           sentHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-medium ' + sc + '">' + item.sentiment + '</span>';
         }
 
         card.innerHTML = '<div class="flex items-center gap-2 mb-3">'
-          + '<span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">' + (item.category or 'market') + '</span>'
-          + '<span class="text-[11px] text-zinc-600">' + item.posted_at.substring(0, 16) + '</span>'
+          + '<span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">' + (item.category || 'market') + '</span>'
+          + '<span class="text-[11px] text-zinc-600">' + item.posted_at[:16].replace('T', ' ') + '</span>'
           + '<span class="text-[11px] text-zinc-700">•</span>'
           + '<span class="text-[11px] text-zinc-600">' + item.source + '</span></div>'
           + '<h2 class="text-[15px] font-semibold text-zinc-100 leading-relaxed mb-3 line-clamp-2">' + item.title + '</h2>'
           + (item.summary ? '<p class="text-sm text-zinc-500 leading-relaxed line-clamp-2 mb-3">' + item.summary + '</p>' : '')
           + '<div class="flex items-center justify-between text-[11px] text-zinc-600 pt-3 border-t border-zinc-800/40">'
-          + '<span>' + item.posted_at.substring(0, 10) + '</span>'
+          + '<span>' + item.posted_at[:10] + '</span>'
           + sentHtml
           + '</div>';
 
@@ -680,26 +654,25 @@
         $('load-more-wrap').classList.add('hidden');
       } else {
         $('load-more-wrap').classList.remove('hidden');
-        var obs = new IntersectionObserver(function(entries) {
+        var obs2 = new IntersectionObserver(function(entries) {
           if (entries[0].isIntersecting) loadMoreNews();
         }, { rootMargin: '200px' });
         obs2.observe($('load-more-wrap'));
       }
     }).catch(function() {
-      // Fallback to standard page load if JS fails
+      // If API fails, show regular pagination as fallback
       window.location.reload();
     });
   }
 
-  // Background Refresh
+  // === Background Refresh (Prices/F&G/Global every 30s, Hero every 5m) ===
   setInterval(function() {
-    api(B + '/api/prices', function(d) { updateMobTicker(d); loadPrices(d); });
-    api(B + '/api/fear-greed', loadFG);
-    api(B + '/api/global', loadGlobal);
+    g(B + '/api/prices', function(d) { updateMobTicker(d); loadPrices(d); });
+    g(B + '/api/fear-greed', loadFG);
+    g(B + '/api/global', loadGlobal);
   }, 30000);
 
   setInterval(loadHeroStats, 300000);
-})();
 })();
 </script>
 
