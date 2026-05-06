@@ -70,6 +70,25 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
 
   .trend-row{transition:background .15s;padding-left:14px;border-left:2px solid transparent}
   .trend-row:hover{background:rgba(255,255,255,.02);border-left-color:#f59e0b}
+
+  /* Lead Section Styles */
+  .hero-grid-bg {
+    background-size: 50px 50px;
+    background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  }
+  .glass-stat {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.2s ease;
+  }
+  .glass-stat:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 </style>
 </head>
 <body class="font-sans text-zinc-100 min-h-screen antialiased">
@@ -112,8 +131,76 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
   </div>
 </nav>
 
-<!-- ===== MAIN ===== -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+<!-- ========================================== -->
+<!-- ===== LEAD SECTION (HERO) ===== -->
+<!-- ========================================== -->
+<section class="relative overflow-hidden border-b border-zinc-800/40">
+  <!-- Background Effects -->
+  <div class="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] via-transparent to-purple-500/[0.02]"></div>
+  <div class="absolute inset-0 hero-grid-bg"></div>
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+    <div class="max-w-3xl">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm mb-6 fade-up">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 dot-pulse"></span>
+        <span class="text-[11px] font-medium text-zinc-400">Live Crypto Intelligence</span>
+      </div>
+
+      <!-- H1 for SEO -->
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-50 leading-[1.1] fade-up d1">
+        Stay Ahead of the<br>
+        <span class="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Crypto Market</span>
+      </h1>
+
+      <!-- Subheadline -->
+      <p class="mt-5 text-base sm:text-lg text-zinc-500 max-w-xl leading-relaxed fade-up d2">
+        AI-powered signals, breaking news, and real-time market data aggregated from <span class="text-zinc-300 font-medium">50+</span> sources.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="mt-8 flex flex-wrap gap-3 fade-up d3">
+        <a href="https://t.me/CryptositNews" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Join Telegram Alerts
+        </a>
+        <a href="#news-feed" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-zinc-700 text-zinc-300 text-sm font-medium hover:bg-zinc-800/50 hover:border-zinc-600 transition-all">
+          Explore News
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Stats Strip -->
+    <div class="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 fade-up d4">
+      <div class="glass-stat rounded-xl p-4">
+        <div class="text-[10px] text-zinc-600 font-medium mb-1">Bitcoin Price</div>
+        <div class="text-lg sm:text-xl font-bold text-zinc-200" id="hero-btc">—</div>
+        <div class="text-[11px] font-medium text-zinc-600" id="hero-btc-chg">—</div>
+      </div>
+      <div class="glass-stat rounded-xl p-4">
+        <div class="text-[10px] text-zinc-600 font-medium mb-1">Total Market Cap</div>
+        <div class="text-lg sm:text-xl font-bold text-zinc-200" id="hero-mcap">—</div>
+        <div class="text-[11px] font-medium text-zinc-600" id="hero-mcap-chg">—</div>
+      </div>
+      <div class="glass-stat rounded-xl p-4">
+        <div class="text-[10px] text-zinc-600 font-medium mb-1">Articles Tracked</div>
+        <div class="text-lg sm:text-xl font-bold text-zinc-200">{{ stats.total | int if stats else '—' }}</div>
+        <div class="text-[11px] text-zinc-600">From 50+ sources</div>
+      </div>
+      <div class="glass-stat rounded-xl p-4">
+        <div class="text-[10px] text-zinc-600 font-medium mb-1">Updates (24h)</div>
+        <div class="text-lg sm:text-xl font-bold text-zinc-200">{{ stats.today | int if stats else '—' }}</div>
+        <div class="text-[11px] text-zinc-600">AI Analyzed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== MAIN CONTENT ===== -->
+<main id="news-feed" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
 <!-- ==================== LEFT ==================== -->
@@ -224,7 +311,7 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
 <!-- ==================== RIGHT SIDEBAR ==================== -->
 <div class="lg:col-span-4 space-y-4">
 
-  <!-- ═══ 1. AI SIGNALS (3 coins) ═══ -->
+  <!-- ═══ 1. AI SIGNALS ═══ -->
   {% if intel and intel.ai_signals %}
   <div class="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-zinc-900 overflow-hidden card-lift fade-up d1">
     <div class="h-[2px] shimmer-top"></div>
@@ -264,7 +351,7 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
   </div>
   {% endif %}
 
-  <!-- ═══ 2. FEAR & GREED INDEX ═══ -->
+  <!-- ═══ 2. FEAR & GREED ═══ -->
   <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up d2">
     <div class="px-4 py-3 border-b border-zinc-800/60">
       <div class="wlabel"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5"/></svg> Fear & Greed</div>
@@ -272,14 +359,7 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
     <div class="p-4 flex flex-col items-center">
       <div class="relative w-40 h-[72px] mb-2">
         <svg viewBox="0 0 140 80" class="w-full">
-          <defs>
-            <linearGradient id="fgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#ef4444"/>
-              <stop offset="40%" stop-color="#f59e0b"/>
-              <stop offset="70%" stop-color="#eab308"/>
-              <stop offset="100%" stop-color="#22c55e"/>
-            </linearGradient>
-          </defs>
+          <defs><linearGradient id="fgGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="40%" stop-color="#f59e0b"/><stop offset="70%" stop-color="#eab308"/><stop offset="100%" stop-color="#22c55e"/></linearGradient></defs>
           <path d="M 10 68 A 60 60 0 0 1 130 68" fill="none" stroke="#18181b" stroke-width="10" stroke-linecap="round"/>
           <path id="fgArc" d="M 10 68 A 60 60 0 0 1 130 68" fill="none" stroke="url(#fgGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 188" class="gauge-arc" style="--target:94"/>
         </svg>
@@ -301,14 +381,14 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
       <div class="wlabel"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"/></svg> Market Overview</div>
     </div>
     <div id="globalBox" class="p-3 grid grid-cols-2 gap-2">
-      <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">Market Cap</div><div id="gMcap" class="text-sm font-bold text-zinc-200 mt-0.5">—</div><div id="gMcapChg" class="text-[10px] text-zinc-600 mt-0.5">—</div></div>
+      <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">Market Cap</div><div id="gMcap" class="text-sm font-bold text-zinc-200 mt-0.5">—</div></div>
       <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">24h Volume</div><div id="gVol" class="text-sm font-bold text-zinc-200 mt-0.5">—</div></div>
       <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">BTC Dominance</div><div id="gBtc" class="text-sm font-bold text-zinc-200 mt-0.5">—</div></div>
       <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">Active Coins</div><div id="gActive" class="text-sm font-bold text-zinc-200 mt-0.5">—</div></div>
     </div>
   </div>
 
-  <!-- ═══ 4. LIVE PRICES + SPARKLINES ═══ -->
+  <!-- ═══ 4. LIVE PRICES ═══ -->
   <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up d4">
     <div class="px-4 py-3 border-b border-zinc-800/60 flex items-center gap-2">
       <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 dot-pulse"></span>
@@ -321,7 +401,7 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
     </div>
   </div>
 
-  <!-- ═══ 5. TRENDING COINS ═══ -->
+  <!-- ═══ 5. TRENDING ═══ -->
   <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up d5">
     <div class="px-4 py-3 border-b border-zinc-800/60">
       <div class="wlabel" style="color:#f59e0b"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/></svg> Top Gainers 24h</div>
@@ -329,7 +409,6 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
     <div id="trendingBox" class="divide-y divide-zinc-800/40">
       <div class="px-4 py-3"><div class="skeleton h-4 w-3/4"></div></div>
       <div class="px-4 py-3"><div class="skeleton h-4 w-2/3"></div></div>
-      <div class="px-4 py-3"><div class="skeleton h-4 w-3/5"></div></div>
     </div>
   </div>
 
@@ -382,35 +461,15 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
       <div class="wlabel"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"/></svg> Site Stats</div>
     </div>
     <div class="p-3 grid grid-cols-2 gap-2">
-      <div class="bg-zinc-800/40 rounded-lg p-3">
-        <div class="text-[9px] text-zinc-600">Total Articles</div>
-        <div class="text-sm font-bold text-zinc-200 mt-0.5">{{ stats.total | int }}</div>
-      </div>
-      <div class="bg-zinc-800/40 rounded-lg p-3">
-        <div class="text-[9px] text-zinc-600">Last 24h</div>
-        <div class="text-sm font-bold text-zinc-200 mt-0.5">{{ stats.today | int }}</div>
-      </div>
+      <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">Total Articles</div><div class="text-sm font-bold text-zinc-200 mt-0.5">{{ stats.total | int }}</div></div>
+      <div class="bg-zinc-800/40 rounded-lg p-3"><div class="text-[9px] text-zinc-600">Last 24h</div><div class="text-sm font-bold text-zinc-200 mt-0.5">{{ stats.today | int }}</div></div>
       <div class="bg-zinc-800/40 rounded-lg p-3 col-span-2">
         <div class="text-[9px] text-zinc-600 mb-1.5">Top Sources</div>
-        <div class="flex flex-wrap gap-1">
-          {% for s in stats.sources[:6] %}
-          <span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-800 text-zinc-400">{{ s.name }} <span class="text-zinc-600">{{ s.count }}</span></span>
-          {% endfor %}
-        </div>
+        <div class="flex flex-wrap gap-1">{% for s in stats.sources[:6] %}<span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-800 text-zinc-400">{{ s.name }} <span class="text-zinc-600">{{ s.count }}</span></span>{% endfor %}</div>
       </div>
     </div>
   </div>
   {% endif %}
-
-  <!-- ═══ 9. TELEGRAM CTA ═══ -->
-  <div class="rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/5 to-zinc-900 p-5 text-center fade-up d9">
-    <svg class="w-6 h-6 text-blue-400 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-    <p class="text-xs text-zinc-400 mb-3">Get breaking crypto alerts instantly</p>
-    <a href="https://t.me/CryptositNews" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition-colors">
-      Join Channel
-      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
-    </a>
-  </div>
 
 </div>
 </div>
@@ -420,9 +479,7 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
 <footer class="border-t border-zinc-800/60 mt-12 py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-2 text-[11px] text-zinc-600">
-      <div class="w-4 h-4 rounded bg-blue-500 flex items-center justify-center">
-        <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-      </div>
+      <div class="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
       © 2025 CryptositNews
     </div>
     <div class="flex items-center gap-4">
@@ -443,123 +500,98 @@ tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-seri
   function fmtP(p){return p>=1?'$'+p.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'$'+p.toFixed(6)}
   function fmtC(c){if(c==null)return'—';return(c>=0?'+':'')+c.toFixed(2)+'%'}
 
-  // ── Sparkline ──
   function spark(change){
     var s='',seed=Math.abs(change*137);
     for(var i=0;i<8;i++){
       var base=25+((Math.sin(seed+i*1.7)*.5)+.5)*45;
       var trend=(change>=0?1:-1)*(i/7)*18;
       var h=Math.max(12,Math.min(92,base+trend));
-      var clr=change>=0?'bg-emerald-500/50':'bg-red-500/50';
-      s+='<div class="sparkline-bar '+clr+'" style="height:'+h+'%"></div>';
+      s+='<div class="sparkline-bar '+(change>=0?'bg-emerald-500/50':'bg-red-500/50')+'" style="height:'+h+'%"></div>';
     }
     return s;
   }
 
-  // ── Ticker ──
   function loadTicker(data){
     var coins=[{s:'BTC'},{s:'ETH'},{s:'SOL'},{s:'BNB'},{s:'XRP'}];
     var h='';
     for(var i=0;i<coins.length;i++){
       var d=data[coins[i].s];if(!d)continue;
       var cls=d.change>=0?'text-emerald-400':'text-red-400';
-      var arr=d.change>=0?'▲':'▼';
-      h+='<span class="flex items-center gap-2 text-xs">'
-        +'<span class="font-semibold text-zinc-200">'+coins[i].s+'</span>'
-        +'<span class="text-zinc-500">'+fmtP(d.price)+'</span>'
-        +'<span class="'+cls+' text-[11px]">'+arr+' '+fmtC(d.change)+'</span></span>';
+      h+='<span class="flex items-center gap-2 text-xs"><span class="font-semibold text-zinc-200">'+coins[i].s+'</span><span class="text-zinc-500">'+fmtP(d.price)+'</span><span class="'+cls+' text-[11px]">'+(d.change>=0?'▲':'▼')+' '+fmtC(d.change)+'</span></span>';
     }
     $('ticker').innerHTML=h+h;
   }
 
-  // ── Prices sidebar ──
   function loadPrices(data){
-    var coins=[
-      {s:'BTC',n:'Bitcoin',i:'₿',c:'amber'},
-      {s:'ETH',n:'Ethereum',i:'Ξ',c:'blue'},
-      {s:'SOL',n:'Solana',i:'S',c:'purple'},
-      {s:'BNB',n:'BNB',i:'B',c:'yellow'},
-      {s:'XRP',n:'XRP',i:'X',c:'slate'}
-    ];
+    var coins=[{s:'BTC',n:'Bitcoin',i:'₿',c:'amber'},{s:'ETH',n:'Ethereum',i:'Ξ',c:'blue'},{s:'SOL',n:'Solana',i:'S',c:'purple'},{s:'BNB',n:'BNB',i:'B',c:'yellow'},{s:'XRP',n:'XRP',i:'X',c:'slate'}];
     var h='';
     for(var i=0;i<coins.length;i++){
       var co=coins[i],d=data[co.s];if(!d)continue;
       var cls=d.change>=0?'text-emerald-400':'text-red-400';
-      var bg=d.change>=0?'bg-emerald-500/10':'bg-red-500/10';
       h+='<div class="flex items-center justify-between px-4 py-3 hover:bg-zinc-800/20 transition-colors">'
-        +'<div class="flex items-center gap-3">'
-        +'<div class="w-8 h-8 rounded-full bg-'+co.c+'-500/10 flex items-center justify-center text-'+co.c+'-400 font-bold text-[10px]">'+co.i+'</div>'
+        +'<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-'+co.c+'-500/10 flex items-center justify-center text-'+co.c+'-400 font-bold text-[10px]">'+co.i+'</div>'
         +'<div><div class="text-[12px] font-semibold text-zinc-200">'+co.n+'</div><div class="text-[9px] text-zinc-600">'+co.s+'</div></div></div>'
-        +'<div class="flex items-center gap-3">'
-        +'<div class="sparkline">'+spark(d.change)+'</div>'
+        +'<div class="flex items-center gap-3"><div class="sparkline">'+spark(d.change)+'</div>'
         +'<div class="text-right min-w-[70px]"><div class="text-[12px] font-semibold text-zinc-200">'+fmtP(d.price)+'</div>'
-        +'<div class="text-[10px] font-medium '+cls+' '+bg+' px-1.5 py-0.5 rounded">'+fmtC(d.change)+'</div></div></div></div>';
+        +'<div class="text-[10px] font-medium '+cls+' '+(d.change>=0?'bg-emerald-500/10':'bg-red-500/10')+' px-1.5 py-0.5 rounded">'+fmtC(d.change)+'</div></div></div></div>';
     }
     $('pricesBox').innerHTML=h;
+    
+    // Update Hero Stats dynamically (No extra API calls)
+    if(data.BTC){
+      $('hero-btc').textContent = fmtP(data.BTC.price);
+      var cls = data.BTC.change >= 0 ? 'text-emerald-400' : 'text-red-400';
+      $('hero-btc-chg').className = 'text-[11px] font-medium ' + cls;
+      $('hero-btc-chg').textContent = (data.BTC.change>=0?'▲':'▼')+' '+Math.abs(data.BTC.change).toFixed(2)+'% 24h';
+    }
   }
 
-  // ── Fear & Greed ──
   function loadFG(data){
     var v=data.value,l=data.label;
     var dash=(ARC_LEN*v/100);
     var arc=$('fgArc');
     arc.style.setProperty('--target',String(ARC_LEN-dash));
     arc.setAttribute('stroke-dasharray',dash+' '+ARC_LEN);
-
-    var valEl=$('fgVal'),lblEl=$('fgLabel');
-    valEl.textContent=v;
-    lblEl.textContent=l;
-
     var color='text-zinc-400';
-    if(v<=25)color='text-red-400';
-    else if(v<=45)color='text-amber-400';
-    else if(v<=55)color='text-yellow-400';
-    else if(v<=75)color='text-emerald-400';
-    else color='text-emerald-300';
-    valEl.className='text-2xl font-bold '+color;
-    lblEl.className='text-[10px] font-semibold tracking-wider uppercase '+color;
+    if(v<=25)color='text-red-400';else if(v<=45)color='text-amber-400';else if(v<=55)color='text-yellow-400';else if(v<=75)color='text-emerald-400';else color='text-emerald-300';
+    $('fgVal').textContent=v; $('fgVal').className='text-2xl font-bold '+color;
+    $('fgLabel').textContent=l; $('fgLabel').className='text-[10px] font-semibold tracking-wider uppercase '+color;
   }
 
-  // ── Global ──
   function loadGlobal(data){
     $('gMcap').textContent=data.market_cap||'—';
     $('gVol').textContent=data.volume||'—';
     $('gBtc').textContent=(data.btc_dom||'—')+'%';
     $('gActive').textContent=data.active?data.active.toLocaleString():'—';
-    var chg=data.market_cap_change;
-    if(chg!=null){
-      var cls=chg>=0?'text-emerald-400':'text-red-400';
-      $('gMcapChg').className='text-[10px] font-medium mt-0.5 '+cls;
-      $('gMcapChg').textContent=(chg>=0?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%';
+    
+    // Update Hero Market Cap dynamically
+    if(data.market_cap){
+      $('hero-mcap').textContent = data.market_cap;
+      var cls = data.market_cap_change >= 0 ? 'text-emerald-400' : 'text-red-400';
+      $('hero-mcap-chg').className = 'text-[11px] font-medium ' + cls;
+      $('hero-mcap-chg').textContent = (data.market_cap_change>=0?'▲':'▼')+' '+Math.abs(data.market_cap_change).toFixed(2)+'% 24h';
     }
   }
 
-  // ── Trending ──
   function loadTrending(data){
     if(!data||!data.length){$('trendingBox').innerHTML='<div class="px-4 py-4 text-center text-[11px] text-zinc-600">Unavailable</div>';return;}
     var h='';
     for(var i=0;i<Math.min(data.length,6);i++){
       var c=data[i];
       var cls=c.change>=0?'text-emerald-400':'text-red-400';
-      var bg=c.change>=0?'bg-emerald-500/10':'bg-red-500/10';
       h+='<div class="trend-row flex items-center justify-between px-4 py-2.5">'
         +'<div class="flex items-center gap-2.5">'
         +'<span class="text-[10px] font-bold text-zinc-600 w-4">'+(i+1)+'</span>'
         +(c.image?'<img src="'+c.image+'" class="w-5 h-5 rounded-full" alt="" loading="lazy">':'<div class="w-5 h-5 rounded-full bg-zinc-800"></div>')
-        +'<div><div class="text-[11px] font-semibold text-zinc-200">'+c.name+'</div>'
-        +'<div class="text-[9px] text-zinc-600">'+c.symbol+(c.rank?' · #'+c.rank:'')+'</div></div></div>'
+        +'<div><div class="text-[11px] font-semibold text-zinc-200">'+c.name+'</div><div class="text-[9px] text-zinc-600">'+c.symbol+'</div></div></div>'
         +'<div class="text-right"><div class="text-[11px] font-semibold text-zinc-300">'+fmtP(c.price)+'</div>'
-        +'<div class="text-[10px] font-bold '+cls+' '+bg+' px-1.5 py-0.5 rounded">'+fmtC(c.change)+'</div></div></div>';
+        +'<div class="text-[10px] font-bold '+cls+' '+(c.change>=0?'bg-emerald-500/10':'bg-red-500/10')+' px-1.5 py-0.5 rounded">'+fmtC(c.change)+'</div></div></div>';
     }
     $('trendingBox').innerHTML=h;
   }
 
-  // ── Fetch helpers ──
-  function getJSON(url,cb){
-    fetch(url).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&!d.error)cb(d)}).catch(function(){});
-  }
+  function getJSON(url,cb){fetch(url).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&!d.error)cb(d)}).catch(function(){});}
 
-  // ── Initial load ──
   function loadAll(){
     getJSON(B+'/api/prices',function(d){loadTicker(d);loadPrices(d)});
     getJSON(B+'/api/fear-greed',loadFG);
