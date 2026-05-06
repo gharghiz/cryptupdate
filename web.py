@@ -169,11 +169,8 @@ def index():
 
     stats = get_stats()
     pages = max(1, (total + 19) // 20)
-    intel = get_cached_intel()
-
     rendered = render_template("index.html",
         news=news, stats=stats,
-        intel=intel,
         page=page, pages=pages,
         total=total, search=search,
         active_tab=active_tab,
@@ -285,6 +282,10 @@ def api_prices():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 503
+
+@app.route("/api/intel")
+def api_intel():
+    return jsonify(get_cached_intel())
 
 @app.route("/health")
 def health():
