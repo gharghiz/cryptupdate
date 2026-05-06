@@ -1,193 +1,223 @@
+# -*- coding: utf-8 -*-
 """
-main.py - نقطة البداية
-- posted_news: الموقع — ما يتحذفش أبداً
-- telegram_log: تيليغرام — يتحذف كل 6 ساعات
+CryptositNews - Main Worker
+Periodic news scraping, AI analysis, price monitoring, and Telegram posting.
 """
 
-import sys
 import time
-import traceback
-import requests
-from concurrent.futures import ThreadPoolExecutor
-from utils import logger, now_utc
-from config import (
-    TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
-    INTERVAL_MINUTES, MAX_POSTS_PER_CYCLE,
-    PRICE_ALERT_COINS, PRICE_ALERT_THRESHOLD, PRICE_CHECK_INTERVAL,
-    CLEANUP_HOURS,
-)
+import threading
+
+import config
+from utils import setup_logger, now_utc
 from database import (
-    init_db,
+    get_news, get_active_alerts, mark_alert_triggered,
     is_telegram_posted, mark_telegram_posted,
-    save_news,
-    get_recent_titles,
-    cleanup_telegram_log,
+    cleanup_telegram_log, cache,
 )
-from scraper import fetch_all_news
-from processor import is_important, is_breaking, is_high_impact, is_duplicate, format_message, prioritize
-from bot import send_message, send_price_alert
+from scraper import scrape_all
+from processor import is_important, prioritize, format_message, extract_coins
+from ai import analyze_news
+from bot import send_message, send_important_news, send_alert_message
 
-# ============================================================
-# Startup check
-# ============================================================
+logger = setup_logger("main")
 
-def check_env():
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        logger.error("❌ TELEGRAM_BOT_TOKEN أو TELEGRAM_CHAT_ID ناقصين!")
-        sys.exit(1)
-    logger.info("✅ جميع المفاتيح موجودة")
+# Track last seen titles for duplicate detection
+_seen_titles = []
+_seen_lock = threading.Lock()
 
-# ============================================================
-# Price Alerts
-# ============================================================
+_start_time = time.time()
 
-_last_price_check = 0
-_session = requests.Session()
 
-def check_price_alerts():
-    global _last_price_check
-    now = time.time()
-    if now - _last_price_check < PRICE_CHECK_INTERVAL * 60:
-        return
-    _last_price_check = now
+def _get_coin_price(coin_id):
+    """Get current price for a coin from CoinGecko."""
+    import requests
+    from database import _coingecko_wait
 
+    _coingecko_wait()
     try:
-        resp = _session.get(
-            "https://api.coingecko.com/api/v3/simple/price",
-            params={"ids": ",".join(PRICE_ALERT_COINS.keys()), "vs_currencies": "usd", "include_1hr_change": "true"},
-            timeout=5
-        )
+        url = f"{config.COINGECKO_BASE}/simple/price"
+        params = {"ids": coin_id, "vs_currencies": "usd"}
+        resp = requests.get(url, params=params, timeout=10)
         data = resp.json()
+        if coin_id in data and "usd" in data[coin_id]:
+            return data[coin_id]["usd"]
     except Exception as e:
-        logger.warning(f"⚠️ فشل الأسعار: {e}")
-        return
-
-    for coin_id, symbol in PRICE_ALERT_COINS.items():
-        raw = data.get(coin_id, {})
-        if not raw:
-            continue
-        price    = raw.get("usd", 0)
-        change1h = round(raw.get("usd_1h_change", 0), 2)
-        if abs(change1h) >= PRICE_ALERT_THRESHOLD:
-            sign      = "+" if change1h > 0 else ""
-            direction = "🚀 Surge" if change1h > 0 else "🔴 Drop"
-            price_str = f"${price:,.2f}" if price >= 1 else f"${price:.6f}"
-            send_price_alert(
-                f"⚡️ <b>Price Alert — {symbol}</b>\n\n"
-                f"{direction} in the last hour!\n\n"
-                f"💰 {price_str}\n"
-                f"📈 1h: {sign}{change1h}%\n\n"
-                f"#Crypto #{symbol} #PriceAlert"
-            )
-
-# ============================================================
-# Enrich
-# ============================================================
-
-def enrich(news_list: list) -> list:
-    enriched = []
-    for item in news_list:
-        title = item["title"]
-        if not is_important(title):
-            continue
-        item["breaking"]    = is_breaking(title)
-        item["high_impact"] = is_high_impact(title)
-        enriched.append(item)
-    return enriched
-
-# ============================================================
-# Process single item
-# ============================================================
-
-def process_item(args):
-    item, recent_titles = args
-    news_id = item["id"]
-    title   = item["title"]
-
-    # تحقق من telegram_log — مو posted_news
-    if is_telegram_posted(news_id):
-        return None
-
-    if is_duplicate(title, recent_titles):
-        logger.info(f"🔁 مشابه: {title[:60]}")
-        return None
-
-    msg, ai = format_message(item)
-    message_id = send_message(msg)
-
-    if message_id:
-        # حفظ في الجدولين
-        mark_telegram_posted(news_id)
-        save_news(
-            news_id, title, item["source"],
-            summary=ai.get("summary", ""),
-            sentiment=ai.get("sentiment", ""),
-            reason=ai.get("reason", "")
-        )
-        return title
-
+        logger.error(f"Error getting price for {coin_id}: {e}")
     return None
 
-# ============================================================
-# Main cycle
-# ============================================================
 
-def run_cycle():
-    logger.info(f"🔄 UTC {now_utc().strftime('%H:%M:%S')}")
+def process_news():
+    """Fetch, analyze, and process news articles."""
+    logger.info("Starting news processing cycle...")
 
-    # تنظيف telegram_log فقط — الموقع ما يتأثرش
-    cleanup_telegram_log(hours=CLEANUP_HOURS)
+    # Scrape RSS feeds
+    scrape_result = scrape_all()
 
-    check_price_alerts()
+    # Get recent unprocessed news
+    news_list = get_news(limit=50, important_only=False)
+    if not news_list:
+        logger.info("No news to process")
+        return
 
-    all_news      = fetch_all_news()
-    enriched      = enrich(all_news)
-    prioritized   = prioritize(enriched)
-    recent_titles = get_recent_titles(200)
-    posted_count  = 0
+    # Update seen titles
+    with _seen_lock:
+        _seen_titles.extend([n["title"] for n in news_list])
+        # Keep only last 500 titles
+        _seen_titles = _seen_titles[-500:]
 
-    items = prioritized[:MAX_POSTS_PER_CYCLE]
+    # Process each news item
+    posted = 0
+    for news in news_list:
+        try:
+            title = news["title"]
+            news_id = news["id"]
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        results = list(executor.map(process_item, [(item, recent_titles) for item in items]))
+            # Skip already posted
+            if news.get("telegram_posted") or is_telegram_posted(title):
+                continue
 
-    for r in results:
-        if r:
-            recent_titles.append(r)
-            posted_count += 1
+            # Check if important
+            important = is_important(title, news.get("summary", ""))
+            priority = prioritize(title, news.get("summary", ""))
 
-    logger.info(f"✅ نشرنا {posted_count} خبر")
+            # Analyze with AI if important
+            ai_summary = news.get("ai_summary", "")
+            ai_sentiment = news.get("ai_sentiment", "")
+            ai_reason = news.get("ai_reason", "")
 
-# ============================================================
-# Entry point
-# ============================================================
+            if important or priority >= 50:
+                if not ai_summary:
+                    ai_summary, ai_sentiment, ai_reason = analyze_news(
+                        title, news.get("summary", "")
+                    )
+                    if ai_summary:
+                        # Update news with AI analysis
+                        from database import get_db
+                        with get_db() as conn:
+                            cursor = conn.cursor()
+                            cursor.execute("""
+                                UPDATE news SET
+                                    ai_summary = ?, ai_sentiment = ?,
+                                    ai_reason = ?, is_important = 1
+                                WHERE id = ?
+                            """, (ai_summary, ai_sentiment, ai_reason, news_id))
+                            conn.commit()
 
-def main():
-    check_env()
-    init_db()
-    logger.info(f"🤖 البوت بدا | كل {INTERVAL_MINUTES} دقيقة | cleanup كل {CLEANUP_HOURS}h")
+                # Send to Telegram
+                success, error = send_important_news(
+                    title=title,
+                    summary=news.get("summary", ""),
+                    url=news.get("url", ""),
+                    sentiment=ai_sentiment,
+                    ai_summary=ai_summary,
+                )
 
-    send_message(
-        f"🚀 <b>Bot Started!</b>\n\n"
-        f"⏱ Every {INTERVAL_MINUTES} minutes\n"
-        f"🗑 Telegram log cleanup every {CLEANUP_HOURS}h\n"
-        f"📰 Website keeps ALL news forever\n"
-        f"🕐 {now_utc().strftime('%H:%M UTC')}"
-    )
+                mark_telegram_posted(news_id, title, success, error or "")
+                if success:
+                    posted += 1
 
+            # Rate limiting between messages
+            if posted > 0:
+                time.sleep(2)
+
+        except Exception as e:
+            logger.error(f"Error processing news: {e}")
+            continue
+
+    logger.info(f"News cycle complete: {posted} posted, {scrape_result['saved']} new articles")
+
+
+def check_price_alerts():
+    """Check active price alerts against current prices."""
+    alerts = get_active_alerts()
+    if not alerts:
+        return
+
+    for alert in alerts:
+        try:
+            coin_id = config.COIN_MAP.get(alert["symbol"])
+            if not coin_id:
+                continue
+
+            price = _get_coin_price(coin_id)
+            if price is None:
+                continue
+
+            target = float(alert["target_price"])
+            condition = alert["condition"]
+            triggered = False
+
+            if condition == "above" and price >= target:
+                triggered = True
+            elif condition == "below" and price <= target:
+                triggered = True
+
+            if triggered:
+                symbol = alert["symbol"]
+                coin = alert["coin"]
+                msg = (
+                    f"📈 <b>Price Alert Triggered!</b>\n\n"
+                    f"🪙 {coin} ({symbol})\n"
+                    f"💰 Target: ${target:,.4f} ({condition})\n"
+                    f"📊 Current: ${price:,.4f}\n"
+                )
+                send_alert_message(msg)
+                mark_alert_triggered(alert["id"])
+                logger.info(f"Alert triggered: {symbol} {condition} {target}")
+
+            time.sleep(3)  # Rate limiting
+
+        except Exception as e:
+            logger.error(f"Error checking alert: {e}")
+            continue
+
+
+def cleanup():
+    """Periodic cleanup tasks."""
+    try:
+        cleanup_telegram_log(days=config.TELEGRAM_LOG_DAYS)
+        logger.info("Cleanup completed")
+    except Exception as e:
+        logger.error(f"Cleanup error: {e}")
+
+
+def worker_loop():
+    """Main worker loop."""
+    logger.info("CryptositNews Worker starting...")
+
+    # Initial scrape on startup
+    try:
+        process_news()
+    except Exception as e:
+        logger.error(f"Initial scrape error: {e}")
+
+    cycle_count = 0
     while True:
         try:
-            run_cycle()
+            cycle_count += 1
+            logger.info(f"Worker cycle #{cycle_count}")
+
+            # News processing
+            process_news()
+
+            # Price alerts (every 5 cycles ~25 minutes)
+            if cycle_count % 5 == 0:
+                check_price_alerts()
+
+            # Cleanup (every 12 cycles ~1 hour)
+            if cycle_count % 12 == 0:
+                cleanup()
+
+            # Wait
+            time.sleep(config.SCRAPER_INTERVAL)
+
+        except KeyboardInterrupt:
+            logger.info("Worker stopped by user")
+            break
         except Exception as e:
-            logger.error(f"❌ {e}")
-            traceback.print_exc()
-        logger.info(f"😴 {INTERVAL_MINUTES} دقيقة...")
-        time.sleep(INTERVAL_MINUTES * 60)
+            logger.error(f"Worker error: {e}")
+            time.sleep(60)
+
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        logger.critical(f"❌ {e}")
-        traceback.print_exc()
-        sys.exit(1)
+    worker_loop()

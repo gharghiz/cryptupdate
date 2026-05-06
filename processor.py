@@ -1,168 +1,138 @@
-import time
+# -*- coding: utf-8 -*-
+"""
+CryptositNews - Processor
+News filtering, prioritization, and formatting.
+"""
+
+import re
 import difflib
-import hashlib
-import requests
-from utils import logger, safe_html
-from config import (
-    IMPORTANT_KEYWORDS, BREAKING_KEYWORDS, HIGH_IMPACT_KEYWORDS,
-    POSITIVE_WORDS, NEGATIVE_WORDS, COIN_MAP,
-    COINGECKO_CACHE_SECONDS, SIMILARITY_THRESHOLD,
-)
-from ai import generate_ai_insight
 
-_price_cache = {}
-_session = requests.Session()
+import config
+from utils import setup_logger, truncate
 
-# ============================
-# Market Data
-# ============================
+logger = setup_logger("processor")
 
-def get_market_data(title: str):
-    title_lower = title.lower()
-    coin_id = None
-    for keyword, cid in COIN_MAP.items():
-        if keyword in title_lower:
-            coin_id = cid
+
+def is_important(title, summary=""):
+    """Check if news is important based on keywords."""
+    if not title:
+        return False
+
+    text = f"{title} {summary}".lower()
+
+    # Check for action/breaking keywords first
+    for kw in config.ACTION_KEYWORDS:
+        if kw.lower() in text:
+            return True
+
+    # Check for important keywords
+    important_count = sum(1 for kw in config.IMPORTANT_KEYWORDS if kw.lower() in text)
+    return important_count >= 2
+
+
+def prioritize(title, summary=""):
+    """Calculate news priority score (0-100+)."""
+    if not title:
+        return 0
+
+    text = f"{title} {summary}".lower()
+    score = 10  # Base score for any news
+
+    # Breaking news bonus
+    for kw in config.BREAKING_KEYWORDS:
+        if kw.lower() in text:
+            score += 100
             break
 
-    if not coin_id:
-        return None
+    # High impact keywords
+    for kw in config.HIGH_IMPACT_KEYWORDS:
+        if kw.lower() in text:
+            score += 80
+            break
 
-    now = time.time()
-    if coin_id in _price_cache:
-        data, ts = _price_cache[coin_id]
-        if now - ts < COINGECKO_CACHE_SECONDS:
-            return data
+    # Major coins mentioned
+    major_coins = ["bitcoin", "ethereum", "btc", "eth", "solana", "sol", "bnb"]
+    for coin in major_coins:
+        if coin in text:
+            score += 50
+            break
 
-    try:
-        resp = _session.get(
-            "https://api.coingecko.com/api/v3/simple/price",
-            params={
-                "ids": coin_id,
-                "vs_currencies": "usd",
-                "include_24hr_change": "true",
-                "include_1hr_change": "true",
-            },
-            timeout=5
-        )
-        raw = resp.json().get(coin_id, {})
-        if not raw:
-            return None
+    # Important keywords
+    for kw in config.IMPORTANT_KEYWORDS:
+        if kw.lower() in text:
+            score += 20
 
-        price = raw.get("usd", 0)
-        change_1h = round(raw.get("usd_1h_change", 0), 2)
-        change_24h = round(raw.get("usd_24h_change", 0), 2)
+    # Sentiment analysis hints
+    for kw in config.POSITIVE_KEYWORDS:
+        if kw.lower() in text:
+            score += 10
 
-        def fmt(c):
-            return f"{'▲' if c >= 0 else '▼'} {'+' if c >= 0 else ''}{c}%"
+    for kw in config.NEGATIVE_KEYWORDS:
+        if kw.lower() in text:
+            score += 15  # Negative news often more important
 
-        result = {
-            "price": f"${price:,.2f}",
-            "change_1h": fmt(change_1h),
-            "change_24h": fmt(change_24h),
-        }
+    return score
 
-        _price_cache[coin_id] = (result, now)
-        return result
 
-    except Exception as e:
-        logger.warning(f"⚠️ Market error: {e}")
-        return None
+def is_duplicate(title, existing_titles, threshold=0.85):
+    """Check if title is too similar to existing ones."""
+    if not title or not existing_titles:
+        return False
 
-# ============================
-# Sentiment
-# ============================
+    title_lower = title.lower().strip()
 
-def analyze_sentiment(title: str):
-    t = title.lower()
-    pos = sum(1 for w in POSITIVE_WORDS if w in t)
-    neg = sum(1 for w in NEGATIVE_WORDS if w in t)
-
-    if pos > neg:
-        return "🟢"
-    elif neg > pos:
-        return "🔴"
-    return "🟡"
-
-# ============================
-# IMPORTANT FIX
-# ============================
-
-def is_important(title: str) -> bool:
-    # ⚡ خففنا الفلترة بزاف
-    return True
-
-def is_breaking(title: str):
-    return any(k in title.lower() for k in BREAKING_KEYWORDS)
-
-def is_high_impact(title: str):
-    return any(k in title.lower() for k in HIGH_IMPACT_KEYWORDS)
-
-# ============================
-# Duplicate Fix
-# ============================
-
-def is_duplicate(title: str, recent_titles: list):
-    title = title.lower()
-
-    for prev in recent_titles[-50:]:  # ⚡ غير آخر 50
-        prev = prev.lower()
-
-        if title == prev:
-            return True
-
-        if title in prev or prev in title:
-            return True
-
-        if difflib.SequenceMatcher(None, title, prev).ratio() >= 0.6:
+    for existing in existing_titles:
+        if not existing:
+            continue
+        existing_lower = existing.lower().strip()
+        similarity = difflib.SequenceMatcher(None, title_lower, existing_lower).ratio()
+        if similarity >= threshold:
             return True
 
     return False
 
-# ============================
-# Format Message + AI
-# ============================
 
-def format_message(item: dict):
-    title = item["title"]
-    source = item["source"]
+def format_message(title, summary="", url="", sentiment="", ai_summary=""):
+    """Format a Telegram message."""
+    # Determine emoji based on sentiment
+    emoji_map = {
+        "positive": "🟢",
+        "negative": "🔴",
+        "neutral": "⚪",
+        "bullish": "🚀",
+        "bearish": "📉",
+        "fear": "😰",
+        "greed": "💰",
+    }
+    emoji = emoji_map.get(sentiment.lower(), "📰")
 
-    breaking = item.get("breaking", False)
-    high = item.get("high_impact", False)
+    # Build message
+    msg = f"{emoji} <b>{title}</b>\n\n"
 
-    sentiment = analyze_sentiment(title)
-    market = get_market_data(title)
+    if ai_summary:
+        msg += f"💡 {truncate(ai_summary, 300)}\n\n"
+    elif summary:
+        msg += f"{truncate(summary, 200)}\n\n"
 
-    # AI فقط للأخبار المهمة
-    ai = {"summary": "", "sentiment": "", "reason": ""}
-    if breaking or high:
-        ai = generate_ai_insight(title)
+    if sentiment:
+        sentiment_emoji = emoji_map.get(sentiment.lower(), "")
+        msg += f"📊 Sentiment: {sentiment_emoji} {sentiment.title()}\n"
 
-    headline = f"{sentiment} {safe_html(title)}"
-    if breaking:
-        headline = f"🚨 <b>BREAKING:</b> {safe_html(title)}"
+    if url:
+        msg += f"\n🔗 <a href=\"{url}\">Read More</a>"
 
-    msg = f"{headline}\n\n"
+    # Telegram limit is 4096 chars
+    if len(msg) > 4000:
+        msg = msg[:3900] + "...\n\n🔗 <a href=\"" + url + "\">Read More</a>"
 
-    if market:
-        msg += f"💰 {market['price']}\n"
-        msg += f"⏱ 1h: {market['change_1h']} | 24h: {market['change_24h']}\n\n"
+    return msg
 
-    if ai["summary"]:
-        msg += (
-            f"🧠 <b>AI Insight</b>\n"
-            f"├ {safe_html(ai['summary'])}\n"
-            f"├ {safe_html(ai['sentiment'])}\n"
-            f"└ {safe_html(ai['reason'])}\n\n"
-        )
 
-    msg += f"📌 {safe_html(source)}\n#Crypto"
-
-    return msg, ai
-
-# ============================
-# Prioritize
-# ============================
-
-def prioritize(news_list):
-    return news_list
+def extract_coins(title, summary=""):
+    """Extract mentioned cryptocurrency coins from text."""
+    text = f"{title} {summary}".lower()
+    mentioned = []
+    for symbol, name in config.COIN_MAP.items():
+        if symbol.lower() in text or name.lower() in text:
+            mentioned.append(symbol)
+    return mentioned
