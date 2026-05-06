@@ -3,168 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CryptositNews — Live Crypto Intelligence & Signals</title>
-<meta name="description" content="AI-powered crypto signals, real-time market sentiment, and breaking news. Make faster trading decisions.">
-<meta property="og:title" content="CryptositNews — Crypto Intelligence">
-<meta property="og:description" content="AI-powered crypto signals and market sentiment.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="{{ site_url }}/">
+<title>CryptositNews — Terminal Intelligence</title>
+<meta name="description" content="Algorithmic crypto intelligence, real-time signals, and market sentiment analysis.">
 {% if gsc_meta %}<meta name="google-site-verification" content="{{ gsc_meta }}">{% endif %}
 <link rel="canonical" href="{{ site_url }}/">
 <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ site_url }}/feed.xml">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui'],mono:['JetBrains Mono','monospace']}}}}
+</script>
 <style>
-  body{background:#09090b}
-  ::-webkit-scrollbar{width:4px}
-  ::-webkit-scrollbar-track{background:#09090b}
-  ::-webkit-scrollbar-thumb{background:#27272a;border-radius:4px}
-
-  @keyframes ticker-slide{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-  .ticker-track{animation:ticker-slide 40s linear infinite}
+  /* Pro SaaS Color System */
+  body { background: #050505; color: #d4d4d8; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #050505; }
+  ::-webkit-scrollbar-thumb { background: #262626; border-radius: 2px; }
   
-  @keyframes dot-pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .dot-pulse{animation:dot-pulse 1.5s ease-in-out infinite}
-
-  @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .fade-up{animation:fade-up .4s ease-out both}
-  .d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}
-
-  .news-row{transition:all .15s;border-left:2px solid transparent}
-  .news-row:hover{background:rgba(255,255,255,.02);border-left-color:#3b82f6}
-
-  .pill{transition:all .15s;border:1px solid transparent}
-  .pill.on{background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.2)}
+  .surface-1 { background: #0a0a0a; border-color: #1a1a1a; }
+  .surface-2 { background: #111111; border-color: #262626; }
   
-  .pg-btn{transition:all .15s}
-  .pg-btn.on{background:#3b82f6;color:#fff}
+  @keyframes ticker-slide { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .ticker-track { animation: ticker-slide 40s linear infinite; }
 
-  .sent-bar{transition:width 1s ease-out}
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .blink { animation: blink 1.5s ease-in-out infinite; }
 
-  @keyframes shimmer-bar{0%{background-position:-200% 0}100%{background-position:200% 0}}
-  .shimmer-top{background:linear-gradient(90deg,#3b82f6,#8b5cf6,#3b82f6);background-size:200% 100%;animation:shimmer-bar 3s linear infinite}
+  /* Data Grid Alignment */
+  .data-row { display: grid; gap: 16px; align-items: center; }
+  .data-cell-label { font-size: 9px; color: #52525b; text-transform: uppercase; letter-spacing: 0.05em; }
+  .data-cell-value { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a1a1aa; font-weight: 500; }
+  .data-cell-positive { color: #4ade80; }
+  .data-cell-negative { color: #f87171; }
 
-  .skeleton{background:linear-gradient(90deg,#18181b 25%,#27272a 50%,#18181b 75%);background-size:200% 100%;animation:shimmer-bar 1.5s ease-in-out infinite;border-radius:4px}
+  /* Verdict Terminal Aesthetics */
+  .terminal-bg { background: linear-gradient(180deg, rgba(59,130,246,0.03) 0%, #0a0a0a 100%); }
+  .terminal-text { font-family: 'JetBrains Mono', monospace; }
+  .scanline { position: absolute; top: 0; left: 0; right: 0; height: 1px; background: rgba(59,130,246,0.3); box-shadow: 0 0 8px rgba(59,130,246,0.2); }
 
-  .wlabel{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:6px;color:#71717a}
-  .wlabel::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(255,255,255,.06),transparent)}
+  /* Hyper-compact Feed */
+  .feed-item { border-left: 2px solid #1a1a1a; transition: all 0.1s; }
+  .feed-item:hover { background: rgba(255,255,255,0.01); border-left-color: #3b82f6; }
+  .feed-item.impact-neg { border-left-color: #dc2626; }
+  .feed-item.impact-pos { border-left-color: #16a34a; }
 
-  .trend-row{transition:all .15s;border-left:2px solid transparent}
-  .trend-row:hover{background:rgba(255,255,255,.02);border-left-color:#f59e0b}
-
-  /* Decision-First Elements */
-  .verdict-glow-bullish{box-shadow: 0 0 40px -10px rgba(34, 197, 94, 0.15);}
-  .verdict-glow-bearish{box-shadow: 0 0 40px -10px rgba(239, 68, 68, 0.15);}
+  .pill { transition: all 0.15s; border: 1px solid transparent; }
+  .pill.on { background: rgba(59,130,246,0.1); color: #93c5fd; border-color: rgba(59,130,246,0.2); }
   
-  .signal-ticket{transition:all .2s;border:1px solid rgba(255,255,255,0.05)}
-  .signal-ticket:hover{border-color:rgba(255,255,255,0.1);transform:translateY(-2px)}
-
-  .impact-pos{border-left:3px solid #22c55e}
-  .impact-neg{border-left:3px solid #ef4444}
-  .impact-neut{border-left:3px solid #3f3f46}
-
-  .sparkline{display:flex;align-items:flex-end;gap:1px;height:18px}
-  .sparkline-bar{width:2px;border-radius:1px;min-height:2px}
+  .skeleton { background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%); background-size: 200% 100%; animation: slide 1.5s infinite; border-radius: 2px; }
+  @keyframes slide { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
 </style>
 </head>
-<body class="font-sans text-zinc-100 min-h-screen antialiased">
+<body class="font-sans antialiased">
+
+<!-- ===== SYSTEM STATUS BAR ===== -->
+<div class="border-b border-[#1a1a1a] bg-[#0a0a0a] px-4 py-1 flex items-center justify-between text-[9px] font-mono text-zinc-600">
+  <div class="flex items-center gap-4">
+    <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 blink"></span> SYSTEM ONLINE</span>
+    <span class="hidden sm:inline">DATA FEED: <span class="text-emerald-500">LIVE</span></span>
+  </div>
+  <div class="flex items-center gap-4">
+    <span class="hidden sm:inline">ALGO: V2.4</span>
+    <span id="clock" class="text-zinc-500">--:--:-- UTC</span>
+  </div>
+</div>
 
 <!-- ===== TICKER ===== -->
-<div class="border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-sm">
-  <div class="overflow-hidden">
-    <div id="ticker" class="ticker-track flex items-center gap-10 py-1.5 px-4 whitespace-nowrap text-xs">
-      <span class="text-zinc-600">Loading…</span>
-    </div>
+<div class="border-b border-[#1a1a1a] bg-[#050505] overflow-hidden">
+  <div id="ticker" class="ticker-track flex items-center gap-8 py-1 px-4 whitespace-nowrap font-mono text-[11px]">
+    <span class="text-zinc-700">CONNECTING...</span>
   </div>
 </div>
 
 <!-- ===== NAV ===== -->
-<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/60">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-4">
-    <a href="/" class="flex items-center gap-2 flex-shrink-0">
-      <div class="w-6 h-6 rounded bg-blue-500 flex items-center justify-center">
-        <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+<nav class="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-[#1a1a1a]">
+  <div class="max-w-[1400px] mx-auto px-4 h-10 flex items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-5 h-5 rounded bg-blue-500 flex items-center justify-center">
+        <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
       </div>
-      <span class="text-sm font-bold text-zinc-100 tracking-tight">Crypto<span class="text-blue-400">sit</span></span>
+      <span class="text-xs font-semibold text-zinc-300 tracking-tight font-mono">CRYPTOSIT<span class="text-blue-400">.IQ</span></span>
     </a>
+    
     <form action="/" method="get" class="hidden sm:flex flex-1 max-w-xs">
-      <div class="relative w-full">
-        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" name="q" value="{{ search }}" placeholder="Search…" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-3 py-1 text-[11px] text-zinc-300 placeholder-zinc-700 focus:outline-none focus:border-zinc-600 transition-colors">
-      </div>
+      <input type="text" name="q" value="{{ search }}" placeholder="Query news..."
+        class="w-full bg-[#0a0a0a] border border-[#1a1a1a] rounded px-3 py-1 text-[10px] text-zinc-400 placeholder-zinc-700 focus:outline-none focus:border-zinc-600 font-mono transition-colors">
     </form>
+
     <div class="flex items-center gap-2">
-      <a href="https://t.me/CryptositNews" target="_blank" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold hover:bg-blue-500/20 transition-all">
-        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-        Alerts
+      <a href="/feed.xml" class="px-2 py-1 rounded text-[9px] font-mono text-zinc-600 hover:text-zinc-400 border border-transparent hover:border-[#1a1a1a] transition-all">RSS</a>
+      <a href="https://t.me/CryptositNews" target="_blank" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-bold font-mono hover:bg-blue-500/20 transition-all">
+        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        ALERTS
       </a>
     </div>
   </div>
 </nav>
 
 <!-- ========================================== -->
-<!-- 1. THE VERDICT (Decision-First Core)      -->
+<!-- 1. ALGO VERDICT (Terminal Style)        -->
 <!-- ========================================== -->
 {% if intel and intel.ai_signal %}
 {% set sig = intel.ai_signal %}
-<section class="border-b border-zinc-800/40 bg-zinc-950/50 {% if sig.signal == 'Bullish' %}verdict-glow-bullish{% else %}verdict-glow-bearish{% endif %}">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 fade-up">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+<section class="border-b border-[#1a1a1a] terminal-bg relative overflow-hidden">
+  <div class="scanline"></div>
+  <div class="max-w-[1400px] mx-auto px-4 py-5">
+    <div class="flex flex-col lg:flex-row gap-5">
       
-      <!-- Left: The Statement -->
+      <!-- Signal Execution Block -->
       <div class="flex-1">
-        <div class="flex items-center gap-2 mb-2">
-          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/></svg>
-          <span class="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Market Intelligence</span>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-[9px] font-mono text-blue-400/70 tracking-widest">// PRIMARY SIGNAL</span>
         </div>
         
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-          {{ sig.coin }} is currently 
-          <span class="{% if sig.signal == 'Bullish' %}text-emerald-400{% elif sig.signal == 'Bearish' %}text-red-400{% else %}text-zinc-400{% endif %}">
-            {{ sig.signal }}
+        <div class="terminal-text flex items-baseline gap-3 mb-2">
+          <span class="text-xl sm:text-2xl font-bold text-zinc-200">{{ sig.coin }}<span class="text-zinc-600">/USD</span></span>
+          <span class="text-zinc-700">→</span>
+          <span class="text-xl sm:text-2xl font-bold {% if sig.signal == 'Bullish' %}text-emerald-400{% elif sig.signal == 'Bearish' %}text-red-400{% else %}text-zinc-500{% endif %}">
+            {{ sig.signal | upper }}
           </span>
-        </h1>
-        <p class="text-sm text-zinc-500 mt-2 max-w-xl">{{ sig.reason }}</p>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-600">
+          <span>CONF: <span class="text-zinc-400">{{ sig.confidence }}%</span></span>
+          <span class="text-zinc-800">|</span>
+          <span>TRIGGERS: <span class="text-zinc-400">{{ sig.reason }}</span></span>
+        </div>
       </div>
 
-      <!-- Right: The Proof (Sentiment Bar) -->
+      <!-- Sentiment Gauge -->
       {% if intel.sentiment %}
-      <div class="lg:w-72 bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex-shrink-0">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">News Sentiment</span>
-          <span class="text-xs font-bold text-zinc-300">{{ intel.sentiment.bullish }}% / {{ intel.sentiment.bearish }}%</span>
+      <div class="lg:w-64 surface-1 rounded-lg p-3 font-mono flex-shrink-0">
+        <div class="text-[9px] text-zinc-600 mb-2 tracking-wider">SENTIMENT ANALYSIS</div>
+        <div class="flex h-1.5 rounded-full overflow-hidden bg-[#111] mb-2">
+          <div class="bg-emerald-500/80 transition-all" style="width: {{ intel.sentiment.bullish }}%"></div>
+          <div class="bg-red-500/80 transition-all" style="width: {{ intel.sentiment.bearish }}%"></div>
         </div>
-        <div class="flex h-2 rounded-full overflow-hidden bg-zinc-800">
-          <div class="bg-emerald-500 sent-bar" style="width: {{ intel.sentiment.bullish }}%"></div>
-          <div class="bg-red-500 sent-bar" style="width: {{ intel.sentiment.bearish }}%"></div>
-        </div>
-        <div class="flex justify-between mt-1.5 text-[9px] text-zinc-600 font-medium">
-          <span>Bullish</span>
-          <span>Bearish</span>
+        <div class="flex justify-between text-[10px]">
+          <span class="text-emerald-500/70">BULL {{ intel.sentiment.bullish }}%</span>
+          <span class="text-red-500/70">BEAR {{ intel.sentiment.bearish }}%</span>
         </div>
       </div>
       {% endif %}
 
     </div>
 
-    <!-- 2. SIGNAL TICKETS (Actionable Steps) -->
+    <!-- Multi-Signal Watchlist -->
     {% if intel.ai_signals and intel.ai_signals|length > 1 %}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 font-mono">
       {% for s in intel.ai_signals %}
-      <div class="signal-ticket rounded-lg bg-zinc-900/80 p-3.5 flex items-center justify-between">
+      <div class="surface-2 rounded px-3 py-2 flex items-center justify-between">
         <div>
-          <div class="text-xs font-bold text-zinc-200">{{ s.coin }}/USD</div>
-          <div class="text-[10px] text-zinc-600 mt-0.5 max-w-[140px] truncate">{{ s.reason }}</div>
+          <span class="text-[11px] font-semibold text-zinc-300">{{ s.coin }}</span>
+          <span class="text-[9px] text-zinc-700 ml-2">{{ s.signal }}</span>
         </div>
-        <div class="text-right flex-shrink-0 ml-3">
-          <div class="text-[10px] font-bold px-2 py-0.5 rounded 
-            {% if s.signal == 'Bullish' %}bg-emerald-500/15 text-emerald-400 
-            {% elif s.signal == 'Bearish' %}bg-red-500/15 text-red-400 
-            {% else %}bg-zinc-800 text-zinc-500 {% endif %}">
-            {{ s.signal }}
-          </div>
-          <div class="text-[10px] text-zinc-600 mt-1">{{ s.confidence }}% conf.</div>
+        <div class="text-[10px] text-zinc-600">
+          {{ s.confidence }}%
         </div>
       </div>
       {% endfor %}
@@ -176,166 +170,170 @@
 {% endif %}
 
 
-<!-- ===== MAIN CONTENT ===== -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- ===== MAIN TERMINAL GRID ===== -->
+<main class="max-w-[1400px] mx-auto px-4 py-4">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
 
-<!-- ==================== LEFT: EVIDENCE (News) ==================== -->
-<div class="lg:col-span-8 space-y-4">
+<!-- ==================== LEFT: FEED LOG ==================== -->
+<div class="lg:col-span-8 space-y-3">
 
-  <!-- Tabs -->
-  <div class="flex items-center justify-between gap-4 fade-up d1">
-    <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
-      {% set tabs=[('all','All'),('breaking','Urgent'),('bitcoin','Bitcoin'),('ethereum','Ethereum'),('defi','DeFi'),('altcoin','Altcoins')] %}
+  <!-- Filters -->
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-1 overflow-x-auto pb-1">
+      {% set tabs=[('all','All'),('breaking','Urgent'),('bitcoin','BTC'),('ethereum','ETH'),('defi','DeFi'),('altcoin','Alts')] %}
       {% for k,l in tabs %}
       <a href="/?{% if search %}q={{ search }}&{% endif %}tab={{ k }}"
-        class="pill px-2.5 py-1 rounded text-[10px] font-medium whitespace-nowrap
+        class="pill px-2 py-0.5 rounded text-[9px] font-mono font-medium whitespace-nowrap
         {% if k==active_tab or (not active_tab and k=='all') %}on{% else %}text-zinc-600 hover:text-zinc-400{% endif %}">{{ l }}</a>
       {% endfor %}
     </div>
     {% if search %}
-    <div class="flex items-center gap-2 flex-shrink-0">
-      <span class="text-[10px] text-zinc-500">"<span class="text-blue-400">{{ search }}</span>"</span>
-      <a href="/" class="text-[9px] text-zinc-700 hover:text-zinc-400">✕ Clear</a>
+    <div class="flex items-center gap-2 flex-shrink-0 font-mono text-[9px]">
+      <span class="text-zinc-700">Q:"<span class="text-blue-400">{{ search }}</span>"</span>
+      <a href="/" class="text-zinc-800 hover:text-zinc-500">[X]</a>
     </div>
     {% endif %}
   </div>
 
-  <!-- Whale Alerts (If any) -->
+  <!-- Whale Alerts -->
   {% if intel and intel.whale_activity and intel.whale_activity|length > 0 %}
-  <div class="bg-amber-500/5 border border-amber-500/10 rounded-lg p-3 fade-up d1">
-    <div class="flex items-center gap-2 mb-2">
-      <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 0 0-2.58 5.84"/></svg>
-      <span class="text-[10px] font-bold text-amber-400 tracking-wider uppercase">Whale Movements</span>
-    </div>
-    <div class="space-y-1">
+  <div class="surface-1 border-l-2 border-l-amber-500/50 p-2.5 font-mono">
+    <div class="text-[9px] text-amber-500/70 mb-1.5 tracking-wider">! WHALE ALERT</div>
+    <div class="space-y-0.5">
       {% for w in intel.whale_activity %}
-      <p class="text-[11px] text-amber-200/70 leading-relaxed">• {{ w }}</p>
+      <p class="text-[10px] text-amber-200/50 leading-relaxed truncate">{{ w }}</p>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <!-- News List (Impact Focused) -->
-  <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden fade-up d2">
+  <!-- Feed List -->
+  <div class="surface-1 rounded-sm overflow-hidden divide-y divide-[#1a1a1a]">
     {% if news %}
       {% for item in news %}
-        {# Skip if it's the first breaking to avoid duplication if handled #}
-        <a href="/news/{{ item.id }}" class="news-row block px-4 py-3 border-b border-zinc-800/30 
-          {% if item.category == 'breaking' %}impact-neg bg-red-500/[0.02]
-          {% elif item.sentiment and 'Bullish' in item.sentiment %}impact-pos
-          {% elif item.sentiment and 'Bearish' in item.sentiment %}impact-neg
-          {% else %}impact-neut{% endif %}">
-          
-          <div class="flex items-start gap-3">
-            <div class="flex-1 min-w-0">
-              <p class="text-[13px] font-medium text-zinc-300 leading-relaxed line-clamp-2">{{ item.title }}</p>
-              <div class="flex items-center gap-2 mt-1.5">
-                <span class="text-[9px] text-zinc-700">{{ item.source }}</span>
-                <span class="text-zinc-800">·</span>
-                <span class="text-[9px] text-zinc-700">{{ item.posted_at[:16].replace('T',' ') }}</span>
-                {% if item.summary %}
-                <span class="text-[9px] text-zinc-600 hidden sm:inline">— {{ item.summary[:50] }}...</span>
-                {% endif %}
-              </div>
-            </div>
-            
-            <!-- Micro Decision Helper -->
-            <div class="flex-shrink-0 pt-0.5 flex flex-col items-end gap-1">
-              {% if item.category == 'breaking' %}
-              <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-red-500/20 text-red-400">URGENT</span>
-              {% elif item.sentiment and 'Bullish' in item.sentiment %}
-              <span class="w-2 h-2 rounded-full bg-emerald-500/80"></span>
-              {% elif item.sentiment and 'Bearish' in item.sentiment %}
-              <span class="w-2 h-2 rounded-full bg-red-500/80"></span>
-              {% else %}
-              <span class="w-2 h-2 rounded-full bg-zinc-700"></span>
-              {% endif %}
-            </div>
+      <a href="/news/{{ item.id }}" class="feed-item block px-3 py-2.5 
+        {% if item.category == 'breaking' %}impact-neg bg-red-500/[0.02]
+        {% elif item.sentiment and 'Bullish' in item.sentiment %}impact-pos
+        {% elif item.sentiment and 'Bearish' in item.sentiment %}impact-neg
+        {% endif %}">
+        
+        <div class="flex items-start gap-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] text-zinc-300 leading-relaxed line-clamp-2 font-sans">{{ item.title }}</p>
           </div>
-        </a>
+          
+          <div class="flex-shrink-0 flex flex-col items-end gap-1 pt-px">
+            {% if item.category == 'breaking' %}
+            <span class="px-1 py-px rounded text-[7px] font-bold bg-red-500/20 text-red-400 font-mono tracking-wider">URGENT</span>
+            {% else %}
+            <div class="w-1.5 h-1.5 rounded-full 
+              {% if item.sentiment and 'Bullish' in item.sentiment %}bg-emerald-500/60
+              {% elif item.sentiment and 'Bearish' in item.sentiment %}bg-red-500/60
+              {% else %}bg-zinc-800{% endif %}"></div>
+            {% endif %}
+            <span class="text-[8px] font-mono text-zinc-700 whitespace-nowrap">{{ item.posted_at[5:16] }}</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2 mt-1 text-[8px] font-mono text-zinc-700">
+          <span>{{ item.source }}</span>
+          {% if item.summary %}<span class="text-zinc-800">—</span><span class="text-zinc-700 truncate max-w-xs hidden sm:inline">{{ item.summary[:60] }}</span>{% endif %}
+        </div>
+      </a>
       {% endfor %}
     {% else %}
-    <div class="p-12 text-center text-sm text-zinc-700">No news matching criteria.</div>
+    <div class="p-10 text-center text-[10px] font-mono text-zinc-800">NO DATA MATCHING CRITERIA</div>
     {% endif %}
   </div>
 
   <!-- Pagination -->
   {% if pages > 1 %}
-  <nav class="flex items-center justify-center gap-1 pt-2 fade-up d3">
-    {% if page > 1 %}<a href="/?page={{ page-1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="pg-btn px-3 py-1.5 rounded text-xs text-zinc-500">←</a>{% endif %}
+  <nav class="flex items-center justify-center gap-1 font-mono text-[9px]">
+    {% if page > 1 %}<a href="/?page={{ page-1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-600 hover:bg-[#111]">← PREV</a>{% endif %}
     {% for p in range(1, pages+1) %}
       {% if p==1 or p==pages or (p>=page-1 and p<=page+1) %}
-        {% if p==page %}<span class="pg-btn on px-3 py-1.5 rounded text-xs font-medium">{{ p }}</span>
-        {% else %}<a href="/?page={{ p }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="pg-btn px-3 py-1.5 rounded text-xs text-zinc-600">{{ p }}</a>{% endif %}
-      {% elif p==page-2 or p==page+2 %}<span class="text-zinc-800 text-xs px-1">…</span>{% endif %}
+        {% if p==page %}<span class="px-2 py-1 rounded bg-blue-500/20 text-blue-400">{{ p }}</span>
+        {% else %}<a href="/?page={{ p }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-700 hover:bg-[#111]">{{ p }}</a>{% endif %}
+      {% elif p==page-2 or p==page+2 %}<span class="text-zinc-800 px-1">…</span>{% endif %}
     {% endfor %}
-    {% if page < pages %}<a href="/?page={{ page+1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="pg-btn px-3 py-1.5 rounded text-xs text-zinc-500">→</a>{% endif %}
+    {% if page < pages %}<a href="/?page={{ page+1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-600 hover:bg-[#111]">NEXT →</a>{% endif %}
   </nav>
   {% endif %}
 
 </div>
 
-<!-- ==================== RIGHT: CONTEXT (Data) ==================== -->
-<div class="lg:col-span-4 space-y-4">
+<!-- ==================== RIGHT: DATA MATRIX ==================== -->
+<div class="lg:col-span-4 space-y-3">
 
-  <!-- F&G + Prices Combined Command -->
-  <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden fade-up d2">
-    <div class="px-4 py-3 border-b border-zinc-800/60">
-      <div class="wlabel" style="color:#a1a1aa">Quick Context</div>
+  <!-- Context Block -->
+  <div class="surface-1 rounded-sm overflow-hidden">
+    <div class="px-3 py-2 border-b border-[#1a1a1a] flex items-center justify-between">
+      <span class="text-[8px] font-mono font-bold text-zinc-600 tracking-widest">QUICK CONTEXT</span>
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 blink"></span>
+        <span class="text-[8px] font-mono text-emerald-500/70">LIVE</span>
+      </div>
     </div>
     
-    <!-- F&G Inline -->
-    <div class="px-4 py-3 border-b border-zinc-800/30 flex items-center justify-between">
+    <!-- F&G Compact -->
+    <div class="px-3 py-2.5 border-b border-[#1a1a1a] flex items-center justify-between">
       <div>
-        <div class="text-[10px] text-zinc-600 font-medium">Fear & Greed</div>
-        <div class="text-lg font-bold text-zinc-300 mt-0.5" id="fgVal">—</div>
+        <div class="text-[8px] font-mono text-zinc-700 mb-0.5">FEAR & GREED</div>
+        <div class="text-base font-mono font-bold text-zinc-300" id="fgVal">—</div>
       </div>
-      <div id="fgLabel" class="text-[10px] font-bold tracking-wider uppercase text-zinc-600 px-2 py-1 rounded bg-zinc-800/50">Loading</div>
+      <div id="fgLabel" class="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded bg-[#111] text-zinc-600">LOAD</div>
     </div>
 
-    <!-- Live Prices Compact -->
-    <div id="pricesBox" class="divide-y divide-zinc-800/30">
-      <div class="px-4 py-3"><div class="skeleton h-4 w-3/4"></div></div>
-      <div class="px-4 py-3"><div class="skeleton h-4 w-2/3"></div></div>
+    <!-- Prices Compact -->
+    <div id="pricesBox" class="divide-y divide-[#1a1a1a]">
+      <div class="px-3 py-2.5"><div class="skeleton h-3 w-3/4"></div></div>
+      <div class="px-3 py-2.5"><div class="skeleton h-3 w-2/3"></div></div>
     </div>
   </div>
 
-  <!-- Top Gainers (Actionable) -->
-  <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden fade-up d3">
-    <div class="px-4 py-3 border-b border-zinc-800/60">
-      <div class="wlabel" style="color:#f59e0b"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"/></svg> Momentum Leaders</div>
+  <!-- Macro Matrix -->
+  <div class="surface-1 rounded-sm overflow-hidden">
+    <div class="px-3 py-2 border-b border-[#1a1a1a]">
+      <span class="text-[8px] font-mono font-bold text-zinc-600 tracking-widest">MACRO MATRIX</span>
     </div>
-    <div id="trendingBox" class="divide-y divide-zinc-800/30">
-      <div class="px-4 py-3"><div class="skeleton h-4 w-3/4"></div></div>
-    </div>
-  </div>
-
-  <!-- Market Macro -->
-  <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden fade-up d4">
-    <div class="px-4 py-3 border-b border-zinc-800/60">
-      <div class="wlabel">Macro Data</div>
-    </div>
-    <div class="p-3 grid grid-cols-2 gap-2 text-center">
-      <div class="bg-zinc-800/40 rounded-lg p-2.5">
-        <div class="text-[9px] text-zinc-600">Market Cap</div>
-        <div id="gMcap" class="text-xs font-bold text-zinc-300 mt-0.5">—</div>
-        <div id="gMcapChg" class="text-[9px] text-zinc-600 mt-0.5">—</div>
+    <div class="p-2 grid grid-cols-2 gap-2">
+      <div class="bg-[#0a0a0a] rounded p-2">
+        <div class="data-cell-label">MKT CAP</div>
+        <div class="data-cell-value text-xs mt-0.5" id="gMcap">—</div>
+        <div class="data-cell-label mt-1" id="gMcapChg">—</div>
       </div>
-      <div class="bg-zinc-800/40 rounded-lg p-2.5">
-        <div class="text-[9px] text-zinc-600">BTC Dominance</div>
-        <div id="gBtc" class="text-xs font-bold text-zinc-300 mt-0.5">—</div>
+      <div class="bg-[#0a0a0a] rounded p-2">
+        <div class="data-cell-label">BTC DOM</div>
+        <div class="data-cell-value text-xs mt-0.5" id="gBtc">—</div>
+      </div>
+      <div class="bg-[#0a0a0a] rounded p-2 col-span-2">
+        <div class="data-cell-label">24H VOLUME</div>
+        <div class="data-cell-value text-xs mt-0.5" id="gVol">—</div>
       </div>
     </div>
   </div>
 
-  <!-- Sources CTA -->
-  <div class="rounded-xl border border-blue-500/10 bg-gradient-to-br from-blue-500/5 to-transparent p-4 text-center fade-up d4">
-    <p class="text-[11px] text-zinc-500 mb-2">Aggregated from <span class="text-zinc-300 font-semibold">50+</span> sources</p>
-    <a href="https://t.me/CryptositNews" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-colors">
-      Get Instant Alerts
-      <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
-    </a>
+  <!-- Momentum Leaders -->
+  <div class="surface-1 rounded-sm overflow-hidden">
+    <div class="px-3 py-2 border-b border-[#1a1a1a]">
+      <span class="text-[8px] font-mono font-bold text-zinc-600 tracking-widest">MOMENTUM (24H)</span>
+    </div>
+    <div id="trendingBox" class="divide-y divide-[#1a1a1a]">
+      <div class="px-3 py-2.5"><div class="skeleton h-3 w-3/4"></div></div>
+    </div>
+  </div>
+
+  <!-- Pro Upsell -->
+  <div class="surface-1 border border-dashed border-[#262626] rounded-sm p-4 text-center relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none"></div>
+    <div class="relative">
+      <div class="text-[9px] font-mono font-bold text-zinc-600 tracking-widest mb-2">UNLOCK PRO ANALYTICS</div>
+      <p class="text-[10px] text-zinc-600 mb-3">On-chain data, historical backtests, and API access.</p>
+      <a href="https://t.me/CryptositNews" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-blue-500 text-white text-[9px] font-mono font-bold hover:bg-blue-600 transition-colors">
+        JOIN WAITLIST
+        <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+      </a>
+    </div>
   </div>
 
 </div>
@@ -343,12 +341,12 @@
 </main>
 
 <!-- ===== FOOTER ===== -->
-<footer class="border-t border-zinc-800/40 mt-8 py-6">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-    <span class="text-[10px] text-zinc-700">© 2025 CryptositNews</span>
+<footer class="border-t border-[#1a1a1a] mt-4 py-4">
+  <div class="max-w-[1400px] mx-auto px-4 flex items-center justify-between font-mono text-[8px] text-zinc-800">
+    <span>© 2025 CRYPTOSIT.IQ</span>
     <div class="flex items-center gap-3">
-      <a href="/feed.xml" class="text-[10px] text-zinc-700 hover:text-zinc-500">RSS</a>
-      <a href="/sitemap.xml" class="text-[10px] text-zinc-700 hover:text-zinc-500">Sitemap</a>
+      <a href="/feed.xml" class="hover:text-zinc-600">RSS</a>
+      <a href="/sitemap.xml" class="hover:text-zinc-600">SITEMAP</a>
     </div>
   </div>
 </footer>
@@ -360,15 +358,12 @@
   function fmtP(p){return p>=1?'$'+p.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'$'+p.toFixed(6)}
   function fmtC(c){if(c==null)return'—';return(c>=0?'+':'')+c.toFixed(2)+'%'}
 
-  function spark(c){
-    var s='',seed=Math.abs(c*137);
-    for(var i=0;i<6;i++){
-      var base=25+((Math.sin(seed+i*1.7)*.5)+.5)*45;
-      var trend=(c>=0?1:-1)*(i/5)*20;
-      var h=Math.max(10,Math.min(90,base+trend));
-      s+='<div class="sparkline-bar '+(c>=0?'bg-emerald-500/40':'bg-red-500/40')+'" style="height:'+h+'%"></div>';
-    }return s;
+  // System Clock
+  function updateClock(){
+    var d=new Date();
+    $('clock').textContent=d.toISOString().slice(11,19)+' UTC';
   }
+  setInterval(updateClock, 1000); updateClock();
 
   function loadTicker(d){
     var coins=[{s:'BTC'},{s:'ETH'},{s:'SOL'},{s:'BNB'},{s:'XRP'}];
@@ -376,64 +371,64 @@
     for(var i=0;i<coins.length;i++){
       var c=d[coins[i].s];if(!c)continue;
       var cls=c.change>=0?'text-emerald-400':'text-red-400';
-      h+='<span class="flex items-center gap-2"><span class="font-semibold text-zinc-300">'+coins[i].s+'</span><span class="text-zinc-600">'+fmtP(c.price)+'</span><span class="'+cls+'">'+(c.change>=0?'▲':'▼')+Math.abs(c.change).toFixed(1)+'%</span></span>';
+      h+='<span class="flex items-center gap-2"><span class="font-semibold text-zinc-400">'+coins[i].s+'</span><span class="text-zinc-600">'+fmtP(c.price)+'</span><span class="'+cls+'">'+(c.change>=0?'▲':'▼')+Math.abs(c.change).toFixed(1)+'%</span></span>';
     }
     $('ticker').innerHTML=h+h;
   }
 
   function loadPrices(d){
-    var coins=[{s:'BTC',n:'Bitcoin',i:'₿',c:'amber'},{s:'ETH',n:'Ethereum',i:'Ξ',c:'blue'},{s:'SOL',n:'Solana',i:'S',c:'purple'},{s:'BNB',n:'BNB',i:'B',c:'yellow'},{s:'XRP',n:'XRP',i:'X',c:'slate'}];
+    var coins=[{s:'BTC',n:'Bitcoin',i:'₿'},{s:'ETH',n:'Ethereum',i:'Ξ'},{s:'SOL',n:'Solana',i:'S'},{s:'BNB',n:'BNB',i:'B'},{s:'XRP',n:'XRP',i:'X'}];
     var h='';
     for(var i=0;i<coins.length;i++){
       var co=coins[i],c=d[co.s];if(!c)continue;
-      var cls=c.change>=0?'text-emerald-400':'text-red-400';
-      h+='<div class="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-800/20 transition-colors">'
-        +'<div class="flex items-center gap-2.5"><div class="w-6 h-6 rounded-full bg-'+co.c+'-500/10 flex items-center justify-center text-'+co.c+'-400 font-bold text-[9px]">'+co.i+'</div>'
-        +'<div><div class="text-[11px] font-semibold text-zinc-300">'+co.n+'</div><div class="text-[8px] text-zinc-600">'+co.s+'</div></div></div>'
-        +'<div class="flex items-center gap-2"><div class="sparkline">'+spark(c.change)+'</div>'
-        +'<div class="text-right min-w-[65px]"><div class="text-[11px] font-semibold text-zinc-300">'+fmtP(c.price)+'</div>'
-        +'<div class="text-[9px] font-bold '+cls+'">'+fmtC(c.change)+'</div></div></div></div>';
+      var cls=c.change>=0?'data-cell-positive':'data-cell-negative';
+      h+='<div class="px-3 py-2 flex items-center justify-between hover:bg-[#111] transition-colors">'
+        +'<div class="flex items-center gap-2"><span class="text-zinc-500 text-xs">'+co.i+'</span>'
+        +'<div><div class="text-[10px] font-medium text-zinc-300 font-sans">'+co.n+'</div>'
+        +'<div class="text-[8px] font-mono text-zinc-700">'+co.s+'</div></div></div>'
+        +'<div class="text-right"><div class="text-[11px] font-mono font-medium text-zinc-300">'+fmtP(c.price)+'</div>'
+        +'<div class="text-[9px] font-mono font-semibold '+cls+'">'+fmtC(c.change)+'</div></div></div>';
     }
     $('pricesBox').innerHTML=h;
   }
 
   function loadFG(d){
     var v=d.value,l=d.label;
-    var color='text-zinc-500',bg='bg-zinc-800/50';
+    var color='text-zinc-500',bg='bg-[#111]';
     if(v<=25){color='text-red-400';bg='bg-red-500/10';}
     else if(v<=45){color='text-amber-400';bg='bg-amber-500/10';}
     else if(v<=55){color='text-yellow-300';bg='bg-yellow-500/10';}
     else if(v<=75){color='text-emerald-400';bg='bg-emerald-500/10';}
     else{color='text-emerald-300';bg='bg-emerald-500/10';}
-    
-    $('fgVal').textContent=v; $('fgVal').className='text-lg font-bold mt-0.5 '+color;
-    $('fgLabel').textContent=l; $('fgLabel').className='text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded '+color+' '+bg;
+    $('fgVal').textContent=v; $('fgVal').className='text-base font-mono font-bold text-zinc-300 '+color;
+    $('fgLabel').textContent=l; $('fgLabel').className='text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded '+color+' '+bg;
   }
 
   function loadGlobal(d){
     $('gMcap').textContent=d.market_cap||'—';
+    $('gVol').textContent=d.volume||'—';
     $('gBtc').textContent=(d.btc_dom||'—')+'%';
     var chg=d.market_cap_change;
     if(chg!=null){
-      var cls=chg>=0?'text-emerald-400':'text-red-400';
-      $('gMcapChg').className='text-[9px] mt-0.5 font-medium '+cls;
+      var cls=chg>=0?'data-cell-positive':'data-cell-negative';
+      $('gMcapChg').className='data-cell-label mt-1 '+cls;
       $('gMcapChg').textContent=(chg>=0?'▲':'▼')+Math.abs(chg).toFixed(2)+'%';
     }
   }
 
   function loadTrending(d){
-    if(!d||!d.length){$('trendingBox').innerHTML='<div class="p-3 text-center text-[10px] text-zinc-700">Unavailable</div>';return;}
+    if(!d||!d.length){$('trendingBox').innerHTML='<div class="p-3 text-center text-[9px] font-mono text-zinc-800">RATE LIMITED</div>';return;}
     var h='';
     for(var i=0;i<Math.min(d.length,5);i++){
       var c=d[i];
-      var cls=c.change>=0?'text-emerald-400':'text-red-400';
-      h+='<div class="trend-row flex items-center justify-between px-4 py-2.5">'
+      var cls=c.change>=0?'data-cell-positive':'data-cell-negative';
+      h+='<div class="px-3 py-2 flex items-center justify-between hover:bg-[#111] transition-colors">'
         +'<div class="flex items-center gap-2">'
-        +'<span class="text-[9px] font-bold text-zinc-700 w-3">'+(i+1)+'</span>'
+        +'<span class="text-[9px] font-mono text-zinc-700 w-3">'+(i+1)+'</span>'
         +(c.image?'<img src="'+c.image+'" class="w-4 h-4 rounded-full" loading="lazy">':'')
-        +'<div><div class="text-[10px] font-semibold text-zinc-300">'+c.name+'</div></div></div>'
-        +'<div class="text-right"><div class="text-[10px] font-semibold text-zinc-400">'+fmtP(c.price)+'</div>'
-        +'<div class="text-[9px] font-bold '+cls+'">'+fmtC(c.change)+'</div></div></div>';
+        +'<span class="text-[10px] font-medium text-zinc-300 font-sans">'+c.name+'</span></div>'
+        +'<div class="text-right"><div class="text-[10px] font-mono text-zinc-400">'+fmtP(c.price)+'</div>'
+        +'<div class="text-[9px] font-mono font-semibold '+cls+'">'+fmtC(c.change)+'</div></div></div>';
     }
     $('trendingBox').innerHTML=h;
   }
