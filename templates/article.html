@@ -10,6 +10,33 @@
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="CryptositNews">
 <link rel="canonical" href="{{ site_url }}/news/{{ item.id }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ site_url }}/news/{{ item.id }}"
+  },
+  "headline": "{{ item.title | replace('\"', '\\\"') }}",
+  "description": "{{ (item.summary or item.title) | replace('\"', '\\\"') }}",
+  "image": "{{ site_url }}/static/og-image.png",
+  "author": {
+    "@type": "Organization",
+    "name": "CryptositIQ AI Engine"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "CryptositNews",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ site_url }}/static/logo.png"
+    }
+  },
+  "datePublished": "{{ item.posted_at[:19] }}",
+  "dateModified": "{{ item.posted_at[:19] }}"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>

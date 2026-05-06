@@ -8,6 +8,7 @@ import os
 import time
 import requests
 import re
+from datetime import datetime, timezone, timedelta
 from database import init_db, get_news, get_news_by_id, get_stats
 
 app = Flask(__name__)
@@ -349,27 +350,84 @@ def admin_init():
 
 @app.route("/sitemap.xml")
 def sitemap():
-    cached = page_cache_get("sitemap")
+    cached = page_cache_get("sitemap_xml")
     if cached:
         return Response(cached, mimetype="application/xml")
 
     news, _ = get_news(page=1, per_page=1000)
-    urls = [f"<url><loc>{SITE_URL}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>"]
-
-    for cat in ["bitcoin","ethereum","defi","nft","regulation","market","altcoin","breaking"]:
-        urls.append(f"<url><loc>{SITE_URL}/?tab={cat}</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>")
+    urls = [f"  <url><loc>{SITE_URL}</loc><changefreq>always</changefreq><priority>1.0</priority></url>"]
 
     for item in news:
-        nid = item["id"].replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
-        urls.append(f"<url><loc>{SITE_URL}/news/{nid}</loc><lastmod>{item['posted_at'][:10]}</lastmod><changefreq>never</changefreq><priority>0.8</priority></url>")
+        nid = item["id"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        lastmod = item["posted_at"][:19] if item.get("posted_at") else ""
+        urls.append(f"""  <url>
+    <loc>{SITE_URL}/news/{nid}</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>""")
 
-    xml = f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{"".join(urls)}\n</urlset>'
-    page_cache_set("sitemap", xml)
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{chr(10).join(urls)}
+</urlset>"""
+    page_cache_set("sitemap_xml", xml)
+    return Response(xml, mimetype="application/xml")
+
+@app.route("/news-sitemap.xml")
+def news_sitemap():
+    cached = page_cache_get("news_sitemap_xml")
+    if cached:
+        return Response(cached, mimetype="application/xml")
+
+    two_days_ago = datetime.now(timezone.utc) - timedelta(hours=48)
+    news, _ = get_news(page=1, per_page=50)
+    articles = []
+    for item in news:
+        posted_raw = item.get("posted_at") or ""
+        try:
+            posted_dt = datetime.fromisoformat(posted_raw.replace("Z", "+00:00"))
+        except Exception:
+            posted_dt = None
+        if posted_dt and posted_dt.tzinfo is None:
+            posted_dt = posted_dt.replace(tzinfo=timezone.utc)
+        if posted_dt and posted_dt < two_days_ago:
+            continue
+
+        nid = item["id"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        title = item["title"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        pub_date = posted_raw[:19] if posted_raw else ""
+        articles.append(f"""  <url>
+    <loc>{SITE_URL}/news/{nid}</loc>
+    <news:news>
+      <news:publication>
+        <news:name>{SITE_NAME}</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>{pub_date}</news:publication_date>
+      <news:title>{title}</news:title>
+    </news:news>
+  </url>""")
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+{chr(10).join(articles)}
+</urlset>"""
+    page_cache_set("news_sitemap_xml", xml)
     return Response(xml, mimetype="application/xml")
 
 @app.route("/robots.txt")
-def robots():
-    return Response(f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml", mimetype="text/plain")
+def robots_txt():
+    content = f"""User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: {SITE_URL}/sitemap.xml
+Sitemap: {SITE_URL}/news-sitemap.xml
+"""
+    return Response(content, mimetype="text/plain")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

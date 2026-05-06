@@ -5,8 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CryptositNews — AI Crypto Intelligence Platform</title>
 <meta name="description" content="AI crypto intelligence platform with market signals, sentiment trends, and decision support.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CryptositIQ — AI Crypto Intelligence Platform">
+<meta property="og:description" content="Real-time crypto news, AI market signals, and sentiment analysis.">
+<meta property="og:url" content="{{ site_url }}/">
+<meta property="og:site_name" content="CryptositIQ">
 <link rel="alternate" type="application/rss+xml" title="CryptositNews RSS" href="/feed.xml">
 {% if gsc_meta %}<meta name="google-site-verification" content="{{ gsc_meta }}">{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "{{ site_url }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ site_url }}/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
