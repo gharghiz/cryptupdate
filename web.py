@@ -33,10 +33,6 @@ def parse_int_param(name: str, default: int, minimum: int = None, maximum: int =
 def get_filtered_news_page(category: str, search: str, page: int, per_page: int):
     return get_news(page=page, per_page=per_page, search=search or None, category=category)
 
-# ============================================================
-# Helpers
-# ============================================================
-
 def fmt_large(n):
     if not n or n < 0:
         return "—"
@@ -76,7 +72,7 @@ def page_cache_set(key, data):
     _page_cache[key] = (data, time.time())
 
 # ============================================================
-# Market Intelligence — يعيد 3 إشارات
+# Market Intelligence — يرجع ai_signal + ai_signals
 # ============================================================
 
 NEGATION_WORDS = {"not", "no", "despite", "survives", "resists", "avoided"}
@@ -130,7 +126,7 @@ def compute_market_intelligence(items: list) -> dict:
                 coin_scores[coin]["pos"] += pos
                 coin_scores[coin]["neg"] += neg
 
-    # ترتيب حسب الأفضل وأخذ أول 3
+    # ترتيب وأخذ أول 3
     sorted_coins = sorted(
         coin_aliases.keys(),
         key=lambda c: (
@@ -157,13 +153,14 @@ def compute_market_intelligence(items: list) -> dict:
         })
 
     default_signal = {"coin": "N/A", "signal": "Neutral", "confidence": 0, "reason": "Analyzing latest stories..."}
+    primary_signal = ai_signals[0] if ai_signals else default_signal
 
     total_sent = max(1, bull + bear)
     bullish_pct = int((bull / total_sent) * 100)
     bearish_pct = 100 - bullish_pct
 
     return {
-        "ai_signal": ai_signals[0] if ai_signals else default_signal,
+        "ai_signal": primary_signal,
         "ai_signals": ai_signals if ai_signals else [default_signal],
         "sentiment": {"bullish": bullish_pct, "bearish": bearish_pct},
         "whale_activity": whale_hits[:3],
@@ -199,7 +196,7 @@ def index():
     else:
         news, total = get_news(page=page, per_page=per_page, search=search or None)
 
-    stats = get_stats()
+    stats = get_stats() or {"total": 0, "today": 0, "sources": []}
     pages = max(1, (total + 19) // 20)
     intel = get_cached_intel()
 
@@ -270,7 +267,7 @@ def rss_feed():
     return Response(rss, mimetype="application/rss+xml")
 
 # ============================================================
-# API — News
+# APIs
 # ============================================================
 
 @app.route("/api/news")
@@ -286,10 +283,6 @@ def api_news():
         news, total = get_news(page=page, per_page=per_page, search=search or None)
 
     return jsonify({"news": news, "total": total, "page": page, "per_page": per_page})
-
-# ============================================================
-# API — Live Prices
-# ============================================================
 
 @app.route("/api/prices")
 def api_prices():
@@ -318,10 +311,6 @@ def api_prices():
     except Exception as e:
         return jsonify({"error": str(e)}), 503
 
-# ============================================================
-# API — Fear & Greed Index
-# ============================================================
-
 @app.route("/api/fear-greed")
 def api_fear_greed():
     cached = widget_cache_get("fear_greed")
@@ -338,12 +327,7 @@ def api_fear_greed():
         page_cache_set("fear_greed", result)
         return jsonify(result)
     except Exception:
-        fallback = {"value": 50, "label": "Neutral"}
-        return jsonify(fallback)
-
-# ============================================================
-# API — Global Market Data
-# ============================================================
+        return jsonify({"value": 50, "label": "Neutral"})
 
 @app.route("/api/global")
 def api_global():
@@ -356,23 +340,21 @@ def api_global():
             return jsonify({"error": "Rate limited"}), 429
         d = resp.json().get("data", {})
         mcp = d.get("market_cap_percentage", {})
+        
+        mcap_val = d.get("total_market_cap", {}).get("usd", 0) or 0
+        vol_val = d.get("total_volume", {}).get("usd", 0) or 0
+        
         result = {
-            "market_cap": fmt_large(d.get("total_market_cap", {}).get("usd", 0)),
-            "volume": fmt_large(d.get("total_volume", {}).get("usd", 0)),
+            "market_cap": fmt_large(mcap_val),
+            "volume": fmt_large(vol_val),
             "btc_dom": round(mcp.get("btc", 0), 1),
-            "eth_dom": round(mcp.get("eth", 0), 1),
-            "active": d.get("active_cryptocurrencies", 0),
-            "market_cap_change": round(d.get("market_cap_change_percentage_24h_usd", 0), 2),
-            "volume_change": round(d.get("total_volume", {}).get("usd", 0) / max(1, d.get("total_volume", {}).get("usd", 1)) * 100, 2) if d.get("total_volume") else 0,
+            "active": d.get("active_cryptocurrencies", 0) or 0,
+            "market_cap_change": round(d.get("market_cap_change_percentage_24h_usd", 0) or 0, 2),
         }
         page_cache_set("global_data", result)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 503
-
-# ============================================================
-# API — Trending / Top Gainers
-# ============================================================
 
 @app.route("/api/trending")
 def api_trending():
@@ -399,9 +381,9 @@ def api_trending():
             result.append({
                 "symbol": c.get("symbol", "").upper(),
                 "name": c.get("name", ""),
-                "price": c.get("current_price", 0),
-                "change": round(c.get("price_change_percentage_24h", 0), 2),
-                "rank": c.get("market_cap_rank", 0),
+                "price": c.get("current_price", 0) or 0,
+                "change": round(c.get("price_change_percentage_24h", 0) or 0, 2),
+                "rank": c.get("market_cap_rank", 0) or 0,
                 "image": c.get("image", ""),
             })
         page_cache_set("trending_coins", result)
