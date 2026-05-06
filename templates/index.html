@@ -15,26 +15,16 @@
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: #050505; }
   ::-webkit-scrollbar-thumb { background: #262626; border-radius: 2px; }
-  
   .surface-1 { background: #0a0a0a; border-color: #1a1a1a; }
   .surface-2 { background: #111111; border-color: #262626; }
-  
   @keyframes ticker-slide { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
   .ticker-track { animation: ticker-slide 40s linear infinite; }
-
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
   .blink { animation: blink 1s ease-in-out infinite; }
-  
-  @keyframes pulse-border { 0%, 100% { border-color: rgba(239, 68, 68, 0.3); } 50% { border-color: rgba(239, 68, 68, 0.8); } }
-  .alert-active { animation: pulse-border 2s ease-in-out infinite; }
-
   .pill { transition: all 0.15s; border: 1px solid transparent; }
   .pill.on { background: rgba(59,130,246,0.1); color: #93c5fd; border-color: rgba(59,130,246,0.2); }
-  
   .skeleton { background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%); background-size: 200% 100%; animation: slide 1.5s infinite; border-radius: 2px; }
   @keyframes slide { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
-  
-  /* Alert Log Specifics */
   .log-row { font-family: 'JetBrains Mono', monospace; border-left: 2px solid #1a1a1a; transition: all 0.1s; }
   .log-row:hover { background: rgba(255,255,255,0.01); }
   .log-row.type-urgent { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.02); }
@@ -45,7 +35,7 @@
 </head>
 <body class="font-sans antialiased">
 
-<!-- ===== SYSTEM STATUS (Authority) ===== -->
+<!-- ===== SYSTEM STATUS ===== -->
 <div class="border-b border-[#1a1a1a] bg-[#0a0a0a] px-4 py-1 flex items-center justify-between text-[9px] font-mono text-zinc-600">
   <div class="flex items-center gap-4">
     <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 blink"></span> ALGO ENGINE: ACTIVE</span>
@@ -54,7 +44,7 @@
     {% endif %}
   </div>
   <div class="flex items-center gap-4">
-    <span class="hidden sm:inline text-zinc-700">DECISION LATENCY: <span class="text-emerald-500">< 100ms</span></span>
+    <span class="hidden sm:inline text-zinc-700">LATENCY: <span class="text-emerald-500">&lt;100ms</span></span>
     <span id="clock" class="text-zinc-500">--:--:-- UTC</span>
   </div>
 </div>
@@ -77,7 +67,7 @@
     </a>
     <form action="/" method="get" class="hidden sm:flex flex-1 max-w-xs">
       <input type="text" name="q" value="{{ search }}" placeholder="Query logs..."
-        class="w-full bg-[#0a0a0a] border border-[#1a1a1a] rounded px-3 py-1 text-[10px] text-zinc-400 placeholder-zinc-700 focus:outline-none focus:border-zinc-600 font-mono transition-colors">
+        class="w-full bg-[#0a0a0a] border border-[#1a1a1a] rounded px-3 py-1 text-[10px] text-zinc-400 placeholder-zinc-700 focus:outline-none focus:border-zinc-600 font-mono">
     </form>
     <div class="flex items-center gap-2">
       <a href="https://t.me/CryptositNews" target="_blank" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-bold font-mono hover:bg-blue-500/20 transition-all">
@@ -89,16 +79,18 @@
 </nav>
 
 <!-- ========================================== -->
-<!-- 1. THE DECISION (Not just data)          -->
+<!-- 1. THE DECISION                              -->
 <!-- ========================================== -->
 {% if intel and intel.ai_signal %}
 {% set sig = intel.ai_signal %}
-{% set is_bull = sig.signal == 'Bullish' %}
+{% if sig.signal == 'Bullish' %}
+{% set is_bull = true %}
+{% else %}
+{% set is_bull = false %}
+{% endif %}
 <section class="border-b border-[#1a1a1a] relative overflow-hidden">
   <div class="h-[1px] w-full {% if is_bull %}bg-emerald-500/30{% else %}bg-red-500/30{% endif %}"></div>
   <div class="max-w-[1400px] mx-auto px-4 py-4">
-    
-    <!-- The Directive -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
       <div>
         <div class="flex items-center gap-2 mb-1">
@@ -107,7 +99,6 @@
             // CURRENT BIAS: {% if is_bull %}RISK-ON (FAVOR LONGS){% else %}RISK-OFF (FAVOR HEDGES){% endif %}
           </span>
         </div>
-        
         <h1 class="text-xl sm:text-2xl font-mono font-bold text-white tracking-tight">
           {{ sig.coin }}/USD
           <span class="text-zinc-600 mx-2">→</span>
@@ -116,8 +107,6 @@
           </span>
         </h1>
       </div>
-
-      <!-- The Funnel (Fear of Missing Out) -->
       <div class="md:text-right flex-shrink-0">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-zinc-900 border border-zinc-800">
           <svg class="w-3 h-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg>
@@ -125,8 +114,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Why? (Evidence) -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-[10px]">
       <div class="surface-1 rounded px-3 py-2">
         <div class="text-zinc-600 mb-0.5">CONFIDENCE</div>
@@ -137,7 +124,6 @@
         <div class="text-zinc-400 truncate">{{ sig.reason }}</div>
       </div>
     </div>
-
   </div>
 </section>
 {% endif %}
@@ -153,11 +139,11 @@
   <!-- Log Filters -->
   <div class="flex items-center justify-between gap-3">
     <div class="flex items-center gap-1 overflow-x-auto pb-1">
-      {% set tabs=[('all','All Logs'),('breaking','Urgent'),('bitcoin','BTC'),('ethereum','ETH'),('defi','DeFi'),('altcoin','Alts')] %}
-      {% for k,l in tabs %}
+      {% set tabs = [('all','All Logs'),('breaking','Urgent'),('bitcoin','BTC'),('ethereum','ETH'),('defi','DeFi'),('altcoin','Alts')] %}
+      {% for k, l in tabs %}
       <a href="/?{% if search %}q={{ search }}&{% endif %}tab={{ k }}"
         class="pill px-2 py-0.5 rounded text-[9px] font-mono font-medium whitespace-nowrap
-        {% if k==active_tab or (not active_tab and k=='all') %}on{% else %}text-zinc-600 hover:text-zinc-400{% endif %}">{{ l }}</a>
+        {% if k == active_tab or (not active_tab and k == 'all') %}on{% else %}text-zinc-600 hover:text-zinc-400{% endif %}">{{ l }}</a>
       {% endfor %}
     </div>
     {% if search %}
@@ -168,39 +154,38 @@
     {% endif %}
   </div>
 
-  <!-- THE LOG (Structured as alerts, not articles) -->
-  <div class="surface-1 rounded-sm overflow-hidden">
-    
-    <!-- Whale Warnings (Always at top if exist) -->
-    {% if intel and intel.whale_activity and intel.whale_activity|length > 0 %}
-    {% for w in intel.whale_activity %}
-    <div class="log-row type-whale px-3 py-2 border-b border-[#1a1a1a]">
-      <div class="flex items-start gap-2">
-        <span class="text-[9px] text-amber-500/70 bg-amber-500/10 px-1 rounded font-bold mt-px">WHALE</span>
-        <p class="text-[11px] text-amber-200/60 font-sans leading-relaxed">{{ w }}</p>
-      </div>
+  <!-- Whale Alerts -->
+  {% if intel and intel.whale_activity and intel.whale_activity | length > 0 %}
+  {% for w in intel.whale_activity %}
+  <div class="log-row type-whale px-3 py-2 border-b border-[#1a1a1a]">
+    <div class="flex items-start gap-2">
+      <span class="text-[9px] text-amber-500/70 bg-amber-500/10 px-1 rounded font-bold mt-px">WHALE</span>
+      <p class="text-[11px] text-amber-200/60 font-sans leading-relaxed">{{ w }}</p>
     </div>
-    {% endfor %}
-    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
 
-    <!-- News as Log Entries -->
+  <!-- THE LOG -->
+  <div class="surface-1 rounded-sm overflow-hidden">
     {% if news %}
       {% for item in news %}
       <a href="/news/{{ item.id }}" class="log-row block px-3 py-2.5 border-b border-[#1a1a1a]
-        {% if item.category == 'breaking' %}type-urgent{% elseif item.sentiment and 'Bullish' in item.sentiment %}type-ai{% elseif item.sentiment and 'Bearish' in item.sentiment %}type-ai{% else %}type-default{% endif %}">
+        {% if item.category == 'breaking' %}type-urgent
+        {% elif item.sentiment and 'Bullish' in item.sentiment %}type-ai
+        {% elif item.sentiment and 'Bearish' in item.sentiment %}type-ai
+        {% else %}type-default{% endif %}">
         
         <div class="flex gap-3">
-          <!-- Log Meta -->
           <div class="flex-shrink-0 w-16 pt-px text-right">
             <div class="text-[9px] font-mono text-zinc-700">{{ item.posted_at[11:16] }}</div>
             {% if item.category == 'breaking' %}
             <div class="text-[8px] font-mono font-bold text-red-400 bg-red-500/10 px-1 rounded mt-0.5 w-fit ml-auto">ALERT</div>
-            {% elseif item.sentiment and ('Bullish' in item.sentiment or 'Bearish' in item.sentiment) %}
+            {% elif item.sentiment and ('Bullish' in item.sentiment or 'Bearish' in item.sentiment) %}
             <div class="text-[8px] font-mono font-bold text-blue-400 bg-blue-500/10 px-1 rounded mt-0.5 w-fit ml-auto">AI</div>
             {% endif %}
           </div>
           
-          <!-- Log Content -->
           <div class="flex-1 min-w-0">
             <p class="text-[12px] text-zinc-300 leading-relaxed line-clamp-2 font-sans">{{ item.title }}</p>
             <div class="flex items-center gap-2 mt-1 text-[8px] font-mono text-zinc-700">
@@ -209,7 +194,6 @@
             </div>
           </div>
         </div>
-        
       </a>
       {% endfor %}
     {% else %}
@@ -220,14 +204,14 @@
   <!-- Pagination -->
   {% if pages > 1 %}
   <nav class="flex items-center justify-center gap-1 font-mono text-[9px]">
-    {% if page > 1 %}<a href="/?page={{ page-1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-600 hover:bg-[#111]">←</a>{% endif %}
-    {% for p in range(1, pages+1) %}
-      {% if p==1 or p==pages or (p>=page-1 and p<=page+1) %}
-        {% if p==page %}<span class="px-2 py-1 rounded bg-blue-500/20 text-blue-400">{{ p }}</span>
+    {% if page > 1 %}<a href="/?page={{ page - 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-600 hover:bg-[#111]">←</a>{% endif %}
+    {% for p in range(1, pages + 1) %}
+      {% if p == 1 or p == pages or (p >= page - 1 and p <= page + 1) %}
+        {% if p == page %}<span class="px-2 py-1 rounded bg-blue-500/20 text-blue-400">{{ p }}</span>
         {% else %}<a href="/?page={{ p }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-700 hover:bg-[#111]">{{ p }}</a>{% endif %}
-      {% elif p==page-2 or p==page+2 %}<span class="text-zinc-800 px-1">…</span>{% endif %}
+      {% elif p == page - 2 or p == page + 2 %}<span class="text-zinc-800 px-1">…</span>{% endif %}
     {% endfor %}
-    {% if page < pages %}<a href="/?page={{ page+1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-600 hover:bg-[#111]">→</a>{% endif %}
+    {% if page < pages %}<a href="/?page={{ page + 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}" class="px-2 py-1 rounded text-zinc-600 hover:bg-[#111]">→</a>{% endif %}
   </nav>
   {% endif %}
 
@@ -242,7 +226,6 @@
       <span class="text-[8px] font-mono font-bold text-zinc-600 tracking-widest">MARKET CONTEXT</span>
       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 blink"></span>
     </div>
-    
     <div class="px-3 py-2.5 border-b border-[#1a1a1a] flex items-center justify-between">
       <div>
         <div class="text-[8px] font-mono text-zinc-700">FEAR & GREED</div>
@@ -250,7 +233,6 @@
       </div>
       <div id="fgLabel" class="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded bg-[#111] text-zinc-600">LOAD</div>
     </div>
-
     <div id="pricesBox" class="divide-y divide-[#1a1a1a]">
       <div class="px-3 py-2.5"><div class="skeleton h-3 w-3/4"></div></div>
       <div class="px-3 py-2.5"><div class="skeleton h-3 w-2/3"></div></div>
@@ -289,7 +271,7 @@
     </div>
   </div>
 
-  <!-- THE CONVERSION ENGINE (Why you need the bot) -->
+  <!-- CTA -->
   <div class="surface-1 rounded-sm border border-dashed border-blue-500/20 p-4 relative overflow-hidden">
     <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl pointer-events-none"></div>
     <div class="relative text-center">
@@ -297,10 +279,8 @@
         <span class="w-1.5 h-1.5 rounded-full bg-red-500 blink"></span>
         <span class="text-[8px] font-mono font-bold text-red-400 tracking-wider">WEB LATENCY: ~2 MINS</span>
       </div>
-      
       <p class="text-[10px] text-zinc-500 mb-1 font-sans">Signals are generated in real-time.</p>
       <p class="text-[10px] text-zinc-400 mb-4 font-sans font-medium">Checking this dashboard manually means <span class="text-red-400">late entry</span>.</p>
-
       <a href="https://t.me/CryptositNews" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded bg-blue-500 text-white text-[10px] font-mono font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/10">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
         GET INSTANT TELEGRAM ALERTS
@@ -318,7 +298,6 @@
   <div class="max-w-[1400px] mx-auto px-4 flex items-center justify-between font-mono text-[8px] text-zinc-800">
     <span>© 2025 CRYPTOSIT.IQ ALGO ENGINE</span>
     <div class="flex items-center gap-3">
-      <a href="/feed.xml" class="hover:text-zinc-600">API/RSS</a>
       <a href="/sitemap.xml" class="hover:text-zinc-600">SITEMAP</a>
     </div>
   </div>
