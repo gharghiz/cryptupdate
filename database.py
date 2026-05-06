@@ -8,7 +8,7 @@ import os
 import time
 import logging
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 logger = logging.getLogger("database")
@@ -88,7 +88,7 @@ def get_sqlite_conn():
     return conn
 
 # ============================================================
-# Init — جدولين
+# Init
 # ============================================================
 
 def init_db():
@@ -97,7 +97,6 @@ def init_db():
             conn = get_pg_conn()
             cur  = conn.cursor()
 
-            # الجدول الأول — للموقع، ما يتحذفش
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS posted_news (
                     id        TEXT PRIMARY KEY,
@@ -111,7 +110,6 @@ def init_db():
                 )
             """)
 
-            # الجدول الثاني — لتتبع ما نشرناه في تيليغرام
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS telegram_log (
                     id         TEXT PRIMARY KEY,
@@ -148,16 +146,15 @@ def init_db():
                 conn.execute("CREATE INDEX IF NOT EXISTS idx_posted_news_category_posted_at ON posted_news (category, posted_at DESC)")
                 conn.commit()
 
-        logger.info("✅ DB جاهزة (posted_news + telegram_log)")
+        logger.info("✅ DB جاهزة")
     except Exception as e:
         logger.error(f"❌ init_db: {e}")
 
 # ============================================================
-# تيليغرام — هل نشرنا هاد الخبر مؤخراً؟
+# Telegram log
 # ============================================================
 
 def is_telegram_posted(news_id: str) -> bool:
-    """تحقق من telegram_log فقط"""
     try:
         if USE_POSTGRES:
             conn = get_pg_conn(); cur = conn.cursor()
@@ -173,7 +170,6 @@ def is_telegram_posted(news_id: str) -> bool:
         return False
 
 def mark_telegram_posted(news_id: str):
-    """سجل في telegram_log"""
     posted_at = now_utc().isoformat()
     try:
         if USE_POSTGRES:
@@ -189,12 +185,11 @@ def mark_telegram_posted(news_id: str):
         logger.error(f"❌ mark_telegram_posted: {e}")
 
 # ============================================================
-# موقع — حفظ الخبر للأبد
+# Save news
 # ============================================================
 
 def save_news(news_id: str, title: str, source: str,
               summary: str = "", sentiment: str = "", reason: str = ""):
-    """حفظ في posted_news — ما يتحذفش أبداً"""
     posted_at = now_utc().isoformat()
     category = categorize_title(title)
     try:
@@ -217,21 +212,16 @@ def save_news(news_id: str, title: str, source: str,
         logger.error(f"❌ save_news: {e}")
 
 # ============================================================
-# تنظيف telegram_log فقط — كل X ساعات
+# Cleanup telegram_log — إصلاح استعلام التاريخ
 # ============================================================
 
 def cleanup_telegram_log(hours: int = 6):
-    """حذف من telegram_log فقط — الموقع ما يتأثرش"""
     try:
         if USE_POSTGRES:
             conn = get_pg_conn(); cur = conn.cursor()
-            cur.execute("""
-                DELETE FROM telegram_log
-                WHERE posted_at < to_char(
-                    NOW() AT TIME ZONE 'UTC' - (interval '1 hour' * %s),
-                    'YYYY-MM-DD"T"HH24:MI:SS'
-                )
-            """, (hours,))
+            # إصلاح: استخدام مقارنة نصية مباشرة
+            cutoff = (now_utc() - timedelta(hours=hours)).isoformat()
+            cur.execute("DELETE FROM telegram_log WHERE posted_at < %s", (cutoff,))
             deleted = cur.rowcount
             conn.commit(); cur.close(); conn.close()
         else:
@@ -241,13 +231,13 @@ def cleanup_telegram_log(hours: int = 6):
                 conn.commit()
 
         if deleted > 0:
-            logger.info(f"🗑️ telegram_log: حذفنا {deleted} سجل قديم (>{hours}h)")
+            logger.info(f"🗑️ telegram_log: حذفنا {deleted} سجل قديم")
         cache_clear()
     except Exception as e:
         logger.error(f"❌ cleanup_telegram_log: {e}")
 
 # ============================================================
-# get_recent_titles — للـ duplicate detection
+# Get recent titles
 # ============================================================
 
 def get_recent_titles(limit: int = 200) -> list:
@@ -268,7 +258,7 @@ def get_recent_titles(limit: int = 200) -> list:
         return []
 
 # ============================================================
-# get_news_by_id
+# Get news by ID
 # ============================================================
 
 def get_news_by_id(news_id: str):
@@ -289,7 +279,7 @@ def get_news_by_id(news_id: str):
         return None
 
 # ============================================================
-# get_news — مع cache
+# Get news — مع cache
 # ============================================================
 
 def get_news(page: int = 1, per_page: int = 20, search: str = None, category: str = None):
@@ -340,7 +330,7 @@ def get_news(page: int = 1, per_page: int = 20, search: str = None, category: st
         return [], 0
 
 # ============================================================
-# get_stats — مع cache
+# Get stats — إصلاح استعلام التاريخ + قيم افتراضية
 # ============================================================
 
 def get_stats():
@@ -352,20 +342,24 @@ def get_stats():
         if USE_POSTGRES:
             conn = get_pg_conn(); cur = conn.cursor()
             cur.execute("SELECT COUNT(*) FROM posted_news")
-            total = cur.fetchone()[0]
-            cur.execute("SELECT COUNT(*) FROM posted_news WHERE posted_at >= to_char(NOW() - INTERVAL '24 hours', 'YYYY-MM-DD\"T\"HH24:MI:SS')")
-            today = cur.fetchone()[0]
+            total = cur.fetchone()[0] or 0
+            
+            # إصلاح: استخدام مقارنة نصية بدل to_char
+            cutoff = (now_utc() - timedelta(hours=24)).isoformat()
+            cur.execute("SELECT COUNT(*) FROM posted_news WHERE posted_at >= %s", (cutoff,))
+            today = cur.fetchone()[0] or 0
+            
             cur.execute("SELECT source, COUNT(*) as c FROM posted_news GROUP BY source ORDER BY c DESC")
             sources = [{"name": r[0], "count": r[1]} for r in cur.fetchall()]
             cur.close(); conn.close()
         else:
             with get_sqlite_conn() as conn:
-                total   = conn.execute("SELECT COUNT(*) FROM posted_news").fetchone()[0]
-                today   = conn.execute("SELECT COUNT(*) FROM posted_news WHERE posted_at >= datetime('now','-1 day')").fetchone()[0]
+                total   = conn.execute("SELECT COUNT(*) FROM posted_news").fetchone()[0] or 0
+                today   = conn.execute("SELECT COUNT(*) FROM posted_news WHERE posted_at >= datetime('now','-1 day')").fetchone()[0] or 0
                 sources = [{"name": r[0], "count": r[1]} for r in conn.execute(
                     "SELECT source, COUNT(*) as c FROM posted_news GROUP BY source ORDER BY c DESC").fetchall()]
 
-        result = {"total": total, "today": today, "sources": sources}
+        result = {"total": int(total), "today": int(today), "sources": sources}
         cache_set("stats", result)
         return result
     except Exception as e:
