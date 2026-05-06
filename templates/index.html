@@ -1,850 +1,556 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptositoIQ - Crypto Intelligence Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        surface: {
-                            900: '#0a0a0f',
-                            800: '#0f0f17',
-                            700: '#14141f',
-                            600: '#1a1a28',
-                            500: '#222233',
-                        },
-                        accent: {
-                            blue: '#3b82f6',
-                            green: '#22c55e',
-                            red: '#ef4444',
-                            amber: '#f59e0b',
-                            purple: '#8b5cf6',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e2e8f0; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0a0f; }
-        ::-webkit-scrollbar-thumb { background: #222233; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #333344; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptositNews — Live Crypto News & AI Signals</title>
+<meta name="description" content="Real-time cryptocurrency news, AI-powered market signals, price tracking, and whale alerts. Stay ahead with CryptositNews.">
+<meta property="og:title" content="CryptositNews — Live Crypto News & AI Signals">
+<meta property="og:description" content="Real-time cryptocurrency news, AI-powered market signals, and price alerts.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ site_url }}/">
+<meta property="og:site_name" content="CryptositNews">
+{% if gsc_meta %}<meta name="google-site-verification" content="{{ gsc_meta }}">{% endif %}
+<link rel="canonical" href="{{ site_url }}/">
+<link rel="alternate" type="application/rss+xml" title="CryptositNews RSS Feed" href="{{ site_url }}/feed.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+    }
+  }
+}
+</script>
+<style>
+  body { background: #09090b; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #09090b; }
+  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); }
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes ticker-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        @keyframes breathe {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
+  @keyframes ticker-slide {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker-track { animation: ticker-slide 45s linear infinite; }
+  .ticker-track:hover { animation-play-state: paused; }
 
-        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-        .animate-slide-in { animation: slideIn 0.4s ease-out forwards; }
-        .pulse-live { animation: pulse-glow 2s ease-in-out infinite; }
-        .breathe { animation: breathe 2s ease-in-out infinite; }
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .dot-pulse { animation: dot-pulse 1.5s ease-in-out infinite; }
 
-        .stagger-1 { animation-delay: 0.05s; }
-        .stagger-2 { animation-delay: 0.1s; }
-        .stagger-3 { animation-delay: 0.15s; }
-        .stagger-4 { animation-delay: 0.2s; }
-        .stagger-5 { animation-delay: 0.25s; }
-        .stagger-6 { animation-delay: 0.3s; }
-        .stagger-7 { animation-delay: 0.35s; }
-        .stagger-8 { animation-delay: 0.4s; }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fade-up 0.45s ease-out both; }
+  .delay-1 { animation-delay: .06s; }
+  .delay-2 { animation-delay: .12s; }
+  .delay-3 { animation-delay: .18s; }
+  .delay-4 { animation-delay: .24s; }
+  .delay-5 { animation-delay: .30s; }
+  .delay-6 { animation-delay: .36s; }
 
-        /* Card styles - Unified gradient backgrounds */
-        .card {
-            background: linear-gradient(135deg, #14141f 0%, #0f0f17 100%);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            transition: all 0.3s ease;
-        }
-        .card:hover {
-            border-color: rgba(255,255,255,0.12);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            transform: translateY(-2px);
-        }
+  .news-row {
+    transition: background 0.15s ease, padding-left 0.15s ease;
+    border-left: 2px solid transparent;
+  }
+  .news-row:hover {
+    background: rgba(255,255,255,0.015);
+    border-left-color: #3b82f6;
+    padding-left: 18px;
+  }
 
-        /* News item */
-        .news-item {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            transition: all 0.25s ease;
-            cursor: pointer;
-            border-radius: 10px;
-            margin: 2px 0;
-        }
-        .news-item:hover {
-            background: rgba(255,255,255,0.04);
-            padding-right: 22px;
-        }
-        .news-item:last-child { border-bottom: none; }
+  .pill {
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .pill:hover { background: rgba(59,130,246,0.1); color: #93c5fd; }
+  .pill.on {
+    background: rgba(59,130,246,0.15);
+    color: #60a5fa;
+    border-color: rgba(59,130,246,0.25);
+  }
 
-        /* Breaking badge */
-        .breaking-badge {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            padding: 3px 8px;
-            border-radius: 4px;
-            animation: breathe 1.5s ease-in-out infinite;
-        }
+  .pg-btn { transition: all 0.15s ease; }
+  .pg-btn:hover { background: #27272a; }
+  .pg-btn.on { background: #3b82f6; color: #fff; }
 
-        /* Section label with extending line */
-        .section-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(to left, rgba(255,255,255,0.08), transparent);
-        }
+  .card-lift {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-lift:hover {
+    transform: translateY(-1px);
+    border-color: #3f3f46;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
 
-        /* Sentiment bar */
-        .sentiment-bar {
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            background: rgba(255,255,255,0.06);
-        }
-        .sentiment-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 1.5s ease-out;
-        }
+  .sent-bar {
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-        /* Price change colors */
-        .price-up { color: #22c55e; }
-        .price-down { color: #ef4444; }
+  @keyframes shimmer-bar {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer-top {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+    background-size: 200% 100%;
+    animation: shimmer-bar 3s linear infinite;
+  }
 
-        /* Live dot pulsing */
-        .live-dot {
-            width: 6px; height: 6px;
-            background: #22c55e;
-            border-radius: 50%;
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        /* AI Signal card with shimmer */
-        .ai-signal {
-            background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(59,130,246,0.05) 100%);
-            border: 1px solid rgba(139,92,246,0.2);
-            border-radius: 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        .ai-signal::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #8b5cf6);
-            background-size: 200% 100%;
-            animation: shimmer 3s linear infinite;
-        }
-
-        /* Nav link active state */
-        .nav-link {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            color: #94a3b8;
-            cursor: pointer;
-        }
-        .nav-link:hover { color: #e2e8f0; background: rgba(255,255,255,0.05); }
-        .nav-link.active { color: #fff; background: rgba(59,130,246,0.15); }
-
-        /* Mini sparkline charts */
-        .sparkline { display: flex; align-items: flex-end; gap: 1px; height: 24px; }
-        .sparkline-bar {
-            width: 3px;
-            border-radius: 1px;
-            transition: height 0.5s ease;
-        }
-
-        /* Tab button system */
-        .tab-btn {
-            padding: 6px 14px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            color: #64748b;
-            border: 1px solid transparent;
-        }
-        .tab-btn:hover { color: #94a3b8; }
-        .tab-btn.active {
-            color: #e2e8f0;
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.1);
-        }
-
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1a1a28;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 12px 20px;
-            font-size: 13px;
-            z-index: 1000;
-            transition: transform 0.4s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-
-        /* Auto-scrolling ticker */
-        .ticker-wrapper {
-            overflow: hidden;
-            white-space: nowrap;
-        }
-        .ticker-content {
-            display: inline-flex;
-            animation: ticker-scroll 30s linear infinite;
-        }
-        .ticker-content:hover {
-            animation-play-state: paused;
-        }
-
-        /* Color-coded tags */
-        .tag {
-            display: inline-block;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            padding: 3px 8px;
-            border-radius: 4px;
-            margin: 2px;
-        }
-        .tag-stablecoin { background: rgba(59,130,246,0.15); color: #3b82f6; }
-        .tag-legal { background: rgba(239,68,68,0.15); color: #ef4444; }
-        .tag-etf { background: rgba(34,197,94,0.15); color: #22c55e; }
-        .tag-macro { background: rgba(245,158,11,0.15); color: #f59e0b; }
-        .tag-mining { background: rgba(245,158,11,0.15); color: #f59e0b; }
-        .tag-l2 { background: rgba(6,182,212,0.15); color: #06b6d4; }
-        .tag-institutional { background: rgba(59,130,246,0.15); color: #3b82f6; }
-        .tag-exchange { background: rgba(139,92,246,0.15); color: #8b5cf6; }
-
-        /* Trending coin item */
-        .trending-coin {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
-            border-radius: 10px;
-            transition: all 0.25s ease;
-            cursor: pointer;
-        }
-        .trending-coin:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        /* Confidence bar */
-        .confidence-bar {
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255,255,255,0.05);
-            overflow: hidden;
-        }
-        .confidence-fill {
-            height: 100%;
-            border-radius: 3px;
-        }
-    </style>
+  .skeleton {
+    background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+    background-size: 200% 100%;
+    animation: shimmer-bar 1.5s ease-in-out infinite;
+    border-radius: 4px;
+  }
+</style>
 </head>
-<body class="font-inter min-h-screen">
+<body class="font-sans text-zinc-100 min-h-screen antialiased">
 
-    <!-- Background gradient -->
-    <div class="fixed inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.03) 0%, transparent 50%);"></div>
+<!-- ============ TICKER BAR ============ -->
+<div class="border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-sm">
+  <div class="overflow-hidden">
+    <div id="ticker" class="ticker-track flex items-center gap-10 py-2 px-4 whitespace-nowrap">
+      <span class="text-zinc-500 text-xs">Loading prices…</span>
+    </div>
+  </div>
+</div>
 
-    <div class="relative z-10">
+<!-- ============ NAVIGATION ============ -->
+<nav class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2.5 flex-shrink-0">
+      <div class="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center">
+        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <span class="text-[15px] font-bold text-zinc-100 tracking-tight">Crypto<span class="text-blue-400">sit</span>News</span>
+    </a>
 
-        <!-- ===== TOP TICKER BAR ===== -->
-        <div class="border-b border-white/5 bg-surface-900/80 backdrop-blur-sm">
-            <div class="ticker-wrapper py-2">
-                <div class="ticker-content">
-                    <div class="flex items-center gap-8 px-4">
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BTC</span> <span class="text-slate-400">$81,445</span> <span class="price-down text-[11px]">-0.48%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ETH</span> <span class="text-slate-400">$3,892</span> <span class="price-up text-[11px]">+1.23%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">XRP</span> <span class="text-slate-400">$1.42</span> <span class="price-up text-[11px]">+0.98%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">SOL</span> <span class="text-slate-400">$187</span> <span class="price-down text-[11px]">-1.15%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BNB</span> <span class="text-slate-400">$612</span> <span class="price-up text-[11px]">+0.34%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ADA</span> <span class="text-slate-400">$0.452</span> <span class="price-up text-[11px]">+3.21%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">DOGE</span> <span class="text-slate-400">$0.158</span> <span class="price-down text-[11px]">-0.72%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">TON</span> <span class="text-slate-400">$5.82</span> <span class="price-up text-[11px]">+25.3%</span></span>
-                    </div>
-                    <div class="flex items-center gap-8 px-4">
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BTC</span> <span class="text-slate-400">$81,445</span> <span class="price-down text-[11px]">-0.48%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ETH</span> <span class="text-slate-400">$3,892</span> <span class="price-up text-[11px]">+1.23%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">XRP</span> <span class="text-slate-400">$1.42</span> <span class="price-up text-[11px]">+0.98%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">SOL</span> <span class="text-slate-400">$187</span> <span class="price-down text-[11px]">-1.15%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BNB</span> <span class="text-slate-400">$612</span> <span class="price-up text-[11px]">+0.34%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ADA</span> <span class="text-slate-400">$0.452</span> <span class="price-up text-[11px]">+3.21%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">DOGE</span> <span class="text-slate-400">$0.158</span> <span class="price-down text-[11px]">-0.72%</span></span>
-                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">TON</span> <span class="text-slate-400">$5.82</span> <span class="price-up text-[11px]">+25.3%</span></span>
-                    </div>
-                </div>
-            </div>
+    <!-- Search -->
+    <form action="/" method="get" class="hidden sm:flex flex-1 max-w-xs">
+      <div class="relative w-full">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input
+          type="text" name="q" value="{{ search }}"
+          placeholder="Search news…"
+          class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+        >
+      </div>
+    </form>
+
+    <!-- Right -->
+    <div class="flex items-center gap-2">
+      <a href="/feed.xml" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all" title="RSS Feed">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
+        RSS
+      </a>
+      <a href="https://t.me/CryptositNews" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold hover:bg-blue-500/20 transition-all">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        Telegram
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ MAIN ============ -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <div class="lg:col-span-8 space-y-5">
+
+      <!-- Breaking / Featured -->
+      {% if news and news[0].category == 'breaking' %}
+      <a href="/news/{{ news[0].id }}" class="block fade-up">
+        <div class="relative rounded-xl border border-red-500/20 bg-gradient-to-br from-red-500/5 to-zinc-900 overflow-hidden card-lift">
+          <div class="absolute top-0 left-0 right-0 h-[2px] bg-red-500"></div>
+          <div class="px-5 py-3 flex items-center gap-2 border-b border-red-500/10">
+            <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-red-500 text-white">BREAKING</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-red-400 dot-pulse"></span>
+            <span class="text-[10px] text-zinc-500">{{ news[0].posted_at[:16].replace('T',' ') }} UTC</span>
+          </div>
+          <div class="px-5 py-4">
+            <h2 class="text-[15px] font-semibold text-zinc-100 leading-relaxed">{{ news[0].title }}</h2>
+            {% if news[0].summary %}
+            <p class="text-xs text-zinc-500 mt-2 line-clamp-2">{{ news[0].summary }}</p>
+            {% endif %}
+          </div>
         </div>
+      </a>
+      {% elif news %}
+      <a href="/news/{{ news[0].id }}" class="block fade-up">
+        <div class="rounded-xl border border-zinc-800 bg-zinc-900/50 px-5 py-4 card-lift">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-blue-500/15 text-blue-400">LATEST</span>
+            <span class="text-[10px] text-zinc-600">{{ news[0].source }}</span>
+            <span class="text-[10px] text-zinc-700">•</span>
+            <span class="text-[10px] text-zinc-600">{{ news[0].posted_at[:16].replace('T',' ') }} UTC</span>
+          </div>
+          <h2 class="text-[15px] font-semibold text-zinc-100 leading-relaxed">{{ news[0].title }}</h2>
+          {% if news[0].summary %}
+          <p class="text-xs text-zinc-500 mt-2 line-clamp-2">{{ news[0].summary }}</p>
+          {% endif %}
+        </div>
+      </a>
+      {% endif %}
 
-        <!-- ===== NAVIGATION ===== -->
-        <nav class="sticky top-0 z-50 bg-surface-900/90 backdrop-blur-xl border-b border-white/5">
-            <div class="max-w-[1440px] mx-auto px-6 py-3 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <i data-lucide="brain" class="w-4 h-4 text-white"></i>
-                    </div>
-                    <span class="text-lg font-bold text-white tracking-tight">Cryptosito<span class="text-blue-400">IQ</span></span>
-                </div>
-                <div class="hidden md:flex items-center gap-1">
-                    <div class="nav-link active">الرئيسية</div>
-                    <div class="nav-link">أخبار</div>
-                    <div class="nav-link">الأسعار</div>
-                    <div class="nav-link">تحليلات AI</div>
-                    <div class="nav-link">تعليم</div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button class="p-2 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white">
-                        <i data-lucide="search" class="w-4 h-4"></i>
-                    </button>
-                    <button class="p-2 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white relative">
-                        <i data-lucide="bell" class="w-4 h-4"></i>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <button onclick="showToast('تم تفعيل الوضع PRO')" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold hover:bg-blue-500/20 transition-all">
-                        <i data-lucide="zap" class="w-3 h-3"></i>
-                        PRO
-                    </button>
-                </div>
-            </div>
-        </nav>
+      <!-- Category Tabs -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 fade-up delay-1">
+        {% set tabs = [
+          ('all','All'),
+          ('breaking','Breaking'),
+          ('bitcoin','Bitcoin'),
+          ('ethereum','Ethereum'),
+          ('defi','DeFi'),
+          ('altcoin','Altcoins'),
+          ('regulation','Regulation'),
+          ('market','Market')
+        ] %}
+        {% for key, label in tabs %}
+        <a
+          href="/?{% if search %}q={{ search }}&{% endif %}tab={{ key }}{% if key == active_tab %}{% endif %}"
+          class="pill px-3 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap
+          {% if key == active_tab or (not active_tab and key == 'all') %}on{% else %}text-zinc-500{% endif %}"
+        >{{ label }}</a>
+        {% endfor %}
+      </div>
 
-        <!-- ===== MAIN CONTENT ===== -->
-        <main class="max-w-[1440px] mx-auto px-4 md:px-6 py-6">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Search active indicator -->
+      {% if search %}
+      <div class="flex items-center gap-2 px-1 fade-up delay-1">
+        <span class="text-xs text-zinc-400">Results for:</span>
+        <span class="text-xs font-medium text-blue-400">"{{ search }}"</span>
+        <a href="/" class="text-[10px] text-zinc-600 hover:text-zinc-400 ml-2">Clear</a>
+      </div>
+      {% endif %}
 
-                <!-- ===== LEFT COLUMN (8 cols) ===== -->
-                <div class="lg:col-span-8 space-y-5">
-
-                    <!-- Breaking News Banner -->
-                    <div class="card p-0 overflow-hidden animate-fade-in-up" style="background: linear-gradient(135deg, rgba(239,68,68,0.08) 0%, #14141f 50%);">
-                        <div class="flex items-center gap-3 px-5 py-3 border-b border-red-500/10">
-                            <div class="breaking-badge">BREAKING</div>
-                            <div class="live-dot"></div>
-                            <span class="text-[11px] text-slate-500">مباشر • منذ 3 دقائق</span>
-                        </div>
-                        <div class="px-5 py-4">
-                            <h2 class="text-base font-semibold text-white leading-relaxed cursor-pointer hover:text-blue-400 transition-colors">
-                                {% if news %}{{ news[0].title }}{% else %}آخر الأخبار في سوق العملات الرقمية{% endif %}
-                            </h2>
-                            <p class="text-xs text-slate-500 mt-2">{% if news %}{{ news[0].summary[:100] }}...{% endif %}</p>
-                        </div>
-                    </div>
-
-                    <!-- News Grid (2 columns) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <!-- Left Column News -->
-                        <div class="card p-5 animate-fade-in-up stagger-1">
-                            <div class="section-label text-blue-400 mb-4">
-                                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
-                                MARKET
-                            </div>
-                            <div class="space-y-0">
-                                {% for item in news[1:5] %}
-                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
-                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">{{ item.title }}</p>
-                                    <div class="flex items-center gap-3 mt-2 flex-wrap">
-                                        <span class="text-[10px] text-slate-600">{{ item.posted_at[:10] }}</span>
-                                        <span class="tag tag-stablecoin">{{ item.source }}</span>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- Right Column News -->
-                        <div class="card p-5 animate-fade-in-up stagger-2">
-                            <div class="section-label text-amber-400 mb-4">
-                                <i data-lucide="flame" class="w-3.5 h-3.5"></i>
-                                TRENDING
-                            </div>
-                            <div class="space-y-0">
-                                {% for item in news[5:9] %}
-                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
-                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">{{ item.title }}</p>
-                                    <div class="flex items-center gap-3 mt-2 flex-wrap">
-                                        <span class="text-[10px] text-slate-600">{{ item.posted_at[:10] }}</span>
-                                        <span class="tag tag-etf">{{ item.source }}</span>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Altcoins Section with Tabs -->
-                    <div class="card p-5 animate-fade-in-up stagger-3">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="section-label text-purple-400">
-                                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-                                ALL NEWS
-                            </div>
-                            <div class="flex gap-1 flex-wrap">
-                                <button class="tab-btn active" onclick="switchTab(this)">الكل</button>
-                                <button class="tab-btn" onclick="switchTab(this)">Bitcoin</button>
-                                <button class="tab-btn" onclick="switchTab(this)">DeFi</button>
-                                <button class="tab-btn" onclick="switchTab(this)">Breaking</button>
-                            </div>
-                        </div>
-                        <div class="space-y-0">
-                            {% for item in news %}
-                            <div class="news-item" onclick="showToast('جاري فتح المقال...')">
-                                <p class="text-[13px] font-medium text-slate-200 leading-relaxed">{{ item.title }}</p>
-                                <div class="flex items-center gap-3 mt-2 flex-wrap">
-                                    <span class="text-[10px] text-slate-600">{{ item.posted_at[:10] }}</span>
-                                    <span class="tag tag-stablecoin">{{ item.source }}</span>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- AI Signals Section -->
-                    <div class="ai-signal p-5 animate-fade-in-up stagger-4">
-                        <div class="flex items-center gap-2 mb-4">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
-                            <span class="section-label text-purple-300" style="flex:none;">AI MARKET SIGNALS</span>
-                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold ml-auto">BETA</span>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <!-- Signal 1 -->
-                            <div class="bg-surface-800/60 rounded-xl p-4 border border-white/5">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-sm font-semibold text-white">BTC/USD</span>
-                                    <span class="text-[10px] px-2 py-1 rounded-md bg-green-500/15 text-green-400 font-bold">LONG</span>
-                                </div>
-                                <p class="text-[11px] text-slate-400 mb-3">قوة الشراء تتزايد — اتجاه صاعد</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] text-slate-500">Confidence</span>
-                                    <div class="flex items-center gap-2">
-                                        <div class="confidence-bar w-20">
-                                            <div class="confidence-fill bg-gradient-to-r from-green-500 to-emerald-400" style="width: 95%"></div>
-                                        </div>
-                                        <span class="text-xs font-bold text-green-400">95%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Signal 2 -->
-                            <div class="bg-surface-800/60 rounded-xl p-4 border border-white/5">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-sm font-semibold text-white">ETH/USD</span>
-                                    <span class="text-[10px] px-2 py-1 rounded-md bg-green-500/15 text-green-400 font-bold">LONG</span>
-                                </div>
-                                <p class="text-[11px] text-slate-400 mb-3">كسر مقاومة $3,850 — استمرار الصعود</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] text-slate-500">Confidence</span>
-                                    <div class="flex items-center gap-2">
-                                        <div class="confidence-bar w-20">
-                                            <div class="confidence-fill bg-gradient-to-r from-green-500 to-emerald-400" style="width: 82%"></div>
-                                        </div>
-                                        <span class="text-xs font-bold text-green-400">82%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Signal 3 -->
-                            <div class="bg-surface-800/60 rounded-xl p-4 border border-white/5">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-sm font-semibold text-white">SOL/USD</span>
-                                    <span class="text-[10px] px-2 py-1 rounded-md bg-red-500/15 text-red-400 font-bold">SHORT</span>
-                                </div>
-                                <p class="text-[11px] text-slate-400 mb-3">تشبع شراء عند $192 — تصحيح محتمل</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] text-slate-500">Confidence</span>
-                                    <div class="flex items-center gap-2">
-                                        <div class="confidence-bar w-20">
-                                            <div class="confidence-fill bg-gradient-to-r from-red-500 to-rose-400" style="width: 68%"></div>
-                                        </div>
-                                        <span class="text-xs font-bold text-red-400">68%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== RIGHT COLUMN (4 cols) ===== -->
-                <div class="lg:col-span-4 space-y-5">
-
-                    <!-- Live Prices -->
-                    <div class="card p-5 animate-fade-in-up stagger-2">
-                        <div class="section-label text-emerald-400 mb-4">
-                            <div class="live-dot"></div>
-                            LIVE PRICES
-                        </div>
-                        <div class="space-y-1">
-                            <!-- BTC -->
-                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-xs">₿</div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-white">Bitcoin</div>
-                                        <div class="text-[10px] text-slate-600">BTC</div>
-                                    </div>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-sm font-semibold text-white">$81,445</div>
-                                    <div class="text-[11px] price-down font-medium">-0.48%</div>
-                                </div>
-                                <div class="sparkline">
-                                    <div class="sparkline-bar bg-red-500/60" style="height:40%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:60%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:45%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:70%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:55%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:35%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:50%"></div>
-                                </div>
-                            </div>
-                            <!-- ETH -->
-                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 font-bold text-xs">Ξ</div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-white">Ethereum</div>
-                                        <div class="text-[10px] text-slate-600">ETH</div>
-                                    </div>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-sm font-semibold text-white">$3,892</div>
-                                    <div class="text-[11px] price-up font-medium">+1.23%</div>
-                                </div>
-                                <div class="sparkline">
-                                    <div class="sparkline-bar bg-green-500/60" style="height:30%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:45%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:55%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:50%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:65%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:75%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:85%"></div>
-                                </div>
-                            </div>
-                            <!-- XRP -->
-                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-500/10 flex items-center justify-center text-slate-300 font-bold text-xs">X</div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-white">XRP</div>
-                                        <div class="text-[10px] text-slate-600">XRP</div>
-                                    </div>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-sm font-semibold text-white">$1.42</div>
-                                    <div class="text-[11px] price-up font-medium">+0.98%</div>
-                                </div>
-                                <div class="sparkline">
-                                    <div class="sparkline-bar bg-green-500/60" style="height:50%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:55%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:48%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:60%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:58%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:65%"></div>
-                                    <div class="sparkline-bar bg-green-500/60" style="height:70%"></div>
-                                </div>
-                            </div>
-                            <!-- SOL -->
-                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold text-xs">S</div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-white">Solana</div>
-                                        <div class="text-[10px] text-slate-600">SOL</div>
-                                    </div>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-sm font-semibold text-white">$187</div>
-                                    <div class="text-[11px] price-down font-medium">-1.15%</div>
-                                </div>
-                                <div class="sparkline">
-                                    <div class="sparkline-bar bg-red-500/60" style="height:80%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:70%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:65%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:55%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:50%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:45%"></div>
-                                    <div class="sparkline-bar bg-red-500/60" style="height:40%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fear & Greed Index -->
-                    <div class="card p-5 animate-fade-in-up stagger-3">
-                        <div class="section-label text-slate-400 mb-5">
-                            <i data-lucide="gauge" class="w-3.5 h-3.5"></i>
-                            FEAR & GREED
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="relative w-40 h-40 mb-4">
-                                <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8" stroke-dasharray="198 66" stroke-linecap="round"/>
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#ef4444" stroke-width="8" stroke-dasharray="33 231" stroke-dashoffset="0" stroke-linecap="round" opacity="0.8"/>
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#f59e0b" stroke-width="8" stroke-dasharray="33 231" stroke-dashoffset="-33" stroke-linecap="round" opacity="0.8"/>
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#22c55e" stroke-width="8" stroke-dasharray="66 198" stroke-dashoffset="-66" stroke-linecap="round" opacity="0.8"/>
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="66 198" stroke-dashoffset="-132" stroke-linecap="round" opacity="0.8"/>
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#f59e0b" stroke-width="8" stroke-dasharray="2 263" stroke-dashoffset="-30" stroke-linecap="round" class="gauge-circle"/>
-                                </svg>
-                                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span class="text-3xl font-bold text-amber-400">46</span>
-                                    <span class="text-[10px] font-semibold text-amber-400/80 tracking-wider uppercase">Fear</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between w-full max-w-[200px] mb-2">
-                                <span class="text-[9px] text-red-400/60 font-medium">Extreme Fear</span>
-                                <span class="text-[9px] text-blue-400/60 font-medium">Extreme Greed</span>
-                            </div>
-                            <p class="text-[11px] text-slate-500 text-center mt-2">السوق في حالة خوف معتدل — فرصة شراء</p>
-                        </div>
-                    </div>
-
-                    <!-- Market Sentiment -->
-                    {% if intel.sentiment %}
-                    <div class="card p-5 animate-fade-in-up stagger-4">
-                        <div class="section-label text-slate-400 mb-4">
-                            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
-                            SENTIMENT
-                        </div>
-                        <div class="space-y-4">
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span class="text-xs font-medium text-slate-300">Bullish</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-green-400">{{ intel.sentiment.bullish }}%</span>
-                                </div>
-                                <div class="sentiment-bar">
-                                    <div class="sentiment-fill bg-gradient-to-r from-green-600 to-green-400" style="width: {{ intel.sentiment.bullish }}%"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                                        <span class="text-xs font-medium text-slate-300">Bearish</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-red-400">{{ intel.sentiment.bearish }}%</span>
-                                </div>
-                                <div class="sentiment-bar">
-                                    <div class="sentiment-fill bg-gradient-to-r from-red-600 to-red-400" style="width: {{ intel.sentiment.bearish }}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+      <!-- News List -->
+      <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden fade-up delay-2">
+        {% if news %}
+          {% for item in news %}
+            {% if loop.index == 1 and item.category == 'breaking' %}
+              {# skip, already shown as featured #}
+            {% else %}
+            <a href="/news/{{ item.id }}" class="news-row block px-4 py-3.5 border-b border-zinc-800/40 last:border-b-0">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                    {% if item.category == 'breaking' %}
+                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase bg-red-500/15 text-red-400">BREAKING</span>
+                    {% else %}
+                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-500">{{ item.category }}</span>
                     {% endif %}
-
-                    <!-- Trending Coins -->
-                    <div class="card p-5 animate-fade-in-up stagger-5">
-                        <div class="section-label text-orange-400 mb-4">
-                            <i data-lucide="flame" class="w-3.5 h-3.5"></i>
-                            TRENDING
-                        </div>
-                        <div class="space-y-1">
-                            <div class="trending-coin" onclick="showToast('فتح صفحة Toncoin')">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500 w-4">1</span>
-                                    <div class="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-[10px] font-bold">T</div>
-                                    <div>
-                                        <div class="text-xs font-semibold text-white">Toncoin</div>
-                                        <div class="text-[10px] text-slate-600">TON</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold price-up">+25.3%</span>
-                            </div>
-                            <div class="trending-coin" onclick="showToast('فتح صفحة Firo')">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500 w-4">2</span>
-                                    <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-[10px] font-bold">F</div>
-                                    <div>
-                                        <div class="text-xs font-semibold text-white">Firo</div>
-                                        <div class="text-[10px] text-slate-600">FIRO</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold price-up">+21.5%</span>
-                            </div>
-                            <div class="trending-coin" onclick="showToast('فتح صفحة Kaspa')">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500 w-4">3</span>
-                                    <div class="w-7 h-7 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-[10px] font-bold">K</div>
-                                    <div>
-                                        <div class="text-xs font-semibold text-white">Kaspa</div>
-                                        <div class="text-[10px] text-slate-600">KAS</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold price-up">+18.7%</span>
-                            </div>
-                            <div class="trending-coin" onclick="showToast('فتح صفحة Render')">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500 w-4">4</span>
-                                    <div class="w-7 h-7 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-400 text-[10px] font-bold">R</div>
-                                    <div>
-                                        <div class="text-xs font-semibold text-white">Render</div>
-                                        <div class="text-[10px] text-slate-600">RNDR</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold price-up">+15.2%</span>
-                            </div>
-                            <div class="trending-coin" onclick="showToast('فتح صفحة Pendle')">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500 w-4">5</span>
-                                    <div class="w-7 h-7 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 text-[10px] font-bold">P</div>
-                                    <div>
-                                        <div class="text-xs font-semibold text-white">Pendle</div>
-                                        <div class="text-[10px] text-slate-600">PENDLE</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold price-up">+12.8%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Market Overview Stats -->
-                    <div class="card p-5 animate-fade-in-up stagger-6">
-                        <div class="section-label text-slate-400 mb-4">
-                            <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                            MARKET OVERVIEW
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
-                                <div class="text-[10px] text-slate-500 mb-1">Market Cap</div>
-                                <div class="text-sm font-bold text-white">$3.42T</div>
-                                <div class="text-[10px] price-up font-medium mt-0.5">+2.1%</div>
-                            </div>
-                            <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
-                                <div class="text-[10px] text-slate-500 mb-1">24h Volume</div>
-                                <div class="text-sm font-bold text-white">$128.5B</div>
-                                <div class="text-[10px] price-down font-medium mt-0.5">-5.3%</div>
-                            </div>
-                            <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
-                                <div class="text-[10px] text-slate-500 mb-1">BTC Dom</div>
-                                <div class="text-sm font-bold text-white">57.2%</div>
-                                <div class="text-[10px] price-up font-medium mt-0.5">+0.4%</div>
-                            </div>
-                            <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
-                                <div class="text-[10px] text-slate-500 mb-1">Page</div>
-                                <div class="text-sm font-bold text-white">{{ page }}/{{ pages }}</div>
-                                <div class="text-[10px] text-slate-500 font-medium mt-0.5">{{ total }} total</div>
-                            </div>
-                        </div>
-                    </div>
+                    <span class="text-[10px] text-zinc-600">{{ item.source }}</span>
+                  </div>
+                  <p class="text-[13px] font-medium text-zinc-200 leading-relaxed line-clamp-2">{{ item.title }}</p>
+                  {% if item.summary %}
+                  <p class="text-[11px] text-zinc-600 mt-1 line-clamp-1">{{ item.summary }}</p>
+                  {% endif %}
                 </div>
-            </div>
-        </main>
+                <span class="text-[10px] text-zinc-700 whitespace-nowrap flex-shrink-0 pt-0.5">{{ item.posted_at[:10] }}</span>
+              </div>
+            </a>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+        <div class="px-5 py-16 text-center">
+          <svg class="w-8 h-8 text-zinc-800 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/></svg>
+          <p class="text-sm text-zinc-600">No news found</p>
+          <a href="/" class="text-xs text-blue-400 hover:text-blue-300 mt-2 inline-block">View all news →</a>
+        </div>
+        {% endif %}
+      </div>
 
-        <!-- Footer -->
-        <footer class="border-t border-white/5 mt-10 py-8">
-            <div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2 text-xs text-slate-600">
-                    <div class="w-5 h-5 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <i data-lucide="brain" class="w-2.5 h-2.5 text-white"></i>
-                    </div>
-                    <span>© 2025 CryptositoIQ. All rights reserved.</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <a href="#" class="text-slate-600 hover:text-slate-400 transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
-                    <a href="#" class="text-slate-600 hover:text-slate-400 transition-colors"><i data-lucide="github" class="w-4 h-4"></i></a>
-                    <a href="#" class="text-slate-600 hover:text-slate-400 transition-colors"><i data-lucide="send" class="w-4 h-4"></i></a>
-                </div>
-            </div>
-        </footer>
+      <!-- Pagination -->
+      {% if pages > 1 %}
+      <nav class="flex items-center justify-center gap-1 fade-up delay-3">
+        {% if page > 1 %}
+        <a href="/?page={{ page - 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="pg-btn px-3 py-1.5 rounded-lg text-xs text-zinc-400">← Prev</a>
+        {% endif %}
+
+        {% for p in range(1, pages + 1) %}
+          {% if p == 1 or p == pages or (p >= page - 2 and p <= page + 2) %}
+            {% if p == page %}
+            <span class="pg-btn on px-3 py-1.5 rounded-lg text-xs font-medium">{{ p }}</span>
+            {% else %}
+            <a href="/?page={{ p }}{% if active_tab %}&tab={{ active_tab }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="pg-btn px-3 py-1.5 rounded-lg text-xs text-zinc-500">{{ p }}</a>
+            {% endif %}
+          {% elif p == page - 3 or p == page + 3 %}
+          <span class="px-1 text-zinc-700 text-xs">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < pages %}
+        <a href="/?page={{ page + 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="pg-btn px-3 py-1.5 rounded-lg text-xs text-zinc-400">Next →</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">
-        <i data-lucide="check-circle" class="w-4 h-4 text-blue-400"></i>
-        <span id="toast-msg" class="text-slate-200"></span>
+    <!-- ===== RIGHT COLUMN ===== -->
+    <div class="lg:col-span-4 space-y-5">
+
+      <!-- AI Signal -->
+      {% if intel and intel.ai_signal %}
+      <div class="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-zinc-900 overflow-hidden card-lift fade-up delay-1">
+        <div class="h-[2px] shimmer-top"></div>
+        <div class="px-4 py-3 border-b border-zinc-800/60 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09z"/></svg>
+            <span class="text-[10px] font-bold tracking-wider uppercase text-zinc-400">AI Signal</span>
+          </div>
+          <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-semibold">BETA</span>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-base font-bold text-zinc-100">{{ intel.ai_signal.coin }}/USD</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold
+              {% if intel.ai_signal.signal == 'Bullish' %}bg-emerald-500/15 text-emerald-400
+              {% else %}bg-red-500/15 text-red-400{% endif %}">
+              {{ intel.ai_signal.signal | upper }}
+            </span>
+          </div>
+          <p class="text-[11px] text-zinc-500 mb-4 leading-relaxed">{{ intel.ai_signal.reason }}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-zinc-600">Confidence</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                <div class="h-full rounded-full
+                  {% if intel.ai_signal.signal == 'Bullish' %}bg-emerald-500
+                  {% else %}bg-red-500{% endif %}
+                  sent-bar" style="width: {{ intel.ai_signal.confidence }}%"></div>
+              </div>
+              <span class="text-xs font-bold
+                {% if intel.ai_signal.signal == 'Bullish' %}text-emerald-400
+                {% else %}text-red-400{% endif %}">{{ intel.ai_signal.confidence }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Live Prices -->
+      <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up delay-2">
+        <div class="px-4 py-3 border-b border-zinc-800/60 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 dot-pulse"></span>
+          <span class="text-[10px] font-bold tracking-wider uppercase text-zinc-400">Live Prices</span>
+        </div>
+        <div id="prices-box" class="divide-y divide-zinc-800/40">
+          <div class="px-4 py-2.5"><div class="skeleton h-4 w-3/4"></div></div>
+          <div class="px-4 py-2.5"><div class="skeleton h-4 w-2/3"></div></div>
+          <div class="px-4 py-2.5"><div class="skeleton h-4 w-3/5"></div></div>
+        </div>
+      </div>
+
+      <!-- Sentiment -->
+      {% if intel and intel.sentiment %}
+      <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up delay-3">
+        <div class="px-4 py-3 border-b border-zinc-800/60 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125z"/></svg>
+          <span class="text-[10px] font-bold tracking-wider uppercase text-zinc-400">Sentiment</span>
+        </div>
+        <div class="p-4 space-y-3">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="text-[11px] text-zinc-400">Bullish</span>
+              </div>
+              <span class="text-xs font-bold text-emerald-400">{{ intel.sentiment.bullish }}%</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 sent-bar" style="width: {{ intel.sentiment.bullish }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <span class="text-[11px] text-zinc-400">Bearish</span>
+              </div>
+              <span class="text-xs font-bold text-red-400">{{ intel.sentiment.bearish }}%</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400 sent-bar" style="width: {{ intel.sentiment.bearish }}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Whale Activity -->
+      {% if intel and intel.whale_activity and intel.whale_activity|length > 0 %}
+      <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up delay-4">
+        <div class="px-4 py-3 border-b border-zinc-800/60 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+          <span class="text-[10px] font-bold tracking-wider uppercase text-zinc-400">Whale Activity</span>
+        </div>
+        <div class="p-4 space-y-2.5">
+          {% for w in intel.whale_activity %}
+          <div class="flex items-start gap-2">
+            <span class="w-1 h-1 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
+            <p class="text-[11px] text-zinc-500 leading-relaxed line-clamp-2">{{ w }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Stats -->
+      {% if stats %}
+      <div class="rounded-xl border border-zinc-800/60 bg-zinc-900/30 overflow-hidden card-lift fade-up delay-5">
+        <div class="px-4 py-3 border-b border-zinc-800/60 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605"/></svg>
+          <span class="text-[10px] font-bold tracking-wider uppercase text-zinc-400">Stats</span>
+        </div>
+        <div class="p-4 grid grid-cols-2 gap-3">
+          <div class="bg-zinc-800/40 rounded-lg p-3">
+            <div class="text-[10px] text-zinc-600">Total Articles</div>
+            <div class="text-sm font-bold text-zinc-200 mt-0.5">{{ stats.total | int }}</div>
+          </div>
+          <div class="bg-zinc-800/40 rounded-lg p-3">
+            <div class="text-[10px] text-zinc-600">Last 24h</div>
+            <div class="text-sm font-bold text-zinc-200 mt-0.5">{{ stats.today | int }}</div>
+          </div>
+          <div class="bg-zinc-800/40 rounded-lg p-3 col-span-2">
+            <div class="text-[10px] text-zinc-600 mb-1.5">Top Sources</div>
+            <div class="flex flex-wrap gap-1">
+              {% for s in stats.sources[:5] %}
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-800 text-zinc-400">{{ s.name }} <span class="text-zinc-600">{{ s.count }}</span></span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Telegram CTA -->
+      <div class="rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/5 to-zinc-900 p-5 text-center fade-up delay-6">
+        <svg class="w-6 h-6 text-blue-400 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        <p class="text-xs text-zinc-400 mb-3">Get breaking crypto alerts instantly</p>
+        <a href="https://t.me/CryptositNews" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition-colors">
+          Join Channel
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+
     </div>
+  </div>
+</main>
 
-    <script>
-        lucide.createIcons();
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-zinc-800/60 mt-12 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2 text-[11px] text-zinc-600">
+      <div class="w-4 h-4 rounded bg-blue-500 flex items-center justify-center">
+        <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      © 2025 CryptositNews
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="/feed.xml" class="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">RSS</a>
+      <a href="/sitemap.xml" class="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Sitemap</a>
+      <a href="https://t.me/CryptositNews" target="_blank" class="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Telegram</a>
+    </div>
+  </div>
+</footer>
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const msg = document.getElementById('toast-msg');
-            msg.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2500);
-        }
+<!-- ============ SCRIPTS ============ -->
+<script>
+(function() {
+  const PRICES_URL = '{{ site_url }}/api/prices';
 
-        function switchTab(el) {
-            el.parentElement.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            el.classList.add('active');
-            showToast('تصنيف: ' + el.textContent);
-        }
+  function fmtPrice(p) {
+    if (p >= 1) return '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    return '$' + p.toFixed(6);
+  }
+  function fmtChange(c) {
+    if (c == null) return '—';
+    const sign = c >= 0 ? '+' : '';
+    return sign + c.toFixed(2) + '%';
+  }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.querySelectorAll('.sentiment-fill').forEach(bar => {
-                        const width = bar.style.width;
-                        bar.style.width = '0%';
-                        setTimeout(() => bar.style.width = width, 100);
-                    });
-                }
-            });
-        }, { threshold: 0.3 });
+  function buildTicker(data) {
+    const coins = [
+      {sym: 'BTC', name: 'Bitcoin'},
+      {sym: 'ETH', name: 'Ethereum'},
+      {sym: 'SOL', name: 'Solana'},
+      {sym: 'BNB', name: 'BNB'},
+      {sym: 'XRP', name: 'XRP'},
+    ];
+    let html = '';
+    for (const c of coins) {
+      const d = data[c.sym];
+      if (!d) continue;
+      const cls = d.change >= 0 ? 'text-emerald-400' : 'text-red-400';
+      const arrow = d.change >= 0 ? '▲' : '▼';
+      html += `<span class="flex items-center gap-2 text-xs">
+        <span class="font-semibold text-zinc-200">${c.sym}</span>
+        <span class="text-zinc-500">${fmtPrice(d.price)}</span>
+        <span class="${cls} text-[11px]">${arrow} ${fmtChange(d.change)}</span>
+      </span>`;
+    }
+    return html;
+  }
 
-        document.querySelectorAll('.sentiment-bar').forEach(bar => {
-            observer.observe(bar.parentElement);
-        });
-    </script>
+  function buildPrices(data) {
+    const coins = [
+      {sym: 'BTC', name: 'Bitcoin', icon: '₿', color: 'amber'},
+      {sym: 'ETH', name: 'Ethereum', icon: 'Ξ', color: 'blue'},
+      {sym: 'SOL', name: 'Solana', icon: 'S', color: 'purple'},
+      {sym: 'BNB', name: 'BNB', icon: 'B', color: 'yellow'},
+      {sym: 'XRP', name: 'XRP', icon: 'X', color: 'slate'},
+    ];
+    let html = '';
+    for (const c of coins) {
+      const d = data[c.sym];
+      if (!d) continue;
+      const cls = d.change >= 0 ? 'text-emerald-400' : 'text-red-400';
+      const bgCls = d.change >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10';
+      html += `<a href="#" class="flex items-center justify-between px-4 py-3 hover:bg-zinc-800/30 transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-full bg-${c.color}-500/10 flex items-center justify-center text-${c.color}-400 font-bold text-[10px]">${c.icon}</div>
+          <div>
+            <div class="text-[12px] font-semibold text-zinc-200">${c.name}</div>
+            <div class="text-[9px] text-zinc-600">${c.sym}</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[12px] font-semibold text-zinc-200">${fmtPrice(d.price)}</div>
+          <div class="text-[10px] font-medium ${cls} ${bgCls} px-1.5 py-0.5 rounded">${fmtChange(d.change)}</div>
+        </div>
+      </a>`;
+    }
+    return html;
+  }
+
+  function loadPrices() {
+    fetch(PRICES_URL)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data || data.error) return;
+        // Ticker — duplicate for seamless scroll
+        const tickerHtml = buildTicker(data);
+        document.getElementById('ticker').innerHTML = tickerHtml + tickerHtml;
+        // Sidebar prices
+        document.getElementById('prices-box').innerHTML = buildPrices(data);
+      })
+      .catch(() => {});
+  }
+
+  loadPrices();
+  setInterval(loadPrices, 30000);
+})();
+</script>
+
 </body>
 </html>
