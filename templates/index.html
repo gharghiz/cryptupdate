@@ -4,853 +4,535 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CryptositNews - Real-time Crypto News & Market Intelligence</title>
-    <meta name="description" content="Real-time cryptocurrency news, market data, AI analysis, and price tracking. Stay ahead with CryptositNews.">
-    <meta name="keywords" content="crypto, bitcoin, ethereum, blockchain, defi, nft, cryptocurrency news">
-    <meta name="author" content="CryptositNews">
+    <meta name="description" content="Real-time cryptocurrency news, market data, AI analysis, and price tracking.">
     <meta property="og:title" content="CryptositNews - Real-time Crypto News">
     <meta property="og:description" content="Real-time cryptocurrency news, market data, and AI analysis">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#080b12">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: ['class', '[data-theme="dark"]'],
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
                     colors: {
-                        dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' },
-                        neon: { blue:'#3b82f6',purple:'#8b5cf6',cyan:'#06b6d4',green:'#10b981',red:'#ef4444',yellow:'#f59e0b',orange:'#f97316',pink:'#ec4899' }
+                        brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8' },
+                        surface: { 0:'#080b12',1:'#0c1018',2:'#111621',3:'#161c2a',4:'#1b2233',5:'#222a3c',6:'#2a3349',7:'#333d55',8:'#3d4968' }
                     }
                 }
             }
         }
     </script>
     <style>
-        [data-theme="light"] body { background: #f8fafc; color: #0f172a; }
-        [data-theme="dark"] body { background: #0f172a; color: #e2e8f0; }
-        .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        [data-theme="dark"] .glass { background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.1); }
-        [data-theme="light"] .glass { background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1); }
-        .gauge-ring { transition: stroke-dashoffset 1s ease-in-out; }
-        .news-card:hover { transform: translateY(-2px); }
-        .news-card { transition: all 0.2s ease; }
-        .pulse-dot { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-        .bookmark-btn.bookmarked svg { fill: #f59e0b; color: #f59e0b; }
-        .toast { animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s; }
-        @keyframes slideIn { from{ transform:translateX(100%); opacity:0; } to{ transform:translateX(0); opacity:1; } }
-        @keyframes slideOut { from{ transform:translateX(0); opacity:1; } to{ transform:translateX(100%); opacity:0; } }
-        [data-theme="dark"] .search-input { background: #1e293b; color: #e2e8f0; border-color: #334155; }
-        [data-theme="light"] .search-input { background: #fff; color: #0f172a; border-color: #e2e8f0; }
-        .notification-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; background:#ef4444; border-radius:50%; font-size:10px; display:flex; align-items:center; justify-content:center; color:#fff; }
+        *, *::before, *::after { box-sizing: border-box; }
+        :root { --brand: #3b82f6; --brand-glow: rgba(59,130,246,0.15); --accent: #8b5cf6; }
+        [data-theme="light"] { --bg: #f0f4f8; --surface: #ffffff; --surface2: #f8fafc; --text: #0f172a; --text2: #475569; --border: rgba(0,0,0,0.08); }
+        [data-theme="dark"] { --bg: #080b12; --surface: #0f1420; --surface2: #141b28; --text: #e8ecf2; --text2: #8892a6; --border: rgba(255,255,255,0.06); }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+        /* Ambient Glow */
+        .hero-glow { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 800px; height: 600px; background: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+        .hero-glow-2 { position: fixed; top: -100px; right: -200px; width: 500px; height: 500px; background: radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+        /* Cards */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+        .card:hover { border-color: rgba(59,130,246,0.2); box-shadow: 0 0 0 1px rgba(59,130,246,0.05), 0 8px 32px -8px rgba(0,0,0,0.3); }
+        .card-elevated { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
+        /* News Card */
+        .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .news-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(to bottom, var(--brand), var(--accent)); opacity: 0; transition: opacity 0.2s; border-radius: 3px 0 0 3px; }
+        .news-card:hover { border-color: rgba(59,130,246,0.15); transform: translateY(-1px); box-shadow: 0 4px 20px -4px rgba(0,0,0,0.25); }
+        .news-card:hover::before { opacity: 1; }
+        .news-card.important-card { border-left: 3px solid #f59e0b; }
+        .news-card.important-card::before { display: none; }
+        /* Ticker */
+        .ticker-wrap { overflow: hidden; white-space: nowrap; }
+        .ticker-content { display: inline-flex; animation: ticker 60s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .ticker-content:hover { animation-play-state: paused; }
+        /* Gauge */
+        .gauge-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, #ef4444 0%, #f59e0b 35%, #eab308 50%, #22c55e 75%, #16a34a 100%); }
+        .gauge-thumb { width: 16px; height: 16px; border-radius: 50%; background: white; border: 3px solid var(--brand); box-shadow: 0 0 12px rgba(59,130,246,0.4); position: absolute; top: 50%; transform: translate(-50%, -50%); transition: left 1.2s cubic-bezier(0.4,0,0.2,1); }
+        /* Animations */
+        .fade-up { animation: fadeUp 0.4s ease forwards; opacity: 0; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger-1 { animation-delay: 0.05s; } .stagger-2 { animation-delay: 0.1s; } .stagger-3 { animation-delay: 0.15s; }
+        /* Pulse */
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; position: relative; }
+        .live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(34,197,94,0.3); animation: livePulse 2s ease-in-out infinite; }
+        @keyframes livePulse { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.6); opacity: 0; } }
+        /* Category Pills */
+        .pill { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.2s; white-space: nowrap; background: transparent; }
+        .pill:hover { border-color: rgba(59,130,246,0.3); color: var(--text); }
+        .pill.active { background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 0 16px rgba(59,130,246,0.25); }
+        /* Bookmark */
+        .bm-btn.bookmarked svg { fill: #f59e0b; color: #f59e0b; }
+        /* Input */
+        .input-field { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 14px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
+        .input-field:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); }
+        .input-field::placeholder { color: var(--text2); }
+        /* Badge */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
+        /* Toast */
+        .toast-item { animation: toastIn 0.35s cubic-bezier(0.4,0,0.2,1), toastOut 0.3s ease 2.7s forwards; }
+        @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toastOut { to { transform: translateX(120%); opacity: 0; } }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        /* Skeleton */
+        .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* Nav */
+        .nav-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
+        /* Btn Primary */
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-primary:hover { box-shadow: 0 0 24px rgba(59,130,246,0.3); transform: translateY(-1px); }
+        .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 20px; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-secondary:hover { border-color: rgba(59,130,246,0.3); }
+        /* Footer Link */
+        .foot-link { color: var(--text2); font-size: 13px; transition: color 0.2s; text-decoration: none; }
+        .foot-link:hover { color: var(--brand); }
+        /* Notification badge */
+        .notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; background: #ef4444; border-radius: 50%; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid var(--surface); }
+        /* RTL */
+        [dir="rtl"] .news-card::before { left: auto; right: 0; }
+        [dir="rtl"] .news-card { border-left: none; }
+        [dir="rtl"] .news-card.important-card { border-right: 3px solid #f59e0b; border-left: none; }
+        [dir="rtl"] .ticker-content { animation-direction: reverse; }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
+<body class="min-h-screen relative">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
 
-    <!-- Navigation -->
-    <nav class="glass sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">📰</span>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">CryptositNews</h1>
-                <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-green-500" title="Live"></span>
-            </div>
-            <div class="flex items-center gap-2">
-                <!-- Search Toggle -->
-                <button onclick="toggleSearch()" class="p-2 rounded-lg hover:bg-white/10 transition" title="Search">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <!-- Toast -->
+    <div id="toast-container" class="fixed top-20 right-4 z-[100] space-y-2"></div>
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="nav-bar sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                    <span class="text-[15px] font-bold tracking-tight">Crypto<span class="text-blue-500">sit</span>News</span>
+                    <span class="hidden sm:flex items-center gap-1.5 ml-2"><span class="live-dot"></span><span class="text-[10px] text-green-500 font-semibold uppercase tracking-wider">Live</span></span>
+                </div>
+            </a>
+            <div class="flex items-center gap-1">
+                <button onclick="toggleSearch()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition" title="Search">
+                    <svg class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </button>
-                <!-- Bookmarks -->
-                <button onclick="toggleBookmarksPanel()" class="p-2 rounded-lg hover:bg-white/10 transition relative" title="Bookmarks">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                    <span id="bookmark-count" class="notification-badge hidden">0</span>
+                <button onclick="toggleBookmarksPanel()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition relative" title="Bookmarks">
+                    <svg class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    <span id="bookmark-count" class="notif-badge hidden">0</span>
                 </button>
-                <!-- Sound Toggle -->
-                <button onclick="toggleSound()" id="sound-btn" class="p-2 rounded-lg hover:bg-white/10 transition" title="Toggle Sound">
-                    <svg id="sound-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 10H3v4h3l4 4V6L6 10z"/></svg>
-                    <svg id="sound-off" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707A1 1 0 0112 5.586v12.828a1 1 0 01-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+                <button onclick="toggleSound()" id="sound-btn" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition" title="Sound">
+                    <svg id="sound-on" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 10H3v4h3l4 4V6L6 10z"/></svg>
+                    <svg id="sound-off" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707A1 1 0 0112 5.586v12.828a1 1 0 01-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
                 </button>
-                <!-- Language Toggle -->
-                <button onclick="toggleLang()" id="lang-btn" class="p-2 rounded-lg hover:bg-white/10 transition text-sm font-medium" title="Language">
+                <div class="w-px h-5 mx-1" style="background:var(--border)"></div>
+                <button onclick="toggleLang()" id="lang-btn" class="h-9 px-3 rounded-xl flex items-center justify-center hover:bg-white/5 transition text-xs font-semibold tracking-wide opacity-60 hover:opacity-100" title="Language">
                     {{ 'EN' if lang == 'ar' else 'AR' }}
                 </button>
-                <!-- Theme Toggle -->
-                <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-lg hover:bg-white/10 transition" title="Toggle Theme">
-                    <svg id="theme-dark" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <button onclick="toggleTheme()" id="theme-btn" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition" title="Theme">
+                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Search Bar (Hidden by default) -->
-    <div id="search-bar" class="hidden glass border-b fade-in">
-        <div class="max-w-3xl mx-auto px-4 py-3">
+    <!-- ===== SEARCH OVERLAY ===== -->
+    <div id="search-bar" class="hidden fixed inset-0 z-[60] fade-up" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(4px)">
+        <div class="max-w-2xl mx-auto px-4 pt-24">
             <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input id="search-input" type="text" placeholder="Search news..." class="search-input w-full pl-10 pr-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-neon-blue/50" oninput="debounceSearch()" onkeydown="if(event.key==='Escape')toggleSearch()">
-                <button onclick="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="search-input" type="text" placeholder="Search news..." class="input-field pl-12 pr-12 py-4 text-lg rounded-2xl shadow-2xl" style="background:var(--surface)" oninput="debounceSearch()" onkeydown="if(event.key==='Escape')toggleSearch()">
+                <button onclick="toggleSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition">
+                    <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div id="search-results" class="mt-2 space-y-1 max-h-96 overflow-y-auto scrollbar-thin"></div>
+            <div id="search-results" class="mt-3 space-y-1 max-h-[50vh] overflow-y-auto rounded-2xl shadow-2xl" style="background:var(--surface); border:1px solid var(--border)"></div>
         </div>
     </div>
 
-    <!-- Bookmarks Panel -->
-    <div id="bookmarks-panel" class="hidden fixed right-0 top-16 bottom-0 w-80 glass z-40 overflow-y-auto scrollbar-thin p-4 fade-in">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-lg" data-i18n="bookmarks">🔖 Bookmarks</h3>
-            <button onclick="toggleBookmarksPanel()" class="p-1 rounded hover:bg-white/10">✕</button>
+    <!-- ===== BOOKMARKS PANEL ===== -->
+    <div id="bookmarks-panel" class="hidden fixed right-0 top-16 bottom-0 w-80 z-40 overflow-y-auto p-5 fade-up" style="background:var(--surface); border-left:1px solid var(--border)">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-base" data-i18n="bookmarks">Bookmarks</h3>
+            <button onclick="toggleBookmarksPanel()" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 text-xs opacity-50">✕</button>
         </div>
-        <div id="bookmarks-list" class="space-y-2"></div>
-        <p id="no-bookmarks" class="text-sm opacity-50 text-center mt-8" data-i18n="no_bookmarks">No bookmarks yet. Click the bookmark icon on any article.</p>
+        <div id="bookmarks-list" class="space-y-1"></div>
+        <p id="no-bookmarks" class="text-sm text-center py-10" style="color:var(--text2)" data-i18n="no_bookmarks">No bookmarks yet.</p>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-16 space-y-6 relative z-10">
 
-        <!-- Hero Stats -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="market_cap">Market Cap</p>
-                <p id="stat-mcap" class="text-lg font-bold mt-1">-</p>
+        <!-- HERO STATS ROW -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 fade-up">
+            <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="market_cap">Market Cap</span>
+                </div>
+                <p id="stat-mcap" class="text-xl font-bold font-mono tracking-tight">-</p>
             </div>
-            <div class="glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="volume_24h">24h Volume</p>
-                <p id="stat-vol" class="text-lg font-bold mt-1">-</p>
+            <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="volume_24h">24h Volume</span>
+                </div>
+                <p id="stat-vol" class="text-xl font-bold font-mono tracking-tight">-</p>
             </div>
-            <div class="glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="btc_dominance">BTC Dominance</p>
-                <p id="stat-btc" class="text-lg font-bold mt-1">-</p>
+            <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="btc_dominance">BTC Dominance</span>
+                </div>
+                <p id="stat-btc" class="text-xl font-bold font-mono tracking-tight">-</p>
             </div>
-            <div class="glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="fear_greed">Fear & Greed</p>
-                <div class="flex items-center gap-2 mt-1">
-                    <span id="fg-value" class="text-lg font-bold">-</span>
-                    <span id="fg-label" class="text-xs px-2 py-0.5 rounded-full">-</span>
+            <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="fear_greed">Fear & Greed</span>
+                </div>
+                <div class="flex items-baseline gap-3">
+                    <span id="fg-value" class="text-xl font-bold font-mono">-</span>
+                    <span id="fg-label" class="badge text-[11px]" style="background:rgba(100,116,139,0.15);color:var(--text2)">-</span>
                 </div>
             </div>
         </section>
 
-        <!-- Fear & Greed Gauge -->
-        <section class="glass rounded-xl p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="font-bold" data-i18n="fear_greed_index">Fear & Greed Index</h2>
-                <span id="fg-emoji" class="text-2xl">😐</span>
+        <!-- FEAR & GREED GAUGE -->
+        <section class="card p-5 fade-up stagger-1">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span id="fg-emoji" class="text-xl">😐</span>
+                    <h2 class="text-sm font-semibold" data-i18n="fear_greed_index">Fear & Greed Index</h2>
+                </div>
             </div>
-            <div class="relative w-full h-4 rounded-full overflow-hidden" style="background: linear-gradient(to right, #ef4444, #f59e0b, #22c55e)">
-                <div id="fg-indicator" class="absolute top-0 w-3 h-3 bg-white rounded-full shadow-lg transition-all duration-1000" style="left:50%; transform: translateX(-50%); margin-top:2px;"></div>
+            <div class="relative">
+                <div class="gauge-track"></div>
+                <div id="fg-indicator" class="gauge-thumb" style="left:50%"></div>
             </div>
-            <div class="flex justify-between text-xs opacity-50 mt-1">
-                <span data-i18n="extreme_fear">Extreme Fear</span>
-                <span data-i18n="neutral">Neutral</span>
-                <span data-i18n="extreme_greed">Extreme Greed</span>
-            </div>
-        </section>
-
-        <!-- Live Prices -->
-        <section class="glass rounded-xl p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="font-bold" data-i18n="live_prices">Live Prices</h2>
-                <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-green-500"></span>
-            </div>
-            <div id="prices-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                <div class="text-sm opacity-50" data-i18n="loading">Loading...</div>
+            <div class="flex justify-between mt-2">
+                <span class="text-[10px] font-medium" style="color:var(--text2)" data-i18n="extreme_fear">Extreme Fear</span>
+                <span class="text-[10px] font-medium" style="color:var(--text2)" data-i18n="neutral">Neutral</span>
+                <span class="text-[10px] font-medium" style="color:var(--text2)" data-i18n="extreme_greed">Extreme Greed</span>
             </div>
         </section>
 
-        <!-- Main Content Grid -->
+        <!-- PRICE TICKER -->
+        <section class="card overflow-hidden fade-up stagger-2">
+            <div class="px-5 py-3 flex items-center justify-between" style="border-bottom:1px solid var(--border)">
+                <div class="flex items-center gap-2">
+                    <span class="live-dot"></span>
+                    <h2 class="text-sm font-semibold" data-i18n="live_prices">Live Prices</h2>
+                </div>
+            </div>
+            <div class="ticker-wrap py-3 px-2">
+                <div id="prices-ticker" class="ticker-content">
+                    <div class="text-sm" style="color:var(--text2)">Loading prices...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN GRID -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- News Feed (2/3) -->
+            <!-- NEWS FEED -->
             <section class="lg:col-span-2 space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="font-bold text-lg" data-i18n="latest_news">Latest News</h2>
-                    <div class="flex gap-1 flex-wrap" id="category-tabs">
-                        <button onclick="filterCategory('all')" class="cat-tab active px-3 py-1 text-xs rounded-full transition" data-cat="all" data-i18n="all">All</button>
-                        <button onclick="filterCategory('important')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="important" data-i18n="important">Important</button>
-                        <button onclick="filterCategory('market')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="market" data-i18n="market">Market</button>
-                        <button onclick="filterCategory('regulation')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="regulation" data-i18n="regulation">Regulation</button>
-                        <button onclick="filterCategory('defi')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="defi">DeFi</button>
-                        <button onclick="filterCategory('security')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="security" data-i18n="security">Security</button>
-                        <button onclick="filterCategory('ai_crypto')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="ai_crypto">AI Crypto</button>
-                        <button onclick="filterCategory('exchange')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="exchange" data-i18n="exchange">Exchange</button>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h2 class="text-lg font-bold" data-i18n="latest_news">Latest News</h2>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1" id="category-tabs">
+                        <button onclick="filterCategory('all')" class="pill active" data-cat="all" data-i18n="all">All</button>
+                        <button onclick="filterCategory('important')" class="pill" data-cat="important">⚡ Important</button>
+                        <button onclick="filterCategory('market')" class="pill" data-cat="market" data-i18n="market">Market</button>
+                        <button onclick="filterCategory('regulation')" class="pill" data-cat="regulation">⚖️ Regulation</button>
+                        <button onclick="filterCategory('defi')" class="pill" data-cat="defi">DeFi</button>
+                        <button onclick="filterCategory('security')" class="pill" data-cat="security">🛡️ Security</button>
+                        <button onclick="filterCategory('ai_crypto')" class="pill" data-cat="ai_crypto">🤖 AI</button>
+                        <button onclick="filterCategory('exchange')" class="pill" data-cat="exchange">🏦 Exchange</button>
                     </div>
                 </div>
                 <div id="news-feed" class="space-y-3">
-                    <div class="text-sm opacity-50" data-i18n="loading">Loading...</div>
+                    <div class="skeleton h-24 w-full"></div>
+                    <div class="skeleton h-24 w-full"></div>
+                    <div class="skeleton h-24 w-full"></div>
                 </div>
-                <button onclick="loadMoreNews()" id="load-more-btn" class="w-full py-2 glass rounded-xl text-sm opacity-70 hover:opacity-100 transition" data-i18n="load_more">Load More</button>
+                <button onclick="loadMoreNews()" id="load-more-btn" class="btn-secondary w-full py-3 text-sm" data-i18n="load_more">Load More</button>
             </section>
 
-            <!-- Sidebar (1/3) -->
-            <aside class="space-y-4">
-                <!-- Market Intelligence -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-bold mb-2 flex items-center gap-2">
-                        <span>🤖</span>
-                        <span data-i18n="ai_intelligence">AI Market Intelligence</span>
-                    </h3>
-                    <div id="ai-intel" class="text-sm leading-relaxed opacity-80" data-i18n="loading">Loading...</div>
+            <!-- SIDEBAR -->
+            <aside class="space-y-5">
+                <!-- AI Intelligence -->
+                <div class="card-elevated p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        </div>
+                        <h3 class="text-sm font-bold" data-i18n="ai_intelligence">AI Market Intelligence</h3>
+                    </div>
+                    <div id="ai-intel" class="text-[13px] leading-relaxed" style="color:var(--text2)">
+                        <div class="skeleton h-16 w-full mb-2"></div>
+                        <div class="skeleton h-16 w-3/4"></div>
+                    </div>
                 </div>
 
                 <!-- Trending -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-bold mb-3 flex items-center gap-2">
-                        <span>🔥</span>
-                        <span data-i18n="trending">Trending</span>
-                    </h3>
-                    <div id="trending-list" class="space-y-2">
-                        <div class="text-sm opacity-50" data-i18n="loading">Loading...</div>
+                <div class="card-elevated overflow-hidden">
+                    <div class="px-5 py-3 flex items-center gap-2" style="border-bottom:1px solid var(--border)">
+                        <span class="text-base">🔥</span>
+                        <h3 class="text-sm font-bold" data-i18n="trending">Trending</h3>
+                    </div>
+                    <div id="trending-list" class="divide-y" style="border-color:var(--border)">
+                        <div class="skeleton h-12 w-full"></div>
+                        <div class="skeleton h-12 w-full"></div>
+                        <div class="skeleton h-12 w-full"></div>
                     </div>
                 </div>
 
                 <!-- Price Alerts -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-bold mb-3 flex items-center gap-2">
-                        <span>🔔</span>
-                        <span data-i18n="price_alerts">Price Alerts</span>
-                    </h3>
-                    <form id="alert-form" onsubmit="createAlert(event)" class="space-y-2">
-                        <select id="alert-coin" class="w-full p-2 rounded-lg text-sm search-input border">
+                <div class="card-elevated p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        </div>
+                        <h3 class="text-sm font-bold" data-i18n="price_alerts">Price Alerts</h3>
+                    </div>
+                    <form id="alert-form" onsubmit="createAlert(event)" class="space-y-2.5">
+                        <select id="alert-coin" class="input-field text-sm">
                             <option value="">Select coin...</option>
                         </select>
                         <div class="flex gap-2">
-                            <select id="alert-condition" class="p-2 rounded-lg text-sm search-input border">
-                                <option value="above">Above</option>
-                                <option value="below">Below</option>
+                            <select id="alert-condition" class="input-field text-sm" style="width:auto">
+                                <option value="above">Above ↑</option>
+                                <option value="below">Below ↓</option>
                             </select>
-                            <input id="alert-price" type="number" step="any" placeholder="Price" class="flex-1 p-2 rounded-lg text-sm search-input border" required>
+                            <input id="alert-price" type="number" step="any" placeholder="Target price" class="input-field text-sm flex-1" required>
                         </div>
-                        <button type="submit" class="w-full py-2 bg-neon-blue text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition" data-i18n="create_alert">Create Alert</button>
+                        <button type="submit" class="btn-primary w-full" data-i18n="create_alert">Create Alert</button>
                     </form>
                 </div>
 
                 <!-- Newsletter -->
-                <div class="glass rounded-xl p-4">
-                    <h3 class="font-bold mb-2 flex items-center gap-2">
-                        <span>📧</span>
-                        <span data-i18n="newsletter">Newsletter</span>
-                    </h3>
-                    <p class="text-xs opacity-60 mb-3" data-i18n="newsletter_desc">Get daily crypto news digest in your inbox.</p>
-                    <form id="newsletter-form" onsubmit="subscribeNewsletter(event)" class="space-y-2">
-                        <input id="newsletter-email" type="email" placeholder="your@email.com" class="w-full p-2 rounded-lg text-sm search-input border" required>
-                        <button type="submit" class="w-full py-2 bg-neon-purple text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition" data-i18n="subscribe">Subscribe</button>
-                    </form>
+                <div class="card-elevated p-5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full"></div>
+                    <div class="relative">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </div>
+                            <h3 class="text-sm font-bold" data-i18n="newsletter">Newsletter</h3>
+                        </div>
+                        <p class="text-[12px] mb-3" style="color:var(--text2)" data-i18n="newsletter_desc">Get daily crypto news digest in your inbox.</p>
+                        <form id="newsletter-form" onsubmit="subscribeNewsletter(event)" class="flex gap-2">
+                            <input id="newsletter-email" type="email" placeholder="your@email.com" class="input-field text-sm flex-1" required>
+                            <button type="submit" class="btn-primary px-4 shrink-0" data-i18n="subscribe">Subscribe</button>
+                        </form>
+                    </div>
                 </div>
             </aside>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="glass mt-12 py-6 px-4 text-center text-sm opacity-60">
-        <p>CryptositNews &copy; 2024 | Real-time Crypto News & AI Analysis</p>
-        <div class="flex justify-center gap-4 mt-2">
-            <a href="/rss" class="hover:opacity-100">RSS</a>
-            <a href="/sitemap.xml" class="hover:opacity-100">Sitemap</a>
-            <a href="/health" class="hover:opacity-100">Health</a>
+    <!-- ===== FOOTER ===== -->
+    <footer style="background:var(--surface); border-top:1px solid var(--border)">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="text-xs font-semibold">CryptositNews</span>
+                    <span class="text-xs" style="color:var(--text2)">© 2024</span>
+                </div>
+                <div class="flex items-center gap-5">
+                    <a href="/rss" class="foot-link">RSS</a>
+                    <a href="/sitemap.xml" class="foot-link">Sitemap</a>
+                    <a href="/health" class="foot-link">Health</a>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script>
-    // ===== I18N =====
+    /* ===== I18N ===== */
     const i18n = {
-        en: {
-            market_cap:"Market Cap", volume_24h:"24h Volume", btc_dominance:"BTC Dominance",
-            fear_greed:"Fear & Greed", fear_greed_index:"Fear & Greed Index",
-            extreme_fear:"Extreme Fear", neutral:"Neutral", extreme_greed:"Extreme Greed",
-            live_prices:"Live Prices", latest_news:"Latest News", all:"All", important:"Important",
-            market:"Market", regulation:"Regulation", security:"Security", exchange:"Exchange",
-            ai_intelligence:"AI Market Intelligence", trending:"Trending",
-            price_alerts:"Price Alerts", newsletter:"Newsletter",
-            newsletter_desc:"Get daily crypto news digest in your inbox.",
-            subscribe:"Subscribe", create_alert:"Create Alert", bookmarks:"Bookmarks",
-            no_bookmarks:"No bookmarks yet.", loading:"Loading...", load_more:"Load More",
-            above:"Above", below:"Below", search_placeholder:"Search news...",
-            copy_link:"Copy Link", share_twitter:"Share on X", share_telegram:"Share on Telegram",
-            bookmark_added:"Bookmark added!", bookmark_removed:"Bookmark removed!",
-            alert_created:"Alert created!", subscribed:"Subscribed!",
-            unsubscribed:"Unsubscribed!", copied:"Link copied!",
-        },
-        ar: {
-            market_cap:"القيمة السوقية", volume_24h:"حجم التداول 24س",
-            btc_dominance:"هيمنة بيتكوين", fear_greed:"الخوف والطمع",
-            fear_greed_index:"مؤشر الخوف والطمع", extreme_fear:"خوف شديد",
-            neutral:"محايد", extreme_greed:"طمع شديد", live_prices:"أسعار مباشرة",
-            latest_news:"آخر الأخبار", all:"الكل", important:"مهم",
-            market:"السوق", regulation:"تنظيم", security:"أمان",
-            exchange:"منصات تداول", ai_intelligence:"ذكاء السوق الاصطناعي",
-            trending:"رائج", price_alerts:"تنبيهات الأسعار",
-            newsletter:"النشرة البريدية", newsletter_desc:"احصل على ملخص أخبار العملات يومياً.",
-            subscribe:"اشتراك", create_alert:"إنشاء تنبيه", bookmarks:"المحفوظات",
-            no_bookmarks:"لا توجد محفوظات بعد.", loading:"جاري التحميل...",
-            load_more:"تحميل المزيد", above:"فوق", below:"تحت",
-            search_placeholder:"البحث في الأخبار...", copy_link:"نسخ الرابط",
-            share_twitter:"مشاركة على X", share_telegram:"مشاركة على تيليجرام",
-            bookmark_added:"تمت الإضافة للمحفوظات!", bookmark_removed:"تمت الإزالة من المحفوظات!",
-            alert_created:"تم إنشاء التنبيه!", subscribed:"تم الاشتراك!",
-            unsubscribed:"تم إلغاء الاشتراك!", copied:"تم نسخ الرابط!",
-        }
+        en:{ market_cap:"Market Cap",volume_24h:"24h Volume",btc_dominance:"BTC Dominance",fear_greed:"Fear & Greed",fear_greed_index:"Fear & Greed Index",extreme_fear:"Extreme Fear",neutral:"Neutral",extreme_greed:"Extreme Greed",live_prices:"Live Prices",latest_news:"Latest News",all:"All",important:"Important",market:"Market",regulation:"Regulation",security:"Security",exchange:"Exchange",ai_intelligence:"AI Market Intelligence",trending:"Trending",price_alerts:"Price Alerts",newsletter:"Newsletter",newsletter_desc:"Get daily crypto news digest in your inbox.",subscribe:"Subscribe",create_alert:"Create Alert",bookmarks:"Bookmarks",no_bookmarks:"No bookmarks yet.",loading:"Loading...",load_more:"Load More",search_placeholder:"Search news...",bookmark_added:"Bookmark added!",bookmark_removed:"Bookmark removed!",alert_created:"Alert created!",subscribed:"Subscribed!",copied:"Link copied!" },
+        ar:{ market_cap:"القيمة السوقية",volume_24h:"حجم التداول 24س",btc_dominance:"هيمنة بيتكوين",fear_greed:"الخوف والطمع",fear_greed_index:"مؤشر الخوف والطمع",extreme_fear:"خوف شديد",neutral:"محايد",extreme_greed:"طمع شديد",live_prices:"أسعار مباشرة",latest_news:"آخر الأخبار",all:"الكل",important:"مهم",market:"السوق",regulation:"تنظيم",security:"أمان",exchange:"منصات تداول",ai_intelligence:"ذكاء السوق الاصطناعي",trending:"رائج",price_alerts:"تنبيهات الأسعار",newsletter:"النشرة البريدية",newsletter_desc:"احصل على ملخص أخبار العملات يومياً.",subscribe:"اشتراك",create_alert:"إنشاء تنبيه",bookmarks:"المحفوظات",no_bookmarks:"لا توجد محفوظات بعد.",loading:"جاري التحميل...",load_more:"تحميل المزيد",search_placeholder:"البحث في الأخبار...",bookmark_added:"تمت الإضافة!",bookmark_removed:"تمت الإزالة!",alert_created:"تم إنشاء التنبيه!",subscribed:"تم الاشتراك!",copied:"تم نسخ الرابط!" }
     };
     let currentLang = "{{ lang }}" || "en";
+    function t(k){ return (i18n[currentLang]||{})[k] || i18n.en[k] || k; }
+    function applyI18n(){ document.querySelectorAll("[data-i18n]").forEach(el=>{ const k=el.getAttribute("data-i18n"); const v=t(k); if(el.tagName==="INPUT")el.placeholder=v; else el.textContent=v; }); document.documentElement.lang=currentLang==="ar"?"ar":"en"; document.documentElement.dir=currentLang==="ar"?"rtl":"ltr"; }
 
-    function t(key) { return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key; }
-
-    function applyI18n() {
-        document.querySelectorAll("[data-i18n]").forEach(el => {
-            const key = el.getAttribute("data-i18n");
-            const val = t(key);
-            if (el.tagName === "INPUT") el.placeholder = val;
-            else el.textContent = val;
-        });
-        document.documentElement.lang = currentLang === "ar" ? "ar" : "en";
-        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
-    }
-
-    // ===== THEME =====
+    /* ===== THEME ===== */
     let currentTheme = "{{ theme }}" || "dark";
+    function toggleTheme(){ currentTheme=currentTheme==="dark"?"light":"dark"; document.documentElement.setAttribute("data-theme",currentTheme); document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark"); document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light"); fetch("/api/theme",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({theme:currentTheme})}); }
 
-    function toggleTheme() {
-        currentTheme = currentTheme === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", currentTheme);
-        document.getElementById("theme-dark").classList.toggle("hidden", currentTheme === "dark");
-        document.getElementById("theme-light").classList.toggle("hidden", currentTheme === "light");
-        fetch("/api/theme", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({theme:currentTheme}) });
-    }
+    /* ===== LANGUAGE ===== */
+    function toggleLang(){ currentLang=currentLang==="en"?"ar":"en"; document.getElementById("lang-btn").textContent=currentLang==="ar"?"EN":"AR"; applyI18n(); fetch("/api/lang",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lang:currentLang})}); }
 
-    // ===== LANGUAGE =====
-    function toggleLang() {
-        currentLang = currentLang === "en" ? "ar" : "en";
-        document.getElementById("lang-btn").textContent = currentLang === "ar" ? "EN" : "AR";
-        applyI18n();
-        fetch("/api/lang", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({lang:currentLang}) });
-    }
+    /* ===== SOUND ===== */
+    let soundEnabled=localStorage.getItem("sound")!=="false";
+    const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    function playNotificationSound(){ if(!soundEnabled)return; try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.setValueAtTime(800,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(400,audioCtx.currentTime+0.15);g.gain.setValueAtTime(0.08,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);o.start();o.stop(audioCtx.currentTime+0.2);}catch(e){} }
+    function toggleSound(){ soundEnabled=!soundEnabled; localStorage.setItem("sound",soundEnabled); document.getElementById("sound-on").classList.toggle("hidden",!soundEnabled); document.getElementById("sound-off").classList.toggle("hidden",soundEnabled); }
 
-    // ===== SOUND =====
-    let soundEnabled = localStorage.getItem("sound") !== "false";
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    /* ===== TOAST ===== */
+    function showToast(msg,type="success"){ const c=document.getElementById("toast-container"); const colors={success:"background:linear-gradient(135deg,#059669,#10b981)",error:"background:linear-gradient(135deg,#dc2626,#ef4444)",info:"background:linear-gradient(135deg,#2563eb,#3b82f6)"}; const d=document.createElement("div"); d.className="toast-item text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium"; d.style.cssText=colors[type]||colors.info; d.textContent=msg; c.appendChild(d); setTimeout(()=>d.remove(),3000); }
 
-    function playNotificationSound() {
-        if (!soundEnabled) return;
-        try {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        } catch(e) {}
-    }
+    /* ===== API ===== */
+    async function g(url,opts){ try{ const r=await fetch(url,opts||{}); if(!r.ok)throw new Error(`HTTP ${r.status}`); return await r.json(); }catch(e){ console.error("API:",url,e); return null; } }
 
-    function toggleSound() {
-        soundEnabled = !soundEnabled;
-        localStorage.setItem("sound", soundEnabled);
-        document.getElementById("sound-on").classList.toggle("hidden", !soundEnabled);
-        document.getElementById("sound-off").classList.toggle("hidden", soundEnabled);
-    }
+    /* ===== FORMATTERS ===== */
+    function fmtNum(n){ if(n==null)return"$0"; n=Number(n); if(n>=1e12)return"$"+(n/1e12).toFixed(2)+"T"; if(n>=1e9)return"$"+(n/1e9).toFixed(2)+"B"; if(n>=1e6)return"$"+(n/1e6).toFixed(2)+"M"; if(n>=1e3)return"$"+(n/1e3).toFixed(1)+"K"; return"$"+n.toLocaleString(undefined,{maximumFractionDigits:2}); }
+    function fmtPrice(p){ if(p==null)return"$0"; p=Number(p); if(p>=1)return"$"+p.toLocaleString(undefined,{maximumFractionDigits:2}); if(p>=0.001)return"$"+p.toFixed(4); return"$"+p.toFixed(8); }
+    function fmtPct(p){ if(p==null)return'<span style="color:var(--text2)">0%</span>'; p=Number(p); const c=p>=0?"#22c55e":"#ef4444"; const s=p>=0?"+":""; return `<span style="color:${c};font-weight:600">${s}${p.toFixed(2)}%</span>`; }
+    function timeAgo(d){ if(!d)return""; const now=new Date(),dt=new Date(d); if(isNaN(dt))return""; const s=Math.floor((now-dt)/1000); if(s<60)return"just now"; if(s<3600)return Math.floor(s/60)+"m"; if(s<86400)return Math.floor(s/3600)+"h"; return Math.floor(s/86400)+"d"; }
 
-    // ===== TOAST =====
-    function showToast(message, type="success") {
-        const container = document.getElementById("toast-container");
-        const colors = { success:"bg-green-600", error:"bg-red-600", info:"bg-blue-600" };
-        const toast = document.createElement("div");
-        toast.className = `toast ${colors[type]||colors.info} text-white px-4 py-2 rounded-lg shadow-lg text-sm`;
-        toast.textContent = message;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
+    /* ===== BOOKMARKS ===== */
+    function getBookmarks(){ try{return JSON.parse(localStorage.getItem("crypto_bookmarks")||"[]");}catch(e){return[];} }
+    function saveBookmarks(b){ localStorage.setItem("crypto_bookmarks",JSON.stringify(b)); updateBookmarkCount(); }
+    function toggleBookmark(id,title){ let bm=getBookmarks(); const i=bm.findIndex(b=>b.id===id); if(i>=0){bm.splice(i,1);showToast(t("bookmark_removed"));}else{bm.unshift({id,title,time:new Date().toISOString()});showToast(t("bookmark_added"));playNotificationSound();} saveBookmarks(bm); renderBookmarks(); document.querySelectorAll(`.bm-btn[data-id="${id}"]`).forEach(b=>b.classList.toggle("bookmarked",i<0)); }
+    function updateBookmarkCount(){ const c=getBookmarks().length; const b=document.getElementById("bookmark-count"); if(c>0){b.textContent=c;b.classList.remove("hidden");}else b.classList.add("hidden"); }
+    function renderBookmarks(){ const bm=getBookmarks(); const l=document.getElementById("bookmarks-list"); const e=document.getElementById("no-bookmarks"); if(!bm.length){l.innerHTML="";e.classList.remove("hidden");return;} e.classList.add("hidden"); l.innerHTML=bm.map(b=>`<a href="/article/${b.id}" class="block px-3 py-2.5 rounded-lg text-[13px] hover:bg-white/5 transition truncate" style="color:var(--text2)" title="${b.title}">${b.title}</a>`).join(""); }
+    function toggleBookmarksPanel(){ document.getElementById("bookmarks-panel").classList.toggle("hidden"); if(!document.getElementById("bookmarks-panel").classList.contains("hidden"))renderBookmarks(); }
 
-    // ===== API HELPER =====
-    async function g(url) {
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch(e) {
-            console.error("API Error:", url, e);
-            return null;
-        }
-    }
-
-    // ===== FORMAT HELPERS =====
-    function fmtNum(n) {
-        if (n == null) return "0";
-        n = Number(n);
-        if (n >= 1e12) return "$" + (n/1e12).toFixed(2) + "T";
-        if (n >= 1e9) return "$" + (n/1e9).toFixed(2) + "B";
-        if (n >= 1e6) return "$" + (n/1e6).toFixed(2) + "M";
-        if (n >= 1e3) return "$" + (n/1e3).toFixed(1) + "K";
-        return "$" + n.toLocaleString(undefined, {maximumFractionDigits:2});
-    }
-
-    function fmtPrice(p) {
-        if (p == null) return "$0";
-        p = Number(p);
-        if (p >= 1) return "$" + p.toLocaleString(undefined, {maximumFractionDigits:2});
-        if (p >= 0.001) return "$" + p.toFixed(4);
-        return "$" + p.toFixed(8);
-    }
-
-    function fmtPct(p) {
-        if (p == null) return "0%";
-        p = Number(p);
-        const sign = p >= 0 ? "+" : "";
-        const color = p >= 0 ? "text-green-400" : "text-red-400";
-        return `<span class="${color}">${sign}${p.toFixed(2)}%</span>`;
-    }
-
-    function timeAgo(dateStr) {
-        if (!dateStr) return "";
-        const now = new Date();
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return "";
-        const diff = Math.floor((now - d) / 1000);
-        if (diff < 60) return "just now";
-        if (diff < 3600) return Math.floor(diff/60) + "m ago";
-        if (diff < 86400) return Math.floor(diff/3600) + "h ago";
-        return Math.floor(diff/86400) + "d ago";
-    }
-
-    // ===== BOOKMARKS =====
-    function getBookmarks() {
-        try { return JSON.parse(localStorage.getItem("crypto_bookmarks") || "[]"); }
-        catch(e) { return []; }
-    }
-
-    function saveBookmarks(bm) {
-        localStorage.setItem("crypto_bookmarks", JSON.stringify(bm));
-        updateBookmarkCount();
-    }
-
-    function toggleBookmark(id, title) {
-        let bm = getBookmarks();
-        const idx = bm.findIndex(b => b.id === id);
-        if (idx >= 0) { bm.splice(idx, 1); showToast(t("bookmark_removed")); }
-        else { bm.unshift({id, title, time: new Date().toISOString()}); showToast(t("bookmark_added")); playNotificationSound(); }
-        saveBookmarks(bm);
-        renderBookmarks();
-        document.querySelectorAll(`.bookmark-btn[data-id="${id}"]`).forEach(btn => {
-            btn.classList.toggle("bookmarked", idx < 0);
-        });
-    }
-
-    function updateBookmarkCount() {
-        const count = getBookmarks().length;
-        const badge = document.getElementById("bookmark-count");
-        if (count > 0) { badge.textContent = count; badge.classList.remove("hidden"); }
-        else { badge.classList.add("hidden"); }
-    }
-
-    function renderBookmarks() {
-        const bm = getBookmarks();
-        const list = document.getElementById("bookmarks-list");
-        const empty = document.getElementById("no-bookmarks");
-        if (bm.length === 0) { list.innerHTML = ""; empty.classList.remove("hidden"); return; }
-        empty.classList.add("hidden");
-        list.innerHTML = bm.map(b => `
-            <a href="/article/${b.id}" class="block p-2 rounded-lg hover:bg-white/5 transition text-sm truncate" title="${b.title}">
-                📌 ${b.title}
-            </a>
-        `).join("");
-    }
-
-    function toggleBookmarksPanel() {
-        const panel = document.getElementById("bookmarks-panel");
-        panel.classList.toggle("hidden");
-        if (!panel.classList.contains("hidden")) renderBookmarks();
-    }
-
-    // ===== SEARCH =====
+    /* ===== SEARCH ===== */
     let searchTimeout;
+    function toggleSearch(){ document.getElementById("search-bar").classList.toggle("hidden"); if(!document.getElementById("search-bar").classList.contains("hidden"))document.getElementById("search-input").focus(); }
+    function debounceSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(doSearch,250); }
+    async function doSearch(){ const q=document.getElementById("search-input").value.trim(); const c=document.getElementById("search-results"); if(q.length<2){c.innerHTML="";return;} const d=await g(`/api/search?q=${encodeURIComponent(q)}&limit=10`); if(!d||!d.results||!d.results.length){c.innerHTML=`<p class="text-sm p-4" style="color:var(--text2)">No results found</p>`;return;} c.innerHTML=d.results.map(n=>`<a href="/article/${n.id}" class="block px-4 py-3 hover:bg-white/5 transition" style="border-bottom:1px solid var(--border)"><p class="text-sm font-medium">${n.title}</p><p class="text-[11px] mt-0.5" style="color:var(--text2)">${n.source||""} · ${timeAgo(n.published)}</p></a>`).join(""); }
+    function clearSearch(){ document.getElementById("search-input").value=""; document.getElementById("search-results").innerHTML=""; }
 
-    function toggleSearch() {
-        const bar = document.getElementById("search-bar");
-        bar.classList.toggle("hidden");
-        if (!bar.classList.contains("hidden")) {
-            document.getElementById("search-input").focus();
-        }
-    }
+    /* ===== CATEGORY ===== */
+    let currentCategory="all", newsOffset=0;
+    async function filterCategory(cat){ currentCategory=cat; newsOffset=0; document.querySelectorAll(".pill").forEach(b=>{ b.classList.toggle("active",b.getAttribute("data-cat")===cat); }); await loadNews(); }
 
-    function debounceSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(doSearch, 300);
-    }
-
-    async function doSearch() {
-        const q = document.getElementById("search-input").value.trim();
-        const container = document.getElementById("search-results");
-        if (q.length < 2) { container.innerHTML = ""; return; }
-        const data = await g(`/api/search?q=${encodeURIComponent(q)}&limit=10`);
-        if (!data || !data.results || data.results.length === 0) {
-            container.innerHTML = `<p class="text-sm opacity-50 p-2">No results found</p>`;
-            return;
-        }
-        container.innerHTML = data.results.map(n => `
-            <a href="/article/${n.id}" class="block p-2 rounded-lg hover:bg-white/5 transition">
-                <p class="text-sm font-medium">${n.title}</p>
-                <p class="text-xs opacity-50">${n.source} &middot; ${timeAgo(n.published)}</p>
-            </a>
-        `).join("");
-    }
-
-    function clearSearch() {
-        document.getElementById("search-input").value = "";
-        document.getElementById("search-results").innerHTML = "";
-    }
-
-    // ===== CATEGORY FILTER =====
-    let currentCategory = "all";
-    let newsOffset = 0;
-
-    async function filterCategory(cat) {
-        currentCategory = cat;
-        newsOffset = 0;
-        document.querySelectorAll(".cat-tab").forEach(btn => {
-            const active = btn.getAttribute("data-cat") === cat;
-            btn.classList.toggle("active", active);
-            if (active) {
-                btn.style.background = currentTheme === "dark" ? "rgba(59,130,246,0.2)" : "rgba(59,130,246,0.3)";
-                btn.style.color = "#3b82f6";
-            } else {
-                btn.style.background = "";
-                btn.style.color = "";
-            }
-        });
-        await loadNews();
-    }
-
-    // ===== NEWS =====
-    async function loadNews(append=false) {
-        const container = document.getElementById("news-feed");
-        if (!append) container.innerHTML = `<div class="text-sm opacity-50">${t("loading")}</div>`;
-
-        const cat = currentCategory === "important" ? "all" : currentCategory;
-        const imp = currentCategory === "important" ? "true" : "false";
-        const data = await g(`/api/news?limit=20&offset=${newsOffset}&category=${cat}&important=${imp}`);
-
-        if (!data || !data.news || data.news.length === 0) {
-            if (!append) container.innerHTML = `<p class="text-sm opacity-50 text-center py-4">No news found</p>`;
-            return;
-        }
-
-        const bm = getBookmarks();
-        const html = data.news.map(n => {
-            const isBookmarked = bm.some(b => b.id === n.id);
-            const sentimentEmoji = {positive:"🟢",negative:"🔴",neutral:"⚪",bullish:"🚀",bearish:"📉"}[n.ai_sentiment] || "";
-            const catColors = {
-                regulation:"bg-blue-500/20 text-blue-400", defi:"bg-purple-500/20 text-purple-400",
-                nft:"bg-pink-500/20 text-pink-400", layer1:"bg-cyan-500/20 text-cyan-400",
-                layer2:"bg-indigo-500/20 text-indigo-400", meme:"bg-yellow-500/20 text-yellow-400",
-                ai_crypto:"bg-green-500/20 text-green-400", mining:"bg-orange-500/20 text-orange-400",
-                stablecoin:"bg-teal-500/20 text-teal-400", gaming:"bg-rose-500/20 text-rose-400",
-                exchange:"bg-amber-500/20 text-amber-400", security:"bg-red-500/20 text-red-400",
-                adoption:"bg-emerald-500/20 text-emerald-400", market:"bg-slate-500/20 text-slate-400",
-            };
-            const catClass = catColors[n.category] || catColors.market;
-
+    /* ===== NEWS ===== */
+    async function loadNews(append=false){
+        const container=document.getElementById("news-feed");
+        if(!append) container.innerHTML='<div class="skeleton h-24 w-full"></div><div class="skeleton h-24 w-full"></div><div class="skeleton h-24 w-full"></div>';
+        const cat=currentCategory==="important"?"all":currentCategory;
+        const imp=currentCategory==="important"?"true":"false";
+        const data=await g(`/api/news?limit=20&offset=${newsOffset}&category=${cat}&important=${imp}`);
+        if(!data||!data.news||!data.news.length){ if(!append)container.innerHTML=`<p class="text-sm text-center py-10" style="color:var(--text2)">No news found</p>`; return; }
+        const bm=getBookmarks();
+        const catColors={regulation:"background:rgba(59,130,246,0.12);color:#60a5fa",defi:"background:rgba(139,92,246,0.12);color:#a78bfa",nft:"background:rgba(236,72,153,0.12);color:#f472b6",layer1:"background:rgba(6,182,212,0.12);color:#22d3ee",layer2:"background:rgba(99,102,241,0.12);color:#818cf8",meme:"background:rgba(245,158,11,0.12);color:#fbbf24",ai_crypto:"background:rgba(16,185,129,0.12);color:#34d399",mining:"background:rgba(249,115,22,0.12);color:#fb923c",stablecoin:"background:rgba(20,184,166,0.12);color:#2dd4bf",gaming:"background:rgba(244,63,94,0.12);color:#fb7185",exchange:"background:rgba(251,191,36,0.12);color:#fbbf24",security:"background:rgba(239,68,68,0.12);color:#f87171",adoption:"background:rgba(52,211,153,0.12);color:#34d399",market:"background:rgba(100,116,139,0.12);color:#94a3b8"};
+        const html=data.news.map((n,i)=>{
+            const isBM=bm.some(b=>b.id===n.id);
+            const sentEmoji={positive:"🟢",negative:"🔴",neutral:"⚪",bullish:"🚀",bearish:"📉"}[n.ai_sentiment]||"";
+            const catStyle=catColors[n.category]||catColors.market;
+            const isImp=n.is_important;
             return `
-            <div class="news-card glass rounded-xl p-4 fade-in">
-                <div class="flex items-start justify-between gap-2">
-                    <a href="/article/${n.id}" class="flex-1 hover:text-neon-blue transition">
-                        <h3 class="font-semibold text-sm leading-snug">${n.title}</h3>
+            <div class="news-card ${isImp?'important-card':''} fade-up" style="animation-delay:${i*0.03}s">
+                <div class="flex items-start justify-between gap-3">
+                    <a href="/article/${n.id}" class="flex-1 group">
+                        <h3 class="font-semibold text-[14px] leading-snug group-hover:text-blue-500 transition-colors">${n.title}</h3>
                     </a>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button onclick="shareArticle(${n.id},'${encodeURIComponent(n.title)}')" class="p-1 rounded hover:bg-white/10 transition" title="Share">
-                            <svg class="w-4 h-4 opacity-50 hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                    <div class="flex items-center gap-0.5 shrink-0 mt-0.5">
+                        <button onclick="shareArticle(${n.id},'${encodeURIComponent(n.title)}')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition opacity-40 hover:opacity-100">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                         </button>
-                        <button onclick="toggleBookmark(${n.id},this.closest('.news-card').querySelector('h3').textContent)" class="bookmark-btn p-1 rounded hover:bg-white/10 transition ${isBookmarked?'bookmarked':''}" data-id="${n.id}" title="Bookmark">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                        <button onclick="toggleBookmark(${n.id},this.closest('.news-card').querySelector('h3').textContent)" class="bm-btn w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition ${isBM?'bookmarked':''}" data-id="${n.id}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                         </button>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 mt-2 flex-wrap">
-                    <span class="text-xs px-2 py-0.5 rounded-full ${catClass}">${n.category||"market"}</span>
-                    ${sentimentEmoji ? `<span class="text-xs">${sentimentEmoji} ${n.ai_sentiment||""}</span>` : ""}
-                    ${n.source ? `<span class="text-xs opacity-40">${n.source}</span>` : ""}
-                    <span class="text-xs opacity-40 ml-auto">${timeAgo(n.published)}</span>
+                <div class="flex items-center gap-2 mt-2.5 flex-wrap">
+                    <span class="badge" style="${catStyle}">${n.category||"market"}</span>
+                    ${sentEmoji?`<span class="text-[11px]" style="color:var(--text2)">${sentEmoji} ${n.ai_sentiment}</span>`:""}
+                    ${n.source?`<span class="text-[11px]" style="color:var(--text2)">${n.source.length>20?n.source.substring(0,20)+'…':n.source}</span>`:""}
+                    <span class="text-[11px] ml-auto" style="color:var(--text2)">${timeAgo(n.published)}</span>
                 </div>
-                ${n.ai_summary ? `<p class="text-xs opacity-60 mt-2 line-clamp-2">${n.ai_summary}</p>` : ""}
+                ${n.ai_summary?`<p class="text-[12px] mt-2.5 leading-relaxed line-clamp-2" style="color:var(--text2)">${n.ai_summary}</p>`:""}
             </div>`;
         }).join("");
+        if(append) container.innerHTML+=html; else container.innerHTML=html;
+        newsOffset+=20;
+        document.getElementById("load-more-btn").style.display=data.news.length<20?"none":"block";
+    }
+    function loadMoreNews(){loadNews(true);}
 
-        if (append) container.innerHTML += html;
-        else container.innerHTML = html;
-
-        newsOffset += 20;
-        document.getElementById("load-more-btn").style.display = data.news.length < 20 ? "none" : "block";
+    /* ===== PRICES ===== */
+    async function loadPrices(){
+        const data=await g("/api/prices"); if(!data||!data.prices)return;
+        const coins=["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","LINK"];
+        const items=coins.filter(c=>data.prices[c]).map(c=>{const p=data.prices[c]; return `<div class="flex items-center gap-3 px-4 py-2.5 shrink-0"><span class="font-bold text-sm font-mono">${c}</span><span class="text-sm font-mono" style="color:var(--text)">${fmtPrice(p.usd)}</span><span class="text-xs font-mono">${fmtPct(p.usd_24h_change)}</span></div>`; }).join("");
+        document.getElementById("prices-ticker").innerHTML=items+items; // duplicate for seamless loop
+        const sel=document.getElementById("alert-coin");
+        if(sel.options.length<=1) coins.forEach(c=>{ if(data.prices[c]){const o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);} });
     }
 
-    function loadMoreNews() { loadNews(true); }
-
-    // ===== PRICES =====
-    async function loadPrices() {
-        const data = await g("/api/prices");
-        if (!data || !data.prices) return;
-
-        const topCoins = ["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","LINK"];
-        const grid = document.getElementById("prices-grid");
-        grid.innerHTML = topCoins.filter(c => data.prices[c]).map(c => {
-            const p = data.prices[c];
-            return `
-            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition">
-                <div>
-                    <span class="font-bold text-sm">${c}</span>
-                    <span class="text-xs opacity-50 block">${fmtPrice(p.usd)}</span>
-                </div>
-                <div class="text-right">
-                    ${fmtPct(p.usd_24h_change)}
-                </div>
-            </div>`;
-        }).join("");
-
-        // Update alert coin selector
-        const sel = document.getElementById("alert-coin");
-        if (sel.options.length <= 1) {
-            topCoins.forEach(c => {
-                if (data.prices[c]) {
-                    const opt = document.createElement("option");
-                    opt.value = c; opt.textContent = c;
-                    sel.appendChild(opt);
-                }
-            });
+    /* ===== HERO STATS ===== */
+    async function loadHeroStats(){
+        const gd=await g("/api/global");
+        if(gd&&gd.global){const g=gd.global;document.getElementById("stat-mcap").textContent=fmtNum(g.total_market_cap_usd);document.getElementById("stat-vol").textContent=fmtNum(g.total_volume_usd);document.getElementById("stat-btc").textContent=(g.btc_dominance||0).toFixed(1)+"%";}
+        const fd=await g("/api/fear-greed");
+        if(fd&&fd.fear_greed){const fg=fd.fear_greed;const val=fg.value||50;
+            document.getElementById("fg-value").textContent=val;
+            document.getElementById("fg-label").textContent=fg.classification||"Neutral";
+            document.getElementById("fg-indicator").style.left=val+"%";
+            let fgC="#64748b";if(val<=25)fgC="#ef4444";else if(val<=45)fgC="#f59e0b";else if(val>=75)fgC="#22c55e";
+            document.getElementById("fg-label").style.cssText=`background:${fgC}22;color:${fgC}`;
+            document.getElementById("fg-emoji").textContent=val<=20?"😰":val<=40?"😟":val<=60?"😐":val<=80?"😊":"🤑";
         }
     }
 
-    // ===== HERO STATS =====
-    async function loadHeroStats() {
-        const globalData = await g("/api/global");
-        if (globalData && globalData.global) {
-            const g = globalData.global;
-            document.getElementById("stat-mcap").textContent = fmtNum(g.total_market_cap_usd);
-            document.getElementById("stat-vol").textContent = fmtNum(g.total_volume_usd);
-            document.getElementById("stat-btc").textContent = (g.btc_dominance || 0).toFixed(1) + "%";
-        }
-
-        const fgData = await g("/api/fear-greed");
-        if (fgData && fgData.fear_greed) {
-            const fg = fgData.fear_greed;
-            const val = fg.value || 50;
-            document.getElementById("fg-value").textContent = val;
-            document.getElementById("fg-label").textContent = fg.classification || "Neutral";
-
-            // Gauge indicator position
-            document.getElementById("fg-indicator").style.left = val + "%";
-
-            // Color based on value
-            let fgColor = "#22c55e";
-            if (val <= 25) fgColor = "#ef4444";
-            else if (val <= 45) fgColor = "#f59e0b";
-            else if (val <= 55) fgColor = "#64748b";
-
-            document.getElementById("fg-label").style.background = fgColor + "33";
-            document.getElementById("fg-label").style.color = fgColor;
-
-            // Emoji
-            const emoji = val <= 20 ? "😰" : val <= 40 ? "😟" : val <= 60 ? "😐" : val <= 80 ? "😊" : "🤑";
-            document.getElementById("fg-emoji").textContent = emoji;
-        }
+    /* ===== TRENDING ===== */
+    async function loadTrending(){
+        const data=await g("/api/trending"); if(!data||!data.trending)return;
+        document.getElementById("trending-list").innerHTML=data.trending.slice(0,7).map((c,i)=>`
+            <div class="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition" style="border-bottom:1px solid var(--border)">
+                <span class="text-[11px] font-bold w-4 text-center" style="color:var(--text2)">${i+1}</span>
+                ${c.thumb?`<img src="${c.thumb}" class="w-6 h-6 rounded-full" alt="" onerror="this.style.display='none'">`:""}
+                <span class="text-sm font-medium flex-1">${c.name}</span>
+                <span class="text-[11px] font-mono font-semibold" style="color:var(--text2)">${c.symbol.toUpperCase()}</span>
+                ${c.market_cap_rank?`<span class="text-[10px] font-mono" style="color:var(--text2)">#${c.market_cap_rank}</span>`:""}
+            </div>`).join("");
     }
 
-    // ===== TRENDING =====
-    async function loadTrending() {
-        const data = await g("/api/trending");
-        if (!data || !data.trending) return;
-        const container = document.getElementById("trending-list");
-        container.innerHTML = data.trending.slice(0, 7).map((coin, i) => `
-            <div class="flex items-center gap-2 p-1">
-                <span class="text-xs font-bold opacity-40 w-4">${i+1}</span>
-                ${coin.thumb ? `<img src="${coin.thumb}" class="w-5 h-5 rounded-full" alt="" onerror="this.style.display='none'">` : ""}
-                <span class="text-sm font-medium">${coin.name}</span>
-                <span class="text-xs opacity-50 uppercase">${coin.symbol}</span>
-                ${coin.market_cap_rank ? `<span class="text-xs opacity-30 ml-auto">#${coin.market_cap_rank}</span>` : ""}
-            </div>
-        `).join("");
+    /* ===== AI INTEL ===== */
+    async function loadAIIntel(){
+        const data=await g("/api/market-intelligence");const c=document.getElementById("ai-intel");
+        if(!data||!data.intelligence){c.innerHTML=`<p style="color:var(--text2)">${currentLang==="ar"?"غير متاح حالياً":"Not available at the moment"}</p>`;return;}
+        c.innerHTML=`<p class="leading-relaxed">${data.intelligence}</p>`;
     }
 
-    // ===== AI INTELLIGENCE =====
-    async function loadAIIntel() {
-        const data = await g("/api/market-intelligence");
-        const container = document.getElementById("ai-intel");
-        if (!data || !data.intelligence) {
-            container.textContent = currentLang === "ar" ? "غير متاح حالياً" : "Not available at the moment";
-            return;
-        }
-        container.innerHTML = `<p>${data.intelligence}</p>`;
-    }
+    /* ===== ALERTS ===== */
+    async function createAlert(e){e.preventDefault();const s=document.getElementById("alert-coin").value,p=document.getElementById("alert-price").value,c=document.getElementById("alert-condition").value;if(!s||!p)return;const d=await g("/api/alerts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbol:s,target_price:parseFloat(p),condition:c})});if(d&&d.success){showToast(t("alert_created"));document.getElementById("alert-price").value="";}}
 
-    // ===== ALERTS =====
-    async function createAlert(e) {
-        e.preventDefault();
-        const symbol = document.getElementById("alert-coin").value;
-        const price = document.getElementById("alert-price").value;
-        const condition = document.getElementById("alert-condition").value;
-        if (!symbol || !price) return;
+    /* ===== NEWSLETTER ===== */
+    async function subscribeNewsletter(e){e.preventDefault();const em=document.getElementById("newsletter-email").value;if(!em)return;const d=await fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em})}).then(r=>r.json());if(d&&d.success){showToast(t("subscribed"));document.getElementById("newsletter-email").value="";}else showToast(d?.message||"Error","error");}
 
-        const data = await g("/api/alerts", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ symbol, target_price: parseFloat(price), condition })
-        });
-        if (data && data.success) {
-            showToast(t("alert_created"));
-            document.getElementById("alert-price").value = "";
-        }
-    }
+    /* ===== SOCIAL ===== */
+    function shareArticle(id,encTitle){const title=decodeURIComponent(encTitle);const url=window.location.origin+"/article/"+id;if(navigator.share){navigator.share({title,url});}else{const m=document.createElement("div");m.className="fixed inset-0 z-[70] flex items-center justify-center";m.style.cssText="background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)";m.onclick=e=>{if(e.target===m)m.remove();};m.innerHTML=`<div class="card-elevated p-5 space-y-1 min-w-[220px]"><p class="font-bold text-sm mb-3">Share</p><a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-white/5 transition">🐦 Share on X</a><a href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-white/5 transition">✈️ Telegram</a><button onclick="navigator.clipboard.writeText('${url}');this.closest('.fixed').remove();showToast('${t("copied")}')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full hover:bg-white/5 transition">🔗 Copy Link</button></div>`;document.body.appendChild(m);}}
 
-    // Override g for POST
-    async function g(url, options) {
-        try {
-            const res = await fetch(url, options || {});
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch(e) {
-            console.error("API Error:", url, e);
-            return null;
-        }
-    }
+    /* ===== SSE ===== */
+    let sseOn=false;
+    function connectSSE(){if(sseOn||!window.EventSource)return;try{const s=new EventSource("/api/sse");sseOn=true;s.addEventListener("message",e=>{try{const d=JSON.parse(e.data);if(d.type==="update"){if(d.prices)loadPrices();if(d.fear_greed)updateFG(d.fear_greed);if(d.latest_news)playNotificationSound();}}catch(err){}});s.onerror=()=>{sseOn=false;s.close();setTimeout(connectSSE,30000);};}catch(e){sseOn=false;setTimeout(connectSSE,30000);}}
+    function updateFG(fg){if(!fg)return;document.getElementById("fg-value").textContent=fg.value||50;document.getElementById("fg-indicator").style.left=(fg.value||50)+"%";}
 
-    // ===== NEWSLETTER =====
-    async function subscribeNewsletter(e) {
-        e.preventDefault();
-        const email = document.getElementById("newsletter-email").value;
-        if (!email) return;
-        const data = await fetch("/api/newsletter/subscribe", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ email })
-        }).then(r => r.json());
-        if (data && data.success) {
-            showToast(t("subscribed"));
-            document.getElementById("newsletter-email").value = "";
-        } else {
-            showToast(data?.message || "Error", "error");
-        }
-    }
+    /* ===== PWA ===== */
+    if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
 
-    // ===== SOCIAL SHARING =====
-    function shareArticle(id, encodedTitle) {
-        const title = decodeURIComponent(encodedTitle);
-        const url = window.location.origin + "/article/" + id;
-
-        if (navigator.share) {
-            navigator.share({ title, url });
-        } else {
-            // Show share menu
-            const menu = document.createElement("div");
-            menu.className = "fixed inset-0 z-50 flex items-center justify-center bg-black/50";
-            menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
-            menu.innerHTML = `
-                <div class="glass rounded-xl p-4 space-y-2 min-w-[200px]">
-                    <p class="font-bold text-sm mb-2">Share</p>
-                    <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 text-sm transition">🐦 ${t("share_twitter")}</a>
-                    <a href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 text-sm transition">✈️ ${t("share_telegram")}</a>
-                    <button onclick="navigator.clipboard.writeText('${url}');this.closest('.fixed').remove();showToast('${t("copied")}')" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 text-sm w-full transition">🔗 ${t("copy_link")}</button>
-                </div>
-            `;
-            document.body.appendChild(menu);
-        }
-    }
-
-    // ===== SSE LIVE UPDATES =====
-    let sseConnected = false;
-
-    function connectSSE() {
-        if (sseConnected || !window.EventSource) return;
-        try {
-            const sse = new EventSource("/api/sse");
-            sseConnected = true;
-
-            sse.addEventListener("message", (e) => {
-                try {
-                    const data = JSON.parse(e.data);
-                    if (data.type === "init") {
-                        if (data.fear_greed) updateFG(data.fear_greed);
-                    } else if (data.type === "update") {
-                        if (data.prices) {
-                            // Refresh prices
-                            loadPrices();
-                        }
-                        if (data.fear_greed) {
-                            updateFG(data.fear_greed);
-                        }
-                        if (data.latest_news) {
-                            playNotificationSound();
-                        }
-                    }
-                } catch(err) {}
-            });
-
-            sse.onerror = () => {
-                sseConnected = false;
-                sse.close();
-                setTimeout(connectSSE, 30000);
-            };
-        } catch(e) {
-            sseConnected = false;
-            setTimeout(connectSSE, 30000);
-        }
-    }
-
-    function updateFG(fg) {
-        if (!fg) return;
-        const val = fg.value || 50;
-        document.getElementById("fg-value").textContent = val;
-        document.getElementById("fg-label").textContent = fg.classification || "Neutral";
-        document.getElementById("fg-indicator").style.left = val + "%";
-    }
-
-    // ===== PWA =====
-    if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-            navigator.serviceWorker.register("/sw.js").catch(() => {});
-        });
-    }
-
-    // ===== INIT =====
-    document.addEventListener("DOMContentLoaded", () => {
-        applyI18n();
-        updateBookmarkCount();
-
-        // Set initial theme UI
-        document.getElementById("theme-dark").classList.toggle("hidden", currentTheme === "dark");
-        document.getElementById("theme-light").classList.toggle("hidden", currentTheme === "light");
-
-        // Set initial sound UI
-        document.getElementById("sound-on").classList.toggle("hidden", !soundEnabled);
-        document.getElementById("sound-off").classList.toggle("hidden", soundEnabled);
-
-        // Set active category tab style
-        filterCategory("all");
-
-        // Load data
-        loadHeroStats();
-        loadPrices();
-        loadNews();
-        loadTrending();
-        loadAIIntel();
-
-        // SSE live updates
-        connectSSE();
-
-        // Auto refresh every 5 minutes
-        setInterval(() => {
-            loadPrices();
-            loadNews();
-        }, 300000);
+    /* ===== INIT ===== */
+    document.addEventListener("DOMContentLoaded",()=>{
+        applyI18n(); updateBookmarkCount();
+        document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");
+        document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");
+        document.getElementById("sound-on").classList.toggle("hidden",!soundEnabled);
+        document.getElementById("sound-off").classList.toggle("hidden",soundEnabled);
+        loadHeroStats(); loadPrices(); loadNews(); loadTrending(); loadAIIntel(); connectSSE();
+        setInterval(()=>{loadPrices();loadNews();},300000);
     });
     </script>
 </body>

@@ -4,248 +4,211 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - CryptositNews</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: ['class', '[data-theme="dark"]'],
-            theme: { extend: { colors: {
-                dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' },
-                neon: { blue:'#3b82f6',purple:'#8b5cf6',cyan:'#06b6d4',green:'#10b981',red:'#ef4444',yellow:'#f59e0b',orange:'#f97316' }
-            }}}
+            theme: { extend: { fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['JetBrains Mono','monospace'] },
+                colors: { brand:{500:'#3b82f6',600:'#2563eb'}, surface:{0:'#080b12',1:'#0f1420',2:'#141b28',3:'#1b2233'} }
+            }}
         }
     </script>
     <style>
-        [data-theme="light"] body { background: #f8fafc; color: #0f172a; }
-        [data-theme="dark"] body { background: #0f172a; color: #e2e8f0; }
-        .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        [data-theme="dark"] .glass { background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.1); }
-        [data-theme="light"] .glass { background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1); }
-        .bar { transition: width 0.8s ease; }
-        .stat-card:hover { transform: translateY(-2px); }
-        .stat-card { transition: all 0.2s ease; }
+        :root { --brand:#3b82f6; --bg:#080b12; --surface:#0f1420; --surface2:#141b28; --text:#e8ecf2; --text2:#8892a6; --border:rgba(255,255,255,0.06); }
+        [data-theme="light"] { --bg:#f0f4f8; --surface:#ffffff; --surface2:#f8fafc; --text:#0f172a; --text2:#475569; --border:rgba(0,0,0,0.08); }
+        body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+        .hero-glow { position:fixed; top:-200px; left:50%; transform:translateX(-50%); width:800px; height:500px; background:radial-gradient(ellipse,rgba(59,130,246,0.06) 0%,transparent 70%); pointer-events:none; z-index:0; }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; transition:all 0.25s cubic-bezier(0.4,0,0.2,1); }
+        .card:hover { border-color:rgba(59,130,246,0.15); }
+        .card-elevated { background:var(--surface); border:1px solid var(--border); border-radius:20px; }
+        .nav-bar { background:var(--surface); border-bottom:1px solid var(--border); }
+        .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; transition:all 0.2s; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px -8px rgba(0,0,0,0.2); }
+        .bar-fill { transition:width 0.8s cubic-bezier(0.4,0,0.2,1); border-radius:4px; height:6px; }
+        .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .btn-primary:hover { box-shadow:0 0 20px rgba(59,130,246,0.3); }
+        .btn-danger { background:rgba(239,68,68,0.1); color:#f87171; border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .btn-danger:hover { background:rgba(239,68,68,0.2); }
+        ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
     </style>
 </head>
-<body class="min-h-screen">
-    <nav class="glass sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+<body class="min-h-screen relative">
+    <div class="hero-glow"></div>
+
+    <nav class="nav-bar sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="/" class="flex items-center gap-2 hover:opacity-80 transition">
-                    <span class="text-2xl">📰</span>
-                    <span class="text-xl font-bold bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">CryptositNews</span>
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="text-[15px] font-bold tracking-tight">Crypto<span class="text-blue-500">sit</span>News</span>
                 </a>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-neon-purple/20 text-neon-purple font-medium">Admin</span>
+                <span class="badge" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(59,130,246,0.15));color:#a78bfa;border:1px solid rgba(139,92,246,0.2)">Admin</span>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="loadAllData()" class="px-3 py-1.5 rounded-lg glass text-sm hover:bg-white/10 transition">Refresh</button>
-                <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-lg hover:bg-white/10 transition">
-                    <svg id="theme-dark" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <button onclick="loadAllData()" class="btn-primary text-xs px-3 py-2">Refresh</button>
+                <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition">
+                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Total News</p>
-                <p id="s-total" class="text-3xl font-bold mt-1">-</p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16 space-y-6 relative z-10">
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Total News</span>
+                </div>
+                <p id="s-total" class="text-3xl font-extrabold font-mono tracking-tight">-</p>
             </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Today</p>
-                <p id="s-today" class="text-3xl font-bold mt-1 text-neon-blue">-</p>
+            <div class="stat-card">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Today</span>
+                </div>
+                <p id="s-today" class="text-3xl font-extrabold font-mono tracking-tight text-blue-500">-</p>
             </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Important</p>
-                <p id="s-important" class="text-3xl font-bold mt-1 text-neon-yellow">-</p>
+            <div class="stat-card">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Important</span>
+                </div>
+                <p id="s-important" class="text-3xl font-extrabold font-mono tracking-tight text-amber-500">-</p>
             </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Telegram Sent</p>
-                <p id="s-telegram" class="text-3xl font-bold mt-1 text-neon-purple">-</p>
-            </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">AI Analyzed</p>
-                <p id="s-ai" class="text-3xl font-bold mt-1 text-neon-cyan">-</p>
-            </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Active Sources</p>
-                <p id="s-sources" class="text-3xl font-bold mt-1 text-neon-green">-</p>
-            </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Newsletter</p>
-                <p id="s-newsletter" class="text-3xl font-bold mt-1 text-neon-orange">-</p>
-            </div>
-            <div class="stat-card glass rounded-xl p-4">
-                <p class="text-xs opacity-60 uppercase">Active Alerts</p>
-                <p id="s-alerts" class="text-3xl font-bold mt-1 text-neon-red">-</p>
+            <div class="stat-card">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Telegram</span>
+                </div>
+                <p id="s-telegram" class="text-3xl font-extrabold font-mono tracking-tight text-violet-500">-</p>
             </div>
         </div>
 
+        <!-- Secondary Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card" style="padding:18px 24px">
+                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">AI Analyzed</span>
+                <p id="s-ai" class="text-xl font-bold font-mono mt-1 text-cyan-500">-</p>
+            </div>
+            <div class="stat-card" style="padding:18px 24px">
+                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Sources</span>
+                <p id="s-sources" class="text-xl font-bold font-mono mt-1 text-emerald-500">-</p>
+            </div>
+            <div class="stat-card" style="padding:18px 24px">
+                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Newsletter</span>
+                <p id="s-newsletter" class="text-xl font-bold font-mono mt-1 text-orange-500">-</p>
+            </div>
+            <div class="stat-card" style="padding:18px 24px">
+                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Alerts</span>
+                <p id="s-alerts" class="text-xl font-bold font-mono mt-1 text-red-500">-</p>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Categories Chart -->
-            <section class="glass rounded-xl p-4">
-                <h3 class="font-bold mb-4">Categories Distribution</h3>
-                <div id="cat-chart" class="space-y-2">
-                    <p class="text-sm opacity-50">Loading...</p>
+            <div class="card-elevated p-6">
+                <h3 class="font-bold text-sm mb-5">Categories Distribution</h3>
+                <div id="cat-chart" class="space-y-3">
+                    <div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div>
                 </div>
-            </section>
-
-            <!-- Top Sources -->
-            <section class="glass rounded-xl p-4">
-                <h3 class="font-bold mb-4">Top Sources</h3>
-                <div id="sources-list" class="space-y-2 max-h-80 overflow-y-auto">
-                    <p class="text-sm opacity-50">Loading...</p>
+            </div>
+            <div class="card-elevated p-6">
+                <h3 class="font-bold text-sm mb-5">Top Sources</h3>
+                <div id="sources-list" class="space-y-2.5 max-h-80 overflow-y-auto">
+                    <div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div>
                 </div>
-            </section>
+            </div>
         </div>
 
-        <!-- Cache Stats -->
-        <section class="glass rounded-xl p-4">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold">Cache Statistics</h3>
-                <button onclick="clearCache()" class="px-3 py-1 rounded-lg bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30 transition">Clear Cache</button>
+        <!-- Cache -->
+        <div class="card-elevated p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="font-bold text-sm">Cache Statistics</h3>
+                <button onclick="clearCache()" class="btn-danger text-xs px-3 py-1.5">Clear Cache</button>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <div class="text-center">
-                    <p class="text-xs opacity-60">Backend</p>
-                    <p id="c-backend" class="font-bold text-sm mt-1">-</p>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Backend</p>
+                    <p id="c-backend" class="font-bold text-sm font-mono">-</p>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs opacity-60">Hits</p>
-                    <p id="c-hits" class="font-bold text-sm mt-1 text-green-400">-</p>
+                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Hits</p>
+                    <p id="c-hits" class="font-bold text-sm font-mono text-green-500">-</p>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs opacity-60">Misses</p>
-                    <p id="c-misses" class="font-bold text-sm mt-1 text-red-400">-</p>
+                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Misses</p>
+                    <p id="c-misses" class="font-bold text-sm font-mono text-red-500">-</p>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs opacity-60">Hit Rate</p>
-                    <p id="c-rate" class="font-bold text-sm mt-1 text-blue-400">-</p>
+                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Hit Rate</p>
+                    <p id="c-rate" class="font-bold text-sm font-mono text-blue-500">-</p>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs opacity-60">Memory Entries</p>
-                    <p id="c-entries" class="font-bold text-sm mt-1">-</p>
+                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Entries</p>
+                    <p id="c-entries" class="font-bold text-sm font-mono">-</p>
                 </div>
             </div>
-        </section>
+        </div>
 
         <!-- Actions -->
-        <section class="glass rounded-xl p-4">
-            <h3 class="font-bold mb-4">Admin Actions</h3>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="initDB()" class="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm hover:bg-blue-500/30 transition">Init Database</button>
-                <button onclick="clearAllNews()" class="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30 transition">Clear All News</button>
+        <div class="card-elevated p-6">
+            <h3 class="font-bold text-sm mb-4">Admin Actions</h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="initDB()" class="btn-primary">Init Database</button>
+                <button onclick="clearAllNews()" class="btn-danger">Clear All News</button>
             </div>
-        </section>
+        </div>
     </main>
 
     <script>
-    const adminKey = new URLSearchParams(window.location.search).get("key") || "";
-    let currentTheme = "{{ theme }}" || "dark";
+    const adminKey=new URLSearchParams(window.location.search).get("key")||"";
+    let currentTheme="{{ theme }}"||"dark";
+    function toggleTheme(){currentTheme=currentTheme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",currentTheme);document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");}
+    document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");
+    document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");
 
-    function toggleTheme() {
-        currentTheme = currentTheme === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", currentTheme);
-        document.getElementById("theme-dark").classList.toggle("hidden", currentTheme === "dark");
-        document.getElementById("theme-light").classList.toggle("hidden", currentTheme === "light");
-    }
+    const barColors={regulation:"#3b82f6",defi:"#8b5cf6",nft:"#ec4899",layer1:"#06b6d4",layer2:"#6366f1",meme:"#eab308",ai_crypto:"#10b981",mining:"#f97316",stablecoin:"#14b8a6",gaming:"#f43f5e",exchange:"#f59e0b",security:"#ef4444",adoption:"#34d399",market:"#64748b"};
 
-    document.getElementById("theme-dark").classList.toggle("hidden", currentTheme === "dark");
-    document.getElementById("theme-light").classList.toggle("hidden", currentTheme === "light");
+    async function api(url,opts){try{const r=await fetch(url,opts);return await r.json();}catch(e){console.error(e);return null;}}
+    function h(){return{"Content-Type":"application/json","X-Admin-Key":adminKey};}
 
-    async function api(url, opts) {
-        try {
-            const res = await fetch(url, opts);
-            return await res.json();
-        } catch(e) { console.error(e); return null; }
-    }
-
-    function headers() { return {"Content-Type":"application/json", "X-Admin-Key": adminKey}; }
-
-    async function loadAllData() {
-        const stats = await api("/api/admin/stats", { headers: headers() });
-        if (stats && stats.stats) {
-            const s = stats.stats;
-            document.getElementById("s-total").textContent = s.total_news || 0;
-            document.getElementById("s-today").textContent = s.today_news || 0;
-            document.getElementById("s-important").textContent = s.important_news || 0;
-            document.getElementById("s-telegram").textContent = s.telegram_posted || 0;
-            document.getElementById("s-ai").textContent = s.ai_analyzed || 0;
-            document.getElementById("s-sources").textContent = s.active_sources || 0;
-            document.getElementById("s-newsletter").textContent = (s.newsletter && s.newsletter.active) || 0;
-            document.getElementById("s-alerts").textContent = s.alerts || 0;
-
-            // Categories
-            const cats = s.categories || {};
-            const catColors = {
-                regulation:"bg-blue-500", defi:"bg-purple-500", nft:"bg-pink-500",
-                layer1:"bg-cyan-500", layer2:"bg-indigo-500", meme:"bg-yellow-500",
-                ai_crypto:"bg-green-500", mining:"bg-orange-500", stablecoin:"bg-teal-500",
-                gaming:"bg-rose-500", exchange:"bg-amber-500", security:"bg-red-500",
-                adoption:"bg-emerald-500", market:"bg-slate-500",
-            };
-            const maxCat = Math.max(...Object.values(cats), 1);
-            document.getElementById("cat-chart").innerHTML = Object.entries(cats)
-                .sort((a,b) => b[1] - a[1])
-                .map(([cat, count]) => `
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span>${cat}</span><span>${count}</span>
-                        </div>
-                        <div class="w-full h-2 rounded-full bg-white/10">
-                            <div class="bar h-2 rounded-full ${catColors[cat]||catColors.market}" style="width:${(count/maxCat*100).toFixed(1)}%"></div>
-                        </div>
-                    </div>
-                `).join("");
-
-            // Cache
-            if (s.cache_stats) {
-                const c = s.cache_stats;
-                document.getElementById("c-backend").textContent = c.backend || "memory";
-                document.getElementById("c-hits").textContent = c.hits || 0;
-                document.getElementById("c-misses").textContent = c.misses || 0;
-                document.getElementById("c-rate").textContent = (c.hit_rate || 0).toFixed(1) + "%";
-                document.getElementById("c-entries").textContent = c.memory_entries || 0;
-            }
+    async function loadAllData(){
+        const s=await api("/api/admin/stats",{headers:h()});
+        if(s&&s.stats){
+            const d=s.stats;
+            document.getElementById("s-total").textContent=d.total_news||0;
+            document.getElementById("s-today").textContent=d.today_news||0;
+            document.getElementById("s-important").textContent=d.important_news||0;
+            document.getElementById("s-telegram").textContent=d.telegram_posted||0;
+            document.getElementById("s-ai").textContent=d.ai_analyzed||0;
+            document.getElementById("s-sources").textContent=d.active_sources||0;
+            document.getElementById("s-newsletter").textContent=(d.newsletter&&d.newsletter.active)||0;
+            document.getElementById("s-alerts").textContent=d.alerts||0;
+            const cats=d.categories||{};
+            const maxC=Math.max(...Object.values(cats),1);
+            document.getElementById("cat-chart").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
+                <div><div class="flex justify-between text-xs mb-1.5"><span class="font-medium">${c}</span><span class="font-mono" style="color:var(--text2)">${n}</span></div><div style="background:var(--surface2);border-radius:4px;height:6px"><div class="bar-fill" style="width:${(n/maxC*100).toFixed(1)}%;background:${barColors[c]||'#64748b'}"></div></div></div>`).join("");
+            if(d.cache_stats){const c=d.cache_stats;document.getElementById("c-backend").textContent=c.backend||"memory";document.getElementById("c-hits").textContent=c.hits||0;document.getElementById("c-misses").textContent=c.misses||0;document.getElementById("c-rate").textContent=(c.hit_rate||0).toFixed(1)+"%";document.getElementById("c-entries").textContent=c.memory_entries||0;}
         }
-
-        // Sources
-        const sources = await api("/api/admin/sources", { headers: headers() });
-        if (sources && sources.sources) {
-            const maxSrc = Math.max(...sources.sources.map(s => s.count), 1);
-            document.getElementById("sources-list").innerHTML = sources.sources.slice(0, 15).map(s => `
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="truncate">${s.source}</span><span>${s.count}</span>
-                    </div>
-                    <div class="w-full h-1.5 rounded-full bg-white/10">
-                        <div class="bar h-1.5 rounded-full bg-neon-blue" style="width:${(s.count/maxSrc*100).toFixed(1)}%"></div>
-                    </div>
-                </div>
-            `).join("");
-        }
+        const src=await api("/api/admin/sources",{headers:h()});
+        if(src&&src.sources){const maxS=Math.max(...src.sources.map(s=>s.count),1);document.getElementById("sources-list").innerHTML=src.sources.slice(0,15).map(s=>`
+            <div><div class="flex justify-between text-xs mb-1.5"><span class="font-medium truncate max-w-[200px]">${s.source}</span><span class="font-mono shrink-0" style="color:var(--text2)">${s.count}</span></div><div style="background:var(--surface2);border-radius:4px;height:4px"><div class="bar-fill" style="width:${(s.count/maxS*100).toFixed(1)}%;background:var(--brand)"></div></div></div>`).join("");}
     }
 
-    async function clearCache() {
-        const r = await api("/api/admin/cache/clear", { method:"POST", headers: headers() });
-        if (r && r.success) { alert("Cache cleared!"); loadAllData(); }
-    }
+    async function clearCache(){const r=await api("/api/admin/cache/clear",{method:"POST",headers:h()});if(r&&r.success){loadAllData();}}
+    async function initDB(){const r=await api("/api/admin/init",{method:"POST",headers:h()});if(r&&r.success)loadAllData();}
+    async function clearAllNews(){if(!confirm("Delete ALL news?"))return;const r=await api("/api/admin/clear",{method:"POST",headers:h()});if(r&&r.success)loadAllData();}
 
-    async function initDB() {
-        const r = await api("/api/admin/init", { method:"POST", headers: headers() });
-        if (r && r.success) { alert("Database initialized!"); }
-    }
-
-    async function clearAllNews() {
-        if (!confirm("Are you sure? This will delete ALL news articles.")) return;
-        const r = await api("/api/admin/clear", { method:"POST", headers: headers() });
-        if (r && r.success) { alert("All news cleared!"); loadAllData(); }
-    }
-
-    loadAllData();
-    // Auto refresh every 30 seconds
-    setInterval(loadAllData, 30000);
+    loadAllData(); setInterval(loadAllData,30000);
     </script>
 </body>
 </html>
