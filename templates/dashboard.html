@@ -61,9 +61,16 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
+        @keyframes gauge-fill {
+            from { stroke-dashoffset: 283; }
+        }
         @keyframes breathe {
             0%, 100% { opacity: 0.4; }
             50% { opacity: 1; }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
@@ -76,6 +83,9 @@
         .stagger-3 { animation-delay: 0.15s; }
         .stagger-4 { animation-delay: 0.2s; }
         .stagger-5 { animation-delay: 0.25s; }
+        .stagger-6 { animation-delay: 0.3s; }
+        .stagger-7 { animation-delay: 0.35s; }
+        .stagger-8 { animation-delay: 0.4s; }
 
         /* Card styles */
         .card {
@@ -116,6 +126,24 @@
             animation: breathe 1.5s ease-in-out infinite;
         }
 
+        /* Gauge */
+        .gauge-circle {
+            transition: stroke-dashoffset 1.5s ease-out;
+        }
+
+        /* Ticker */
+        .ticker-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-content {
+            display: inline-flex;
+            animation: ticker-scroll 30s linear infinite;
+        }
+        .ticker-content:hover {
+            animation-play-state: paused;
+        }
+
         /* Section label */
         .section-label {
             font-size: 10px;
@@ -133,12 +161,61 @@
             background: linear-gradient(to left, rgba(255,255,255,0.08), transparent);
         }
 
+        /* Sentiment bar */
+        .sentiment-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.06);
+        }
+        .sentiment-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1.5s ease-out;
+        }
+
+        /* Trending coin */
+        .trending-coin {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 10px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .trending-coin:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Price change */
+        .price-up { color: #22c55e; }
+        .price-down { color: #ef4444; }
+
         /* Live dot */
         .live-dot {
             width: 6px; height: 6px;
             background: #22c55e;
             border-radius: 50%;
             animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* AI Signal card */
+        .ai-signal {
+            background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(59,130,246,0.05) 100%);
+            border: 1px solid rgba(139,92,246,0.2);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .ai-signal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #8b5cf6);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
         }
 
         /* Nav active */
@@ -154,28 +231,21 @@
         .nav-link:hover { color: #e2e8f0; background: rgba(255,255,255,0.05); }
         .nav-link.active { color: #fff; background: rgba(59,130,246,0.15); }
 
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1a1a28;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 12px 20px;
-            font-size: 13px;
-            z-index: 1000;
-            transition: transform 0.4s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* Mini sparkline */
+        .sparkline { display: flex; align-items: flex-end; gap: 1px; height: 24px; }
+        .sparkline-bar {
+            width: 3px;
+            border-radius: 1px;
+            transition: height 0.5s ease;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); }
 
-        /* Price change */
-        .price-up { color: #22c55e; }
-        .price-down { color: #ef4444; }
+        /* Fear gauge label */
+        .fear-label {
+            position: absolute;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
 
         /* Tab system */
         .tab-btn {
@@ -195,6 +265,25 @@
             background: rgba(255,255,255,0.06);
             border-color: rgba(255,255,255,0.1);
         }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1a1a28;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 13px;
+            z-index: 1000;
+            transition: transform 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body class="font-inter min-h-screen">
@@ -203,6 +292,34 @@
     <div class="fixed inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.03) 0%, transparent 50%);"></div>
 
     <div class="relative z-10">
+
+        <!-- ===== TOP TICKER BAR ===== -->
+        <div class="border-b border-white/5 bg-surface-900/80 backdrop-blur-sm">
+            <div class="ticker-wrapper py-2">
+                <div class="ticker-content">
+                    <div class="flex items-center gap-8 px-4">
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BTC</span> <span class="text-slate-400">$81,445.00</span> <span class="price-down text-[11px]">-0.48%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ETH</span> <span class="text-slate-400">$3,892.15</span> <span class="price-up text-[11px]">+1.23%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">XRP</span> <span class="text-slate-400">$1.42</span> <span class="price-up text-[11px]">+0.98%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">SOL</span> <span class="text-slate-400">$187.30</span> <span class="price-down text-[11px]">-1.15%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BNB</span> <span class="text-slate-400">$612.80</span> <span class="price-up text-[11px]">+0.34%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ADA</span> <span class="text-slate-400">$0.452</span> <span class="price-up text-[11px]">+3.21%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">DOGE</span> <span class="text-slate-400">$0.158</span> <span class="price-down text-[11px]">-0.72%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">TON</span> <span class="text-slate-400">$5.82</span> <span class="price-up text-[11px]">+25.3%</span></span>
+                    </div>
+                    <div class="flex items-center gap-8 px-4">
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BTC</span> <span class="text-slate-400">$81,445.00</span> <span class="price-down text-[11px]">-0.48%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ETH</span> <span class="text-slate-400">$3,892.15</span> <span class="price-up text-[11px]">+1.23%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">XRP</span> <span class="text-slate-400">$1.42</span> <span class="price-up text-[11px]">+0.98%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">SOL</span> <span class="text-slate-400">$187.30</span> <span class="price-down text-[11px]">-1.15%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">BNB</span> <span class="text-slate-400">$612.80</span> <span class="price-up text-[11px]">+0.34%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">ADA</span> <span class="text-slate-400">$0.452</span> <span class="price-up text-[11px]">+3.21%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">DOGE</span> <span class="text-slate-400">$0.158</span> <span class="price-down text-[11px]">-0.72%</span></span>
+                        <span class="flex items-center gap-2 text-xs"><span class="font-semibold text-white">TON</span> <span class="text-slate-400">$5.82</span> <span class="price-up text-[11px]">+25.3%</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- ===== NAVIGATION ===== -->
         <nav class="sticky top-0 z-50 bg-surface-900/90 backdrop-blur-xl border-b border-white/5">
@@ -249,26 +366,19 @@
                 <div class="lg:col-span-8 space-y-5">
 
                     <!-- Breaking News Banner -->
-                    {% if intel.ai_signal %}
-                    <div class="card p-0 overflow-hidden animate-fade-in-up" style="background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, #14141f 50%);">
-                        <div class="flex items-center gap-3 px-5 py-3 border-b border-blue-500/10">
-                            <div class="breaking-badge" style="background: linear-gradient(135deg, #3b82f6, #2563eb); animation: none;">AI SIGNAL</div>
+                    <div class="card p-0 overflow-hidden animate-fade-in-up" style="background: linear-gradient(135deg, rgba(239,68,68,0.08) 0%, #14141f 50%);">
+                        <div class="flex items-center gap-3 px-5 py-3 border-b border-red-500/10">
+                            <div class="breaking-badge">BREAKING</div>
                             <div class="live-dot"></div>
-                            <span class="text-[11px] text-slate-500">مباشر • الآن</span>
+                            <span class="text-[11px] text-slate-500">مباشر • منذ 3 دقائق</span>
                         </div>
                         <div class="px-5 py-4">
-                            <h2 class="text-base font-semibold text-white leading-relaxed">
-                                🤖 {{ intel.ai_signal.coin }} — {{ intel.ai_signal.signal }}
+                            <h2 class="text-base font-semibold text-white leading-relaxed cursor-pointer hover:text-blue-400 transition-colors">
+                                Kelp DAO تطلق بروتوكول جديد للستيكينغ على Ethereum مع عوائد مُحسّنة تصل إلى 8.5%
                             </h2>
-                            <p class="text-xs text-slate-500 mt-2">{{ intel.ai_signal.reason }}</p>
-                            <div class="mt-3 flex items-center gap-2">
-                                <span class="text-[10px] px-2 py-1 rounded bg-blue-500/15 text-blue-400 font-medium">
-                                    {{ intel.ai_signal.confidence }}% Confidence
-                                </span>
-                            </div>
+                            <p class="text-xs text-slate-500 mt-2">المنصة تتيح للمستخدمين تجميع أصولهم وتحقيق عوائد إضافية من خلال آلية مبتكرة...</p>
                         </div>
                     </div>
-                    {% endif %}
 
                     <!-- News Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -280,62 +390,189 @@
                                 MARKET
                             </div>
                             <div class="space-y-0">
-                                {% for item in news[:2] %}
                                 <div class="news-item" onclick="showToast('جاري فتح المقال...')">
-                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">{{ item.title }}</p>
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Bitwise CIO says big tech stablecoin tests could help drive $4T supply by 2030</p>
                                     <div class="flex items-center gap-3 mt-2">
-                                        <span class="text-[10px] text-slate-600">{{ item.posted_at[:10] }}</span>
-                                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-medium">{{ item.source }}</span>
+                                        <span class="text-[10px] text-slate-600">12 мин назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-medium">Stablecoin</span>
                                     </div>
                                 </div>
-                                {% endfor %}
+                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Crypto whale sues Coinbase for allegedly refusing to return stolen DAI</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="text-[10px] text-slate-600">28 мин назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-medium">Legal</span>
+                                    </div>
+                                </div>
+                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Bitcoin ETF inflows surge past $2.8B in single week as institutional demand grows</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="text-[10px] text-slate-600">45 мин назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-400 font-medium">ETF</span>
+                                    </div>
+                                </div>
+                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Fed Governor signals potential rate cut could boost risk assets including crypto</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="text-[10px] text-slate-600">1ч назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium">Macro</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Top Stories -->
+                        <!-- Bitcoin News -->
                         <div class="card p-5 animate-fade-in-up stagger-2">
                             <div class="section-label text-amber-400 mb-4">
-                                <i data-lucide="flame" class="w-3.5 h-3.5"></i>
-                                HOT
+                                <i data-lucide="bitcoin" class="w-3.5 h-3.5"></i>
+                                BITCOIN
                             </div>
                             <div class="space-y-0">
-                                {% for item in news[2:4] %}
                                 <div class="news-item" onclick="showToast('جاري فتح المقال...')">
-                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">{{ item.title }}</p>
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Solana Exchange introduces zero-fee BTC trading pairs to attract Bitcoin maximalists</p>
                                     <div class="flex items-center gap-3 mt-2">
-                                        <span class="text-[10px] text-slate-600">{{ item.posted_at[:10] }}</span>
-                                        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium">{{ item.source }}</span>
+                                        <span class="text-[10px] text-slate-600">15 мин назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-medium">Exchange</span>
                                     </div>
                                 </div>
-                                {% endfor %}
+                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Bitcoin mining difficulty reaches all-time high as hash rate continues to climb</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="text-[10px] text-slate-600">32 мин назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium">Mining</span>
+                                    </div>
+                                </div>
+                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Lightning Network capacity crosses 5,000 BTC milestone for the first time</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="text-[10px] text-slate-600">1ч назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium">L2</span>
+                                    </div>
+                                </div>
+                                <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                    <p class="text-[13px] font-medium text-slate-200 leading-relaxed">MicroStrategy adds another 2,100 BTC worth $171M to its treasury holdings</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="text-[10px] text-slate-600">2ч назад</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-medium">Institutional</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- All News Section -->
+                    <!-- Altcoins Section -->
                     <div class="card p-5 animate-fade-in-up stagger-3">
                         <div class="flex items-center justify-between mb-4">
                             <div class="section-label text-purple-400">
-                                <i data-lucide="list" class="w-3.5 h-3.5"></i>
-                                ALL NEWS
+                                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                                ALTCOINS
                             </div>
                             <div class="flex gap-1">
                                 <button class="tab-btn active" onclick="switchTab(this)">الكل</button>
-                                <button class="tab-btn" onclick="switchTab(this)">Bitcoin</button>
-                                <button class="tab-btn" onclick="switchTab(this)">Ethereum</button>
                                 <button class="tab-btn" onclick="switchTab(this)">DeFi</button>
+                                <button class="tab-btn" onclick="switchTab(this)">NFT</button>
+                                <button class="tab-btn" onclick="switchTab(this)">Gaming</button>
                             </div>
                         </div>
-                        <div class="space-y-0">
-                            {% for item in news %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
                             <div class="news-item" onclick="showToast('جاري فتح المقال...')">
-                                <p class="text-[13px] font-medium text-slate-200 leading-relaxed">{{ item.title }}</p>
-                                <div class="flex items-center gap-3 mt-2">
-                                    <span class="text-[10px] text-slate-600">{{ item.posted_at[:10] }}</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-500/10 text-slate-300 font-medium">{{ item.source }}</span>
+                                <div class="flex gap-3">
+                                    <img src="https://picsum.photos/seed/altcoin1/80/60" class="w-16 h-12 rounded-lg object-cover flex-shrink-0 opacity-80" alt="">
+                                    <div>
+                                        <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Toncoin rallies 25% after Telegram integration update announcement</p>
+                                        <span class="text-[10px] text-slate-600 mt-1 block">18 мин назад</span>
+                                    </div>
                                 </div>
                             </div>
-                            {% endfor %}
+                            <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                <div class="flex gap-3">
+                                    <img src="https://picsum.photos/seed/altcoin2/80/60" class="w-16 h-12 rounded-lg object-cover flex-shrink-0 opacity-80" alt="">
+                                    <div>
+                                        <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Avalanche subnet adoption grows 300% in Q4 as enterprises join</p>
+                                        <span class="text-[10px] text-slate-600 mt-1 block">40 мин назад</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                <div class="flex gap-3">
+                                    <img src="https://picsum.photos/seed/altcoin3/80/60" class="w-16 h-12 rounded-lg object-cover flex-shrink-0 opacity-80" alt="">
+                                    <div>
+                                        <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Chainlink CCIP enables cross-chain transfers for 12 new blockchains</p>
+                                        <span class="text-[10px] text-slate-600 mt-1 block">1ч назад</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="news-item" onclick="showToast('جاري فتح المقال...')">
+                                <div class="flex gap-3">
+                                    <img src="https://picsum.photos/seed/altcoin4/80/60" class="w-16 h-12 rounded-lg object-cover flex-shrink-0 opacity-80" alt="">
+                                    <div>
+                                        <p class="text-[13px] font-medium text-slate-200 leading-relaxed">Arbitrum DAO approves $2M grant program for ecosystem development</p>
+                                        <span class="text-[10px] text-slate-600 mt-1 block">1ч назад</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Signal Section -->
+                    <div class="ai-signal p-5 animate-fade-in-up stagger-4">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                            <span class="section-label text-purple-300" style="flex:none;">AI MARKET SIGNALS</span>
+                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold ml-auto">BETA</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Signal 1 -->
+                            <div class="bg-surface-800/60 rounded-xl p-4 border border-white/5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-semibold text-white">BTC/USD</span>
+                                    <span class="text-[10px] px-2 py-1 rounded-md bg-green-500/15 text-green-400 font-bold">LONG</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mb-3">多头动能检测 — قوة الشراء تتزايد</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] text-slate-500">Confidence</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-20 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                            <div class="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400" style="width: 95%"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-green-400">95%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Signal 2 -->
+                            <div class="bg-surface-800/60 rounded-xl p-4 border border-white/5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-semibold text-white">ETH/USD</span>
+                                    <span class="text-[10px] px-2 py-1 rounded-md bg-green-500/15 text-green-400 font-bold">LONG</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mb-3">كسر مقاومة $3,850 — استمرار الصعود</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] text-slate-500">Confidence</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-20 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                            <div class="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400" style="width: 82%"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-green-400">82%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Signal 3 -->
+                            <div class="bg-surface-800/60 rounded-xl p-4 border border-white/5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-semibold text-white">SOL/USD</span>
+                                    <span class="text-[10px] px-2 py-1 rounded-md bg-red-500/15 text-red-400 font-bold">SHORT</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mb-3">تشبع شراء عند $192 — تصحيح محتمل</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] text-slate-500">Confidence</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-20 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                            <div class="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-400" style="width: 68%"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-red-400">68%</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -343,8 +580,143 @@
                 <!-- ===== RIGHT COLUMN: SIDEBAR ===== -->
                 <div class="lg:col-span-4 space-y-5">
 
+                    <!-- Live Prices -->
+                    <div class="card p-5 animate-fade-in-up stagger-2">
+                        <div class="section-label text-emerald-400 mb-4">
+                            <div class="live-dot"></div>
+                            LIVE PRICES
+                        </div>
+                        <div class="space-y-1">
+                            <!-- BTC -->
+                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-xs">₿</div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white">Bitcoin</div>
+                                        <div class="text-[10px] text-slate-600">BTC</div>
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">$81,445.00</div>
+                                    <div class="text-[11px] price-down font-medium">-0.48%</div>
+                                </div>
+                                <div class="sparkline">
+                                    <div class="sparkline-bar bg-red-500/60" style="height:40%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:60%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:45%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:70%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:55%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:35%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:50%"></div>
+                                </div>
+                            </div>
+                            <!-- ETH -->
+                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 font-bold text-xs">Ξ</div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white">Ethereum</div>
+                                        <div class="text-[10px] text-slate-600">ETH</div>
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">$3,892.15</div>
+                                    <div class="text-[11px] price-up font-medium">+1.23%</div>
+                                </div>
+                                <div class="sparkline">
+                                    <div class="sparkline-bar bg-green-500/60" style="height:30%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:45%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:55%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:50%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:65%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:75%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:85%"></div>
+                                </div>
+                            </div>
+                            <!-- XRP -->
+                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-500/10 flex items-center justify-center text-slate-300 font-bold text-xs">X</div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white">XRP</div>
+                                        <div class="text-[10px] text-slate-600">XRP</div>
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">$1.42</div>
+                                    <div class="text-[11px] price-up font-medium">+0.98%</div>
+                                </div>
+                                <div class="sparkline">
+                                    <div class="sparkline-bar bg-green-500/60" style="height:50%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:55%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:48%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:60%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:58%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:65%"></div>
+                                    <div class="sparkline-bar bg-green-500/60" style="height:70%"></div>
+                                </div>
+                            </div>
+                            <!-- SOL -->
+                            <div class="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold text-xs">S</div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white">Solana</div>
+                                        <div class="text-[10px] text-slate-600">SOL</div>
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">$187.30</div>
+                                    <div class="text-[11px] price-down font-medium">-1.15%</div>
+                                </div>
+                                <div class="sparkline">
+                                    <div class="sparkline-bar bg-red-500/60" style="height:80%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:70%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:65%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:55%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:50%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:45%"></div>
+                                    <div class="sparkline-bar bg-red-500/60" style="height:40%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fear & Greed Index -->
+                    <div class="card p-5 animate-fade-in-up stagger-3">
+                        <div class="section-label text-slate-400 mb-5">
+                            <i data-lucide="gauge" class="w-3.5 h-3.5"></i>
+                            FEAR & GREED INDEX
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <!-- SVG Gauge -->
+                            <div class="relative w-40 h-40 mb-4">
+                                <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
+                                    <!-- Background arc -->
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8" stroke-dasharray="198 66" stroke-linecap="round"/>
+                                    <!-- Gradient arc segments -->
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#ef4444" stroke-width="8" stroke-dasharray="33 231" stroke-dashoffset="0" stroke-linecap="round" opacity="0.8"/>
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#f59e0b" stroke-width="8" stroke-dasharray="33 231" stroke-dashoffset="-33" stroke-linecap="round" opacity="0.8"/>
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#22c55e" stroke-width="8" stroke-dasharray="66 198" stroke-dashoffset="-66" stroke-linecap="round" opacity="0.8"/>
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="66 198" stroke-dashoffset="-132" stroke-linecap="round" opacity="0.8"/>
+                                    <!-- Indicator dot -->
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#f59e0b" stroke-width="8" stroke-dasharray="2 263" stroke-dashoffset="-30" stroke-linecap="round" class="gauge-circle"/>
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span class="text-3xl font-bold text-amber-400">46</span>
+                                    <span class="text-[10px] font-semibold text-amber-400/80 tracking-wider uppercase">Fear</span>
+                                </div>
+                            </div>
+                            <!-- Scale labels -->
+                            <div class="flex justify-between w-full max-w-[200px] mb-2">
+                                <span class="text-[9px] text-red-400/60 font-medium">Extreme Fear</span>
+                                <span class="text-[9px] text-blue-400/60 font-medium">Extreme Greed</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 text-center mt-2">السوق في حالة خوف معتدل — فرصة شراء محتملة</p>
+                        </div>
+                    </div>
+
                     <!-- Market Sentiment -->
-                    {% if intel.sentiment %}
                     <div class="card p-5 animate-fade-in-up stagger-4">
                         <div class="section-label text-slate-400 mb-4">
                             <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
@@ -358,10 +730,10 @@
                                         <div class="w-2 h-2 rounded-full bg-green-500"></div>
                                         <span class="text-xs font-medium text-slate-300">Bullish</span>
                                     </div>
-                                    <span class="text-sm font-bold text-green-400">{{ intel.sentiment.bullish }}%</span>
+                                    <span class="text-sm font-bold text-green-400">75%</span>
                                 </div>
-                                <div class="h-2 rounded-full bg-white/5 overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-green-600 to-green-400" style="width: {{ intel.sentiment.bullish }}%"></div>
+                                <div class="sentiment-bar">
+                                    <div class="sentiment-fill bg-gradient-to-r from-green-600 to-green-400" style="width: 75%"></div>
                                 </div>
                             </div>
                             <!-- Bearish -->
@@ -371,30 +743,119 @@
                                         <div class="w-2 h-2 rounded-full bg-red-500"></div>
                                         <span class="text-xs font-medium text-slate-300">Bearish</span>
                                     </div>
-                                    <span class="text-sm font-bold text-red-400">{{ intel.sentiment.bearish }}%</span>
+                                    <span class="text-sm font-bold text-red-400">25%</span>
                                 </div>
-                                <div class="h-2 rounded-full bg-white/5 overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-red-600 to-red-400" style="width: {{ intel.sentiment.bearish }}%"></div>
+                                <div class="sentiment-bar">
+                                    <div class="sentiment-fill bg-gradient-to-r from-red-600 to-red-400" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            <!-- Neutral -->
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-slate-500"></div>
+                                        <span class="text-xs font-medium text-slate-300">Neutral</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-400">0%</span>
+                                </div>
+                                <div class="sentiment-bar">
+                                    <div class="sentiment-fill bg-slate-500" style="width: 0%"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
 
-                    <!-- Stats -->
+                    <!-- Trending Coins -->
                     <div class="card p-5 animate-fade-in-up stagger-5">
+                        <div class="section-label text-orange-400 mb-4">
+                            <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+                            TRENDING
+                        </div>
+                        <div class="space-y-1">
+                            <div class="trending-coin" onclick="showToast('فتح صفحة Toncoin')">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-500 w-4">1</span>
+                                    <div class="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-[10px] font-bold">T</div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-white">Toncoin</div>
+                                        <div class="text-[10px] text-slate-600">TON</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold price-up">+25.3%</span>
+                            </div>
+                            <div class="trending-coin" onclick="showToast('فتح صفحة Firo')">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-500 w-4">2</span>
+                                    <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-[10px] font-bold">F</div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-white">Firo</div>
+                                        <div class="text-[10px] text-slate-600">FIRO</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold price-up">+21.5%</span>
+                            </div>
+                            <div class="trending-coin" onclick="showToast('فتح صفحة Kaspa')">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-500 w-4">3</span>
+                                    <div class="w-7 h-7 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-[10px] font-bold">K</div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-white">Kaspa</div>
+                                        <div class="text-[10px] text-slate-600">KAS</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold price-up">+18.7%</span>
+                            </div>
+                            <div class="trending-coin" onclick="showToast('فتح صفحة Render')">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-500 w-4">4</span>
+                                    <div class="w-7 h-7 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-400 text-[10px] font-bold">R</div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-white">Render</div>
+                                        <div class="text-[10px] text-slate-600">RNDR</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold price-up">+15.2%</span>
+                            </div>
+                            <div class="trending-coin" onclick="showToast('فتح صفحة Pendle')">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-500 w-4">5</span>
+                                    <div class="w-7 h-7 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 text-[10px] font-bold">P</div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-white">Pendle</div>
+                                        <div class="text-[10px] text-slate-600">PENDLE</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold price-up">+12.8%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="card p-5 animate-fade-in-up stagger-6">
                         <div class="section-label text-slate-400 mb-4">
                             <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                            STATS
+                            MARKET OVERVIEW
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
-                                <div class="text-[10px] text-slate-500 mb-1">Total News</div>
-                                <div class="text-sm font-bold text-white">{{ total }}</div>
+                                <div class="text-[10px] text-slate-500 mb-1">Market Cap</div>
+                                <div class="text-sm font-bold text-white">$3.42T</div>
+                                <div class="text-[10px] price-up font-medium mt-0.5">+2.1%</div>
                             </div>
                             <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
-                                <div class="text-[10px] text-slate-500 mb-1">Current Page</div>
-                                <div class="text-sm font-bold text-white">{{ page }} / {{ pages }}</div>
+                                <div class="text-[10px] text-slate-500 mb-1">24h Volume</div>
+                                <div class="text-sm font-bold text-white">$128.5B</div>
+                                <div class="text-[10px] price-down font-medium mt-0.5">-5.3%</div>
+                            </div>
+                            <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
+                                <div class="text-[10px] text-slate-500 mb-1">BTC Dominance</div>
+                                <div class="text-sm font-bold text-white">57.2%</div>
+                                <div class="text-[10px] price-up font-medium mt-0.5">+0.4%</div>
+                            </div>
+                            <div class="bg-surface-800/60 rounded-xl p-3 border border-white/5">
+                                <div class="text-[10px] text-slate-500 mb-1">Active Coins</div>
+                                <div class="text-sm font-bold text-white">14,832</div>
+                                <div class="text-[10px] text-slate-500 font-medium mt-0.5">+24 today</div>
                             </div>
                         </div>
                     </div>
@@ -445,6 +906,35 @@
             el.classList.add('active');
             showToast('تصنيف: ' + el.textContent);
         }
+
+        // Animate sentiment bars on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.sentiment-fill').forEach(bar => {
+                        const width = bar.style.width;
+                        bar.style.width = '0%';
+                        setTimeout(() => bar.style.width = width, 100);
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.sentiment-bar').forEach(bar => {
+            observer.observe(bar.parentElement);
+        });
+
+        // Simulate live price updates
+        function simulatePriceUpdate() {
+            const prices = document.querySelectorAll('[data-live-price]');
+            // Small visual pulse on live dot
+            const dots = document.querySelectorAll('.live-dot');
+            dots.forEach(dot => {
+                dot.style.transform = 'scale(1.5)';
+                setTimeout(() => dot.style.transform = 'scale(1)', 300);
+            });
+        }
+        setInterval(simulatePriceUpdate, 5000);
     </script>
 </body>
 </html>
