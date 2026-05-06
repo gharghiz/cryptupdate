@@ -1,6 +1,6 @@
 """
 web.py - Flask web server
-RSS Feed + Cache + SEO + Admin
+RSS Feed + Cache + SEO + Admin + Widgets API
 """
 
 from flask import Flask, render_template, jsonify, request, Response
@@ -34,11 +34,27 @@ def get_filtered_news_page(category: str, search: str, page: int, per_page: int)
     return get_news(page=page, per_page=per_page, search=search or None, category=category)
 
 # ============================================================
+# Helpers
+# ============================================================
+
+def fmt_large(n):
+    if not n or n < 0:
+        return "—"
+    if n >= 1e12:
+        return f"${n / 1e12:.2f}T"
+    if n >= 1e9:
+        return f"${n / 1e9:.2f}B"
+    if n >= 1e6:
+        return f"${n / 1e6:.2f}M"
+    return f"${n:,.0f}"
+
+# ============================================================
 # Page cache
 # ============================================================
 
 _page_cache = {}
 PAGE_CACHE_TTL = 120
+WIDGET_CACHE_TTL = 300
 
 def page_cache_get(key):
     if key in _page_cache:
@@ -48,11 +64,19 @@ def page_cache_get(key):
         del _page_cache[key]
     return None
 
+def widget_cache_get(key):
+    if key in _page_cache:
+        data, ts = _page_cache[key]
+        if time.time() - ts < WIDGET_CACHE_TTL:
+            return data
+        del _page_cache[key]
+    return None
+
 def page_cache_set(key, data):
     _page_cache[key] = (data, time.time())
 
 # ============================================================
-# Category mapping
+# Market Intelligence — يعيد 3 إشارات
 # ============================================================
 
 NEGATION_WORDS = {"not", "no", "despite", "survives", "resists", "avoided"}
@@ -77,9 +101,12 @@ def _compose_text(item: dict) -> str:
 def compute_market_intelligence(items: list) -> dict:
     positive_words = {"surge","rally","pumped","breakout","approved","inflow","gained","bullish","soared","jumped","surging"}
     negative_words = {"crashed","dumped","hacked","exploited","lawsuit","banned","outflow","falling","dropped","bearish","plunged","slumped"}
-    coin_aliases = {"BTC":["bitcoin","btc"],"ETH":["ethereum","eth"],"SOL":["solana","sol"],"BNB":["bnb","binance"],"XRP":["xrp","ripple"]}
+    coin_aliases = {
+        "BTC": ["bitcoin","btc"], "ETH": ["ethereum","eth"],
+        "SOL": ["solana","sol"], "BNB": ["bnb","binance"], "XRP": ["xrp","ripple"],
+    }
 
-    coin_scores = {c:{"pos":0,"neg":0,"mentions":0} for c in coin_aliases}
+    coin_scores = {c: {"pos": 0, "neg": 0, "mentions": 0} for c in coin_aliases}
     whale_hits = []
     bull = bear = 0
 
@@ -95,7 +122,7 @@ def compute_market_intelligence(items: list) -> dict:
             bear += 1
 
         if any(k in text for k in ["whale","million","moved","transfer","inflow","outflow"]):
-            whale_hits.append(item.get("title",""))
+            whale_hits.append(item.get("title", ""))
 
         for coin, keys in coin_aliases.items():
             if any(k in text for k in keys):
@@ -103,39 +130,44 @@ def compute_market_intelligence(items: list) -> dict:
                 coin_scores[coin]["pos"] += pos
                 coin_scores[coin]["neg"] += neg
 
-    best_coin = max(
+    # ترتيب حسب الأفضل وأخذ أول 3
+    sorted_coins = sorted(
         coin_aliases.keys(),
         key=lambda c: (
             coin_scores[c]["mentions"] > 0,
             coin_scores[c]["pos"] - coin_scores[c]["neg"],
             coin_scores[c]["mentions"],
         ),
+        reverse=True,
     )
 
-    c = coin_scores[best_coin]
-    total = max(1, c["pos"] + c["neg"])
-    confidence = min(95, int(50 + (abs(c["pos"] - c["neg"]) / total) * 45))
-    signal = "Bullish" if c["pos"] >= c["neg"] else "Bearish"
+    ai_signals = []
+    for coin in sorted_coins[:3]:
+        c = coin_scores[coin]
+        if c["mentions"] == 0:
+            continue
+        total = max(1, c["pos"] + c["neg"])
+        confidence = min(95, int(50 + (abs(c["pos"] - c["neg"]) / total) * 45))
+        signal = "Bullish" if c["pos"] >= c["neg"] else "Bearish"
+        ai_signals.append({
+            "coin": coin,
+            "signal": signal,
+            "confidence": confidence,
+            "reason": f"Positive {c['pos']} vs negative {c['neg']} across {c['mentions']} stories"
+        })
+
+    default_signal = {"coin": "N/A", "signal": "Neutral", "confidence": 0, "reason": "Analyzing latest stories..."}
 
     total_sent = max(1, bull + bear)
     bullish_pct = int((bull / total_sent) * 100)
     bearish_pct = 100 - bullish_pct
 
     return {
-        "ai_signal": {
-            "coin": best_coin,
-            "signal": signal,
-            "confidence": confidence,
-            "reason": f"Positive signals {c['pos']} vs negative {c['neg']} across {c['mentions']} related stories"
-        },
-        "sentiment": {
-            "bullish": bullish_pct,
-            "bearish": bearish_pct
-        },
+        "ai_signal": ai_signals[0] if ai_signals else default_signal,
+        "ai_signals": ai_signals if ai_signals else [default_signal],
+        "sentiment": {"bullish": bullish_pct, "bearish": bearish_pct},
         "whale_activity": whale_hits[:3],
     }
-
-
 
 def get_cached_intel() -> dict:
     cached = page_cache_get("global_intel")
@@ -172,18 +204,14 @@ def index():
     intel = get_cached_intel()
 
     rendered = render_template("index.html",
-        news=news, stats=stats,
-        intel=intel,
-        page=page, pages=pages,
-        total=total, search=search,
-        active_tab=active_tab,
-        gsc_meta=GSC_META_TAG,
-        site_url=SITE_URL,
+        news=news, stats=stats, intel=intel,
+        page=page, pages=pages, total=total,
+        search=search, active_tab=active_tab,
+        gsc_meta=GSC_META_TAG, site_url=SITE_URL,
     )
 
     if not search:
         page_cache_set(cache_key, rendered)
-
     return rendered
 
 # ============================================================
@@ -211,15 +239,13 @@ def rss_feed():
         return Response(cached, mimetype="application/rss+xml")
 
     news, _ = get_news(page=1, per_page=50, search=None)
-    items   = []
-
+    items = []
     for item in news:
         title    = item["title"].replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
         link     = f"{SITE_URL}/news/{item['id']}"
         pub_date = item["posted_at"][:19].replace("T", " ") + " UTC"
         source   = item["source"].replace("&","&amp;")
         desc     = (item.get("summary") or item["title"]).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
-
         items.append(f"""  <item>
     <title>{title}</title>
     <link>{link}</link>
@@ -240,20 +266,19 @@ def rss_feed():
 {"".join(items)}
 </channel>
 </rss>"""
-
     page_cache_set("rss_feed", rss)
     return Response(rss, mimetype="application/rss+xml")
 
 # ============================================================
-# API
+# API — News
 # ============================================================
 
 @app.route("/api/news")
 def api_news():
-    page   = parse_int_param("page", default=1, minimum=1)
+    page     = parse_int_param("page", default=1, minimum=1)
     per_page = parse_int_param("per_page", default=20, minimum=1, maximum=100)
-    search = request.args.get("q", "").strip()
-    cat    = request.args.get("cat", "").strip()
+    search   = request.args.get("q", "").strip()
+    cat      = request.args.get("cat", "").strip()
 
     if cat and cat != "all":
         news, total = get_filtered_news_page(cat, search, page, per_page)
@@ -262,9 +287,13 @@ def api_news():
 
     return jsonify({"news": news, "total": total, "page": page, "per_page": per_page})
 
+# ============================================================
+# API — Live Prices
+# ============================================================
+
 @app.route("/api/prices")
 def api_prices():
-    cached = page_cache_get("coin_prices")
+    cached = widget_cache_get("coin_prices")
     if cached:
         return jsonify(cached)
     mapping = {"BTC": "bitcoin", "ETH": "ethereum", "SOL": "solana", "BNB": "binancecoin", "XRP": "ripple"}
@@ -280,8 +309,102 @@ def api_prices():
         result = {}
         for sym, coin_id in mapping.items():
             d = data.get(coin_id, {})
-            result[sym] = {"price": round(d.get("usd", 0), 2), "change": round(d.get("usd_24h_change", 0), 2)}
+            result[sym] = {
+                "price": round(d.get("usd", 0), 2),
+                "change": round(d.get("usd_24h_change", 0), 2),
+            }
         page_cache_set("coin_prices", result)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 503
+
+# ============================================================
+# API — Fear & Greed Index
+# ============================================================
+
+@app.route("/api/fear-greed")
+def api_fear_greed():
+    cached = widget_cache_get("fear_greed")
+    if cached:
+        return jsonify(cached)
+    try:
+        resp = requests.get("https://api.alternative.me/fng/?limit=1", timeout=5)
+        data = resp.json()
+        d = data.get("data", [{}])[0]
+        result = {
+            "value": int(d.get("value", 50)),
+            "label": d.get("value_classification", "Neutral"),
+        }
+        page_cache_set("fear_greed", result)
+        return jsonify(result)
+    except Exception:
+        fallback = {"value": 50, "label": "Neutral"}
+        return jsonify(fallback)
+
+# ============================================================
+# API — Global Market Data
+# ============================================================
+
+@app.route("/api/global")
+def api_global():
+    cached = widget_cache_get("global_data")
+    if cached:
+        return jsonify(cached)
+    try:
+        resp = requests.get("https://api.coingecko.com/api/v3/global", timeout=6)
+        if resp.status_code == 429:
+            return jsonify({"error": "Rate limited"}), 429
+        d = resp.json().get("data", {})
+        mcp = d.get("market_cap_percentage", {})
+        result = {
+            "market_cap": fmt_large(d.get("total_market_cap", {}).get("usd", 0)),
+            "volume": fmt_large(d.get("total_volume", {}).get("usd", 0)),
+            "btc_dom": round(mcp.get("btc", 0), 1),
+            "eth_dom": round(mcp.get("eth", 0), 1),
+            "active": d.get("active_cryptocurrencies", 0),
+            "market_cap_change": round(d.get("market_cap_change_percentage_24h_usd", 0), 2),
+            "volume_change": round(d.get("total_volume", {}).get("usd", 0) / max(1, d.get("total_volume", {}).get("usd", 1)) * 100, 2) if d.get("total_volume") else 0,
+        }
+        page_cache_set("global_data", result)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 503
+
+# ============================================================
+# API — Trending / Top Gainers
+# ============================================================
+
+@app.route("/api/trending")
+def api_trending():
+    cached = widget_cache_get("trending_coins")
+    if cached:
+        return jsonify(cached)
+    try:
+        resp = requests.get(
+            "https://api.coingecko.com/api/v3/coins/markets",
+            params={
+                "vs_currency": "usd",
+                "order": "price_change_percentage_24h_desc",
+                "per_page": "6",
+                "page": "1",
+                "sparkline": "false",
+            },
+            timeout=6,
+        )
+        if resp.status_code == 429:
+            return jsonify({"error": "Rate limited"}), 429
+        data = resp.json()
+        result = []
+        for c in data:
+            result.append({
+                "symbol": c.get("symbol", "").upper(),
+                "name": c.get("name", ""),
+                "price": c.get("current_price", 0),
+                "change": round(c.get("price_change_percentage_24h", 0), 2),
+                "rank": c.get("market_cap_rank", 0),
+                "image": c.get("image", ""),
+            })
+        page_cache_set("trending_coins", result)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 503
@@ -299,10 +422,8 @@ def admin_clear():
     key = request.args.get("key", "")
     if key != ADMIN_KEY:
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         from database import get_pg_conn, get_sqlite_conn, USE_POSTGRES, cache_clear
-
         if USE_POSTGRES:
             conn = get_pg_conn(); cur = conn.cursor()
             cur.execute("CREATE TABLE IF NOT EXISTS telegram_log (id TEXT PRIMARY KEY, posted_at TEXT)")
@@ -315,11 +436,9 @@ def admin_clear():
                 cur = conn.execute("DELETE FROM telegram_log")
                 deleted = cur.rowcount
                 conn.commit()
-
         cache_clear()
         _page_cache.clear()
         return jsonify({"status": "ok", "deleted": deleted})
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -329,7 +448,6 @@ def admin_init():
     if key != ADMIN_KEY:
         return jsonify({"error": "Unauthorized"}), 401
     try:
-        from database import init_db
         init_db()
         return jsonify({"status": "ok"})
     except Exception as e:
@@ -344,17 +462,13 @@ def sitemap():
     cached = page_cache_get("sitemap")
     if cached:
         return Response(cached, mimetype="application/xml")
-
     news, _ = get_news(page=1, per_page=1000)
     urls = [f"<url><loc>{SITE_URL}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>"]
-
     for cat in ["bitcoin","ethereum","defi","nft","regulation","market","altcoin","breaking"]:
         urls.append(f"<url><loc>{SITE_URL}/?tab={cat}</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>")
-
     for item in news:
         nid = item["id"].replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
         urls.append(f"<url><loc>{SITE_URL}/news/{nid}</loc><lastmod>{item['posted_at'][:10]}</lastmod><changefreq>never</changefreq><priority>0.8</priority></url>")
-
     xml = f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{"".join(urls)}\n</urlset>'
     page_cache_set("sitemap", xml)
     return Response(xml, mimetype="application/xml")
