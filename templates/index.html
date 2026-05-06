@@ -58,11 +58,11 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .up{color:var(--green);} .dn{color:var(--red);}
 
 /* NAV TABS */
-.nav-tabs{position:sticky;top:62px;z-index:90;background:color-mix(in srgb,var(--surface) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
+.nav-tabs{position:sticky;top:62px;z-index:90;background:color-mix(in srgb,var(--surface) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:.5rem 1.5rem;display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;}
 .nav-tabs::-webkit-scrollbar{display:none;}
-.tab-btn{font-family:var(--mono);font-size:.65rem;color:var(--muted);background:none;border:none;padding:.7rem .8rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab-btn{font-family:var(--mono);font-size:.65rem;color:var(--muted);background:none;border:1px solid transparent;padding:.5rem .9rem;cursor:pointer;border-radius:6px;transition:all .15s;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-btn.active{background:rgba(0,229,255,.1);color:var(--accent);border:1px solid rgba(0,229,255,.2);}
 
 /* HERO */
 .hero{background:linear-gradient(135deg,rgba(124,77,255,.12),rgba(0,229,255,.07));border-bottom:1px solid var(--border);padding:1.6rem;}
@@ -77,7 +77,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .hero-top-story{background:linear-gradient(160deg,var(--card),color-mix(in srgb,var(--card) 78%, var(--purple) 22%));border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;cursor:pointer;transition:all .2s;min-width:420px;max-width:560px;}
 .hero-top-story:hover{border-color:var(--purple);}
 .hero-label{font-family:var(--mono);font-size:.58rem;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
-.hero-title{font-size:1rem;font-weight:800;line-height:1.4;color:var(--text);}
+.hero-title{font-size:clamp(1rem,2.5vw,1.35rem);font-weight:800;line-height:1.4;color:var(--text);letter-spacing:-.02em;}
 .hero-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.5rem;}
 
 /* CONTAINER */
@@ -86,7 +86,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 
 /* STATS */
 .stats-bar{display:flex;gap:.55rem;margin-bottom:1.3rem;flex-wrap:wrap;}
-.stat-chip{background:linear-gradient(180deg,color-mix(in srgb,var(--card) 92%, #fff 8%),var(--card));border:1px solid var(--border);padding:.4rem .75rem;border-radius:999px;display:flex;align-items:center;gap:.35rem;font-family:var(--mono);font-size:.63rem;}
+.stat-chip{background:var(--card);border:1px solid rgba(255,255,255,.03);padding:.4rem .75rem;border-radius:999px;display:flex;align-items:center;gap:.35rem;font-family:var(--mono);font-size:.63rem;}
 .stat-chip .v{color:var(--accent);font-weight:500;}
 .stat-chip .l{color:var(--muted);}
 
@@ -106,9 +106,13 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .news-grid.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
 
 /* NEWS CARD */
-.news-card{background:linear-gradient(180deg,color-mix(in srgb,var(--card) 88%, #fff 12%),var(--card));border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;cursor:pointer;position:relative;overflow:hidden;animation:fadeUp .3s ease both;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s;will-change:transform;}
+.news-card{background:var(--card);border:1px solid rgba(255,255,255,.03);border-radius:10px;padding:.9rem 1rem;cursor:pointer;position:relative;overflow:hidden;animation:fadeUp .3s ease both;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s;will-change:transform;}
 .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;transition:background .15s;}
-.news-card:hover{background:var(--card-h);border-color:var(--border-h);transform:translateY(-2px);box-shadow:0 10px 24px var(--shadow);}
+.news-card:hover{transform:translateY(-3px) scale(1.005);border-color:var(--border-h);box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.nc-bitcoin:hover{box-shadow:0 0 25px rgba(247,147,26,.15);}
+.nc-ethereum:hover{box-shadow:0 0 25px rgba(98,126,234,.15);}
+.nc-breaking:hover{box-shadow:0 0 25px rgba(255,51,102,.25);border-color:var(--red);}
+.nc-defi:hover{box-shadow:0 0 25px rgba(0,201,122,.15);}
 .nc-bitcoin::before{background:#f7931a;} .nc-ethereum::before{background:#627eea;}
 .nc-defi::before{background:var(--green);} .nc-nft::before{background:#ff6b6b;}
 .nc-regulation::before{background:var(--gold);} .nc-market::before{background:var(--accent);}
@@ -125,7 +129,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .card-title.translated{direction:rtl;text-align:right;font-size:.8rem;}
 .sentiment{font-size:.9rem;flex-shrink:0;}
 
-.ai-preview{font-family:var(--mono);font-size:.6rem;color:var(--muted);background:rgba(124,77,255,.06);border:1px solid rgba(124,77,255,.1);border-radius:3px;padding:.25rem .4rem;margin-bottom:.4rem;line-height:1.4;}
+.ai-preview{font-family:var(--mono);font-size:.65rem;color:rgba(238,238,245,.7);background:rgba(124,77,255,.06);border:1px solid rgba(124,77,255,.1);border-radius:3px;padding:.25rem .4rem;margin-bottom:.4rem;line-height:1.6;}
 .ai-preview b{color:var(--purple);}
 
 .card-meta{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;}
@@ -146,7 +150,11 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 
 /* SIDEBAR */
 .sidebar{position:sticky;top:72px;}
-.widget{background:linear-gradient(180deg,color-mix(in srgb,var(--card) 88%, #fff 12%),var(--card));border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem;box-shadow:0 6px 22px var(--shadow);}
+.widget{background:rgba(18,18,30,.6);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:1rem;margin-bottom:1rem;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.widget:has(.ai-preview){border-color:rgba(124,77,255,.2);position:relative;overflow:hidden;}
+.widget:has(.ai-preview)::before{content:'AI';position:absolute;right:-10px;bottom:-20px;font-size:6rem;font-family:var(--display);font-weight:800;color:rgba(124,77,255,.03);pointer-events:none;}
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--border) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .widget-title{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
 .tg-widget{background:linear-gradient(135deg,rgba(0,136,204,.12),rgba(0,100,180,.08));border:1px solid rgba(0,136,204,.2);border-radius:8px;padding:1.1rem;text-align:center;margin-bottom:1rem;}
 .tg-widget .icon{font-size:1.8rem;margin-bottom:.4rem;}
@@ -415,25 +423,27 @@ footer a{color:var(--purple);text-decoration:none;}
 
       <div class="widget">
         <div class="widget-title">🤖 AI Market Signal</div>
-        <div class="ai-preview"><b>{{ intel.ai_signal.coin }}:</b> {{ intel.ai_signal.signal }} momentum detected</div>
-        <div class="price-row"><span class="coin-sym">Confidence</span><span class="up">{{ intel.ai_signal.confidence }}%</span></div>
-        <div class="fg-sub">Reason: {{ intel.ai_signal.reason }}</div>
+        <div id="aiSignalWrap">
+          <div class="skeleton" style="width:92%;height:16px;margin-bottom:7px;"></div>
+          <div class="skeleton" style="width:58%;height:14px;margin-bottom:7px;"></div>
+          <div class="skeleton" style="width:100%;height:13px;"></div>
+        </div>
       </div>
 
       <div class="widget">
         <div class="widget-title">📊 Sentiment Trend</div>
-        <div class="price-row"><span class="coin-sym">Bullish</span><span class="up">{{ intel.sentiment.bullish }}%</span></div>
-        <div class="price-row"><span class="coin-sym">Bearish</span><span class="dn">{{ intel.sentiment.bearish }}%</span></div>
+        <div id="sentimentWrap">
+          <div class="skeleton" style="width:75%;height:14px;margin-bottom:7px;"></div>
+          <div class="skeleton" style="width:75%;height:14px;"></div>
+        </div>
       </div>
 
       <div class="widget">
         <div class="widget-title">🐋 Whale Activity</div>
         <div id="whaleActivity" style="font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.6;">
-          {% if intel.whale_activity %}
-            {% for w in intel.whale_activity %}• {{ w }}<br>{% endfor %}
-          {% else %}
-            No significant whale-tagged headlines in latest batch.
-          {% endif %}
+          <div class="skeleton" style="width:95%;height:12px;margin-bottom:5px;"></div>
+          <div class="skeleton" style="width:86%;height:12px;margin-bottom:5px;"></div>
+          <div class="skeleton" style="width:78%;height:12px;"></div>
         </div>
       </div>
 
@@ -441,7 +451,7 @@ footer a{color:var(--purple);text-decoration:none;}
         <div class="widget-title">😱 Fear & Greed Index</div>
         <div class="fg-wrap">
           <div class="fg-value" id="fgValue">—</div>
-          <div class="fg-label" id="fgLabel">Loading...</div>
+          <div class="fg-label" id="fgLabel"><span class="skeleton" style="display:inline-block;width:95px;height:13px;"></span></div>
           <div class="fg-gauge"><div class="fg-fill" id="fgFill" style="width:0%"></div></div>
           <div class="fg-scale"><span>Fear</span><span>Neutral</span><span>Greed</span></div>
           <div class="fg-sub" id="fgSub"></div>
@@ -450,7 +460,11 @@ footer a{color:var(--purple);text-decoration:none;}
 
       <div class="widget">
         <div class="widget-title">🔥 Trending Coins</div>
-        <div id="trendingList"><div style="font-family:var(--mono);font-size:.65rem;color:var(--muted)">Loading...</div></div>
+        <div id="trendingList">
+          <div class="skeleton" style="width:100%;height:36px;margin-bottom:6px;"></div>
+          <div class="skeleton" style="width:100%;height:36px;margin-bottom:6px;"></div>
+          <div class="skeleton" style="width:100%;height:36px;"></div>
+        </div>
       </div>
 
       {% if stats.sources %}
@@ -560,6 +574,40 @@ async function loadTrending() {
   } catch(e){}
 }
 loadTrending(); setInterval(loadTrending, 300000);
+
+// Intelligence sidebar (async for faster first paint)
+async function loadIntel() {
+  try {
+    const r = await fetch('/api/intel');
+    if(!r.ok) return;
+    const intel = await r.json();
+    const ai = intel.ai_signal || {};
+    const sentiment = intel.sentiment || {};
+    const whales = intel.whale_activity || [];
+    const aiWrap = document.getElementById('aiSignalWrap');
+    if (aiWrap) {
+      aiWrap.innerHTML = `
+        <div class="ai-preview"><b>${ai.coin || 'N/A'}:</b> ${(ai.signal || 'Neutral')} momentum detected</div>
+        <div class="price-row"><span class="coin-sym">Confidence</span><span class="up">${ai.confidence || 0}%</span></div>
+        <div class="fg-sub">Reason: ${ai.reason || 'No signal context available yet.'}</div>
+      `;
+    }
+    const sentimentWrap = document.getElementById('sentimentWrap');
+    if (sentimentWrap) {
+      sentimentWrap.innerHTML = `
+        <div class="price-row"><span class="coin-sym">Bullish</span><span class="up">${sentiment.bullish || 0}%</span></div>
+        <div class="price-row"><span class="coin-sym">Bearish</span><span class="dn">${sentiment.bearish || 0}%</span></div>
+      `;
+    }
+    const whaleBox = document.getElementById('whaleActivity');
+    if (whaleBox) {
+      whaleBox.innerHTML = whales.length
+        ? whales.map(w => `• ${w}`).join('<br>')
+        : 'No significant whale-tagged headlines in latest batch.';
+    }
+  } catch(e){}
+}
+loadIntel(); setInterval(loadIntel, 300000);
 
 // Translation
 let allTranslated = false;
