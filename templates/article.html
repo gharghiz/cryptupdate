@@ -51,7 +51,6 @@ tailwind.config = {
   .fade-up { animation: fade-up 0.45s ease-out both; }
   .delay-1 { animation-delay: .08s; }
   .delay-2 { animation-delay: .16s; }
-  .delay-3 { animation-delay: .24s; }
 
   @keyframes shimmer-bar {
     0% { background-position: -200% 0; }
@@ -85,15 +84,12 @@ tailwind.config = {
 <!-- ============ ARTICLE ============ -->
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
 
-  <!-- Back -->
   <a href="/" class="inline-flex items-center gap-1.5 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors mb-6 fade-up">
     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
     Back to News
   </a>
 
-  <!-- Article Card -->
   <article class="fade-up delay-1">
-    <!-- Meta -->
     <div class="flex items-center gap-2.5 mb-4 flex-wrap">
       {% if item.category == 'breaking' %}
       <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-red-500/15 text-red-400">BREAKING</span>
@@ -104,13 +100,10 @@ tailwind.config = {
       <span class="text-[10px] text-zinc-700">{{ item.posted_at[:16].replace('T',' ') }} UTC</span>
     </div>
 
-    <!-- Title -->
     <h1 class="text-xl sm:text-2xl font-bold text-zinc-100 leading-snug mb-6">{{ item.title }}</h1>
 
-    <!-- Divider -->
     <div class="h-px bg-zinc-800/60 mb-6"></div>
 
-    <!-- AI Analysis -->
     {% if item.summary or item.sentiment or item.reason %}
     <div class="rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/5 to-zinc-900 overflow-hidden mb-6">
       <div class="h-[2px] shimmer-top"></div>
@@ -144,7 +137,6 @@ tailwind.config = {
     </div>
     {% endif %}
 
-    <!-- Telegram CTA -->
     <div class="rounded-xl border border-blue-500/10 bg-zinc-900/40 p-6 text-center fade-up delay-2">
       <svg class="w-5 h-5 text-blue-400 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
       <p class="text-xs text-zinc-500 mb-3">Get breaking crypto news instantly on Telegram</p>
@@ -157,7 +149,6 @@ tailwind.config = {
 
 </main>
 
-<!-- ============ FOOTER ============ -->
 <footer class="border-t border-zinc-800/60 mt-12 py-8">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-2 text-[11px] text-zinc-600">
