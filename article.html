@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ item.title }} | CryptositNews</title>
+<meta name="description" content="{{ item.title }}">
+<meta name="keywords" content="crypto, bitcoin, ethereum, trading, news">
+<meta property="og:title" content="{{ item.title }}">
+<meta property="og:description" content="{{ item.title }}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="CryptositNews">
+<link rel="canonical" href="{{ site_url }}/news/{{ item.id }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": "{{ item.title | replace('"', '\"') }}",
+  "datePublished": "{{ item.posted_at }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "CryptositNews"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --card: #16161f;
+    --border: #1e1e2e; --accent: #00ff88; --accent3: #7b61ff;
+    --text: #e8e8f0; --muted: #555570;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,255,136,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,.92); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border); padding: 0 2rem;
+  }
+  .header-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; height: 64px;
+  }
+  .logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+  .logo-icon {
+    width: 32px; height: 32px; background: var(--accent);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; font-weight: 700; color: #000; font-family: 'Space Mono', monospace;
+  }
+  .logo-text { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+  .logo-text span { color: var(--accent); }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; position: relative; z-index: 1; }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-family: 'Space Mono', monospace; font-size: .7rem;
+    color: var(--muted); text-decoration: none; border: 1px solid var(--border);
+    padding: .4rem .8rem; border-radius: 3px; margin-bottom: 2rem;
+    transition: all .2s;
+  }
+  .back-btn:hover { color: var(--accent3); border-color: var(--accent3); }
+
+  .article-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2.5rem; position: relative; overflow: hidden;
+  }
+  .article-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--accent3);
+  }
+
+  .article-meta {
+    display: flex; align-items: center; gap: .8rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+  }
+  .source-tag {
+    font-family: 'Space Mono', monospace; font-size: .65rem;
+    color: var(--accent3); border: 1px solid rgba(123,97,255,.3);
+    padding: .2rem .5rem; border-radius: 2px; text-transform: uppercase;
+  }
+  .time-tag { font-family: 'Space Mono', monospace; font-size: .65rem; color: var(--muted); }
+
+  h1 { font-size: 1.5rem; font-weight: 800; line-height: 1.4; margin-bottom: 2rem; color: var(--text); }
+
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  .ai-block {
+    background: rgba(123,97,255,.08); border: 1px solid rgba(123,97,255,.2);
+    border-radius: 4px; padding: 1.2rem; margin-bottom: 1.5rem;
+  }
+  .ai-title {
+    font-family: 'Space Mono', monospace; font-size: .65rem;
+    color: var(--accent3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .8rem;
+  }
+  .ai-row { display: flex; gap: .5rem; margin-bottom: .4rem; font-size: .85rem; }
+  .ai-label { color: var(--muted); font-size: .8rem; min-width: 80px; }
+  .ai-value { color: var(--text); }
+
+  .tg-cta {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(0,136,204,.3); border-radius: 4px;
+    padding: 1.5rem; text-align: center; margin-top: 2rem;
+  }
+  .tg-cta p { font-size: .85rem; color: var(--muted); margin-bottom: 1rem; }
+  .tg-btn {
+    display: inline-block; background: #0088cc; color: #fff;
+    text-decoration: none; font-family: 'Space Mono', monospace;
+    font-size: .7rem; padding: .5rem 1.5rem; border-radius: 3px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border); margin-top: 3rem; padding: 1.5rem 2rem;
+    text-align: center; font-family: 'Space Mono', monospace;
+    font-size: .65rem; color: var(--muted);
+  }
+  footer a { color: var(--accent3); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <div class="logo-icon">₿</div>
+      <span class="logo-text">Crypto<span>Sit</span> News</span>
+    </a>
+  </div>
+</header>
+
+<div class="container">
+  <a class="back-btn" href="/">← Back to News</a>
+
+  <article class="article-card">
+    <div class="article-meta">
+      <span class="source-tag">{{ item.source }}</span>
+      <span class="time-tag">{{ item.posted_at[:16].replace('T',' ') }} UTC</span>
+    </div>
+
+    <h1>{{ item.title }}</h1>
+
+    <div class="divider"></div>
+
+    {% if item.get('summary') or item.get('sentiment') %}
+    <div class="ai-block">
+      <div class="ai-title">🧠 AI Analysis</div>
+      {% if item.get('summary') %}
+      <div class="ai-row">
+        <span class="ai-label">Summary:</span>
+        <span class="ai-value">{{ item.summary }}</span>
+      </div>
+      {% endif %}
+      {% if item.get('sentiment') %}
+      <div class="ai-row">
+        <span class="ai-label">Sentiment:</span>
+        <span class="ai-value">{{ item.sentiment }}</span>
+      </div>
+      {% endif %}
+      {% if item.get('reason') %}
+      <div class="ai-row">
+        <span class="ai-label">Why:</span>
+        <span class="ai-value">{{ item.reason }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="tg-cta">
+      <p>Get breaking crypto news instantly on Telegram</p>
+      <a class="tg-btn" href="https://t.me/CryptositNews" target="_blank">Join Channel →</a>
+    </div>
+  </article>
+</div>
+
+<footer>
+  <p>© 2025 CryptositNews — <a href="/">Home</a> | <a href="https://t.me/CryptositNews" target="_blank">Telegram</a></p>
+</footer>
+
+</body>
+</html>
