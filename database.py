@@ -394,16 +394,28 @@ def init_db():
             """)
 
         # Telegram log
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS telegram_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                news_id INTEGER,
-                title TEXT,
-                posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                success BOOLEAN DEFAULT TRUE,
-                error TEXT DEFAULT ''
-            )
-        """)
+        if is_postgres:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS telegram_log (
+                    id SERIAL PRIMARY KEY,
+                    news_id INTEGER,
+                    title TEXT,
+                    posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    success BOOLEAN DEFAULT TRUE,
+                    error TEXT DEFAULT ''
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS telegram_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    news_id INTEGER,
+                    title TEXT,
+                    posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    success BOOLEAN DEFAULT TRUE,
+                    error TEXT DEFAULT ''
+                )
+            """)
 
         # Price alerts
         if is_postgres:
