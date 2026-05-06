@@ -195,7 +195,7 @@ def news_page(news_id):
     item = get_news_by_id(news_id)
     if not item:
         return "Not Found", 404
-    return render_template("article.html", item=item, site_url=SITE_URL)
+    return render_template("article.html", item=item, site_url=SITE_URL, gsc_meta=GSC_META_TAG)
 
 # ============================================================
 # RSS Feed
@@ -291,12 +291,11 @@ def health():
     return jsonify({"status": "ok"})
 
 # ============================================================
-# Admin — حذف DB
+# Admin
 # ============================================================
 
 @app.route("/admin/clear")
 def admin_clear():
-    """حذف telegram_log فقط — الموقع ما يتأثرش"""
     key = request.args.get("key", "")
     if key != ADMIN_KEY:
         return jsonify({"error": "Unauthorized"}), 401
@@ -306,39 +305,33 @@ def admin_clear():
 
         if USE_POSTGRES:
             conn = get_pg_conn(); cur = conn.cursor()
-            # إنشاء الجدول إيلا ما كانش موجود
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS telegram_log (
-                    id TEXT PRIMARY KEY, posted_at TEXT
-                )
-            """)
+            cur.execute("CREATE TABLE IF NOT EXISTS telegram_log (id TEXT PRIMARY KEY, posted_at TEXT)")
             cur.execute("DELETE FROM telegram_log")
             deleted = cur.rowcount
             conn.commit(); cur.close(); conn.close()
         else:
             with get_sqlite_conn() as conn:
-                conn.execute("""CREATE TABLE IF NOT EXISTS telegram_log (id TEXT PRIMARY KEY, posted_at TEXT)""")
+                conn.execute("CREATE TABLE IF NOT EXISTS telegram_log (id TEXT PRIMARY KEY, posted_at TEXT)")
                 cur = conn.execute("DELETE FROM telegram_log")
                 deleted = cur.rowcount
                 conn.commit()
 
         cache_clear()
         _page_cache.clear()
-        return jsonify({"status": "✅ telegram_log cleared", "deleted": deleted, "note": "posted_news (website) untouched"})
+        return jsonify({"status": "ok", "deleted": deleted})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/admin/init")
 def admin_init():
-    """إنشاء جميع الجداول — شغلو مرة واحدة بعد deploy"""
     key = request.args.get("key", "")
     if key != ADMIN_KEY:
         return jsonify({"error": "Unauthorized"}), 401
     try:
         from database import init_db
         init_db()
-        return jsonify({"status": "✅ DB initialized"})
+        return jsonify({"status": "ok"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
