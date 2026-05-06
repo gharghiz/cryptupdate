@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme or 'dark' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | CryptositNews</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: { extend: { colors: {
+                dark: { 900:'#0f172a', 800:'#1e293b' },
+                neon: { blue:'#3b82f6', purple:'#8b5cf6' }
+            }}}
+        }
+    </script>
+    <style>
+        [data-theme="light"] body { background: #f8fafc; color: #0f172a; }
+        [data-theme="dark"] body { background: #0f172a; color: #e2e8f0; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="text-center px-4">
+        <div class="text-8xl mb-4">🔍</div>
+        <h1 class="text-6xl font-bold mb-2 bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">404</h1>
+        <p class="text-xl opacity-60 mb-6">Page Not Found</p>
+        <a href="/" class="inline-block px-6 py-3 rounded-xl bg-neon-blue/20 text-neon-blue font-medium hover:bg-neon-blue/30 transition">
+            Back to Home
+        </a>
+    </div>
+</body>
+</html>

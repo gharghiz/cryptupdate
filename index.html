@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptositNews - Real-time Crypto News & Market Intelligence</title>
+    <meta name="description" content="Real-time cryptocurrency news, market data, AI analysis, and price tracking. Stay ahead with CryptositNews.">
+    <meta name="keywords" content="crypto, bitcoin, ethereum, blockchain, defi, nft, cryptocurrency news">
+    <meta name="author" content="CryptositNews">
+    <meta property="og:title" content="CryptositNews - Real-time Crypto News">
+    <meta property="og:description" content="Real-time cryptocurrency news, market data, and AI analysis">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' },
+                        neon: { blue:'#3b82f6',purple:'#8b5cf6',cyan:'#06b6d4',green:'#10b981',red:'#ef4444',yellow:'#f59e0b',orange:'#f97316',pink:'#ec4899' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [data-theme="light"] body { background: #f8fafc; color: #0f172a; }
+        [data-theme="dark"] body { background: #0f172a; color: #e2e8f0; }
+        .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        [data-theme="dark"] .glass { background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.1); }
+        [data-theme="light"] .glass { background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1); }
+        .gauge-ring { transition: stroke-dashoffset 1s ease-in-out; }
+        .news-card:hover { transform: translateY(-2px); }
+        .news-card { transition: all 0.2s ease; }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .bookmark-btn.bookmarked svg { fill: #f59e0b; color: #f59e0b; }
+        .toast { animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s; }
+        @keyframes slideIn { from{ transform:translateX(100%); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+        @keyframes slideOut { from{ transform:translateX(0); opacity:1; } to{ transform:translateX(100%); opacity:0; } }
+        [data-theme="dark"] .search-input { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+        [data-theme="light"] .search-input { background: #fff; color: #0f172a; border-color: #e2e8f0; }
+        .notification-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; background:#ef4444; border-radius:50%; font-size:10px; display:flex; align-items:center; justify-content:center; color:#fff; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
+
+    <!-- Navigation -->
+    <nav class="glass sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">📰</span>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">CryptositNews</h1>
+                <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-green-500" title="Live"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Search Toggle -->
+                <button onclick="toggleSearch()" class="p-2 rounded-lg hover:bg-white/10 transition" title="Search">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+                <!-- Bookmarks -->
+                <button onclick="toggleBookmarksPanel()" class="p-2 rounded-lg hover:bg-white/10 transition relative" title="Bookmarks">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    <span id="bookmark-count" class="notification-badge hidden">0</span>
+                </button>
+                <!-- Sound Toggle -->
+                <button onclick="toggleSound()" id="sound-btn" class="p-2 rounded-lg hover:bg-white/10 transition" title="Toggle Sound">
+                    <svg id="sound-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 10H3v4h3l4 4V6L6 10z"/></svg>
+                    <svg id="sound-off" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707A1 1 0 0112 5.586v12.828a1 1 0 01-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+                </button>
+                <!-- Language Toggle -->
+                <button onclick="toggleLang()" id="lang-btn" class="p-2 rounded-lg hover:bg-white/10 transition text-sm font-medium" title="Language">
+                    {{ 'EN' if lang == 'ar' else 'AR' }}
+                </button>
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-lg hover:bg-white/10 transition" title="Toggle Theme">
+                    <svg id="theme-dark" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Bar (Hidden by default) -->
+    <div id="search-bar" class="hidden glass border-b fade-in">
+        <div class="max-w-3xl mx-auto px-4 py-3">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="search-input" type="text" placeholder="Search news..." class="search-input w-full pl-10 pr-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-neon-blue/50" oninput="debounceSearch()" onkeydown="if(event.key==='Escape')toggleSearch()">
+                <button onclick="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="search-results" class="mt-2 space-y-1 max-h-96 overflow-y-auto scrollbar-thin"></div>
+        </div>
+    </div>
+
+    <!-- Bookmarks Panel -->
+    <div id="bookmarks-panel" class="hidden fixed right-0 top-16 bottom-0 w-80 glass z-40 overflow-y-auto scrollbar-thin p-4 fade-in">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg" data-i18n="bookmarks">🔖 Bookmarks</h3>
+            <button onclick="toggleBookmarksPanel()" class="p-1 rounded hover:bg-white/10">✕</button>
+        </div>
+        <div id="bookmarks-list" class="space-y-2"></div>
+        <p id="no-bookmarks" class="text-sm opacity-50 text-center mt-8" data-i18n="no_bookmarks">No bookmarks yet. Click the bookmark icon on any article.</p>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- Hero Stats -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="market_cap">Market Cap</p>
+                <p id="stat-mcap" class="text-lg font-bold mt-1">-</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="volume_24h">24h Volume</p>
+                <p id="stat-vol" class="text-lg font-bold mt-1">-</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="btc_dominance">BTC Dominance</p>
+                <p id="stat-btc" class="text-lg font-bold mt-1">-</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs opacity-60 uppercase tracking-wide" data-i18n="fear_greed">Fear & Greed</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="fg-value" class="text-lg font-bold">-</span>
+                    <span id="fg-label" class="text-xs px-2 py-0.5 rounded-full">-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fear & Greed Gauge -->
+        <section class="glass rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-bold" data-i18n="fear_greed_index">Fear & Greed Index</h2>
+                <span id="fg-emoji" class="text-2xl">😐</span>
+            </div>
+            <div class="relative w-full h-4 rounded-full overflow-hidden" style="background: linear-gradient(to right, #ef4444, #f59e0b, #22c55e)">
+                <div id="fg-indicator" class="absolute top-0 w-3 h-3 bg-white rounded-full shadow-lg transition-all duration-1000" style="left:50%; transform: translateX(-50%); margin-top:2px;"></div>
+            </div>
+            <div class="flex justify-between text-xs opacity-50 mt-1">
+                <span data-i18n="extreme_fear">Extreme Fear</span>
+                <span data-i18n="neutral">Neutral</span>
+                <span data-i18n="extreme_greed">Extreme Greed</span>
+            </div>
+        </section>
+
+        <!-- Live Prices -->
+        <section class="glass rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-bold" data-i18n="live_prices">Live Prices</h2>
+                <span class="pulse-dot inline-block w-2 h-2 rounded-full bg-green-500"></span>
+            </div>
+            <div id="prices-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div class="text-sm opacity-50" data-i18n="loading">Loading...</div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- News Feed (2/3) -->
+            <section class="lg:col-span-2 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-lg" data-i18n="latest_news">Latest News</h2>
+                    <div class="flex gap-1 flex-wrap" id="category-tabs">
+                        <button onclick="filterCategory('all')" class="cat-tab active px-3 py-1 text-xs rounded-full transition" data-cat="all" data-i18n="all">All</button>
+                        <button onclick="filterCategory('important')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="important" data-i18n="important">Important</button>
+                        <button onclick="filterCategory('market')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="market" data-i18n="market">Market</button>
+                        <button onclick="filterCategory('regulation')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="regulation" data-i18n="regulation">Regulation</button>
+                        <button onclick="filterCategory('defi')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="defi">DeFi</button>
+                        <button onclick="filterCategory('security')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="security" data-i18n="security">Security</button>
+                        <button onclick="filterCategory('ai_crypto')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="ai_crypto">AI Crypto</button>
+                        <button onclick="filterCategory('exchange')" class="cat-tab px-3 py-1 text-xs rounded-full transition" data-cat="exchange" data-i18n="exchange">Exchange</button>
+                    </div>
+                </div>
+                <div id="news-feed" class="space-y-3">
+                    <div class="text-sm opacity-50" data-i18n="loading">Loading...</div>
+                </div>
+                <button onclick="loadMoreNews()" id="load-more-btn" class="w-full py-2 glass rounded-xl text-sm opacity-70 hover:opacity-100 transition" data-i18n="load_more">Load More</button>
+            </section>
+
+            <!-- Sidebar (1/3) -->
+            <aside class="space-y-4">
+                <!-- Market Intelligence -->
+                <div class="glass rounded-xl p-4">
+                    <h3 class="font-bold mb-2 flex items-center gap-2">
+                        <span>🤖</span>
+                        <span data-i18n="ai_intelligence">AI Market Intelligence</span>
+                    </h3>
+                    <div id="ai-intel" class="text-sm leading-relaxed opacity-80" data-i18n="loading">Loading...</div>
+                </div>
+
+                <!-- Trending -->
+                <div class="glass rounded-xl p-4">
+                    <h3 class="font-bold mb-3 flex items-center gap-2">
+                        <span>🔥</span>
+                        <span data-i18n="trending">Trending</span>
+                    </h3>
+                    <div id="trending-list" class="space-y-2">
+                        <div class="text-sm opacity-50" data-i18n="loading">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Price Alerts -->
+                <div class="glass rounded-xl p-4">
+                    <h3 class="font-bold mb-3 flex items-center gap-2">
+                        <span>🔔</span>
+                        <span data-i18n="price_alerts">Price Alerts</span>
+                    </h3>
+                    <form id="alert-form" onsubmit="createAlert(event)" class="space-y-2">
+                        <select id="alert-coin" class="w-full p-2 rounded-lg text-sm search-input border">
+                            <option value="">Select coin...</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <select id="alert-condition" class="p-2 rounded-lg text-sm search-input border">
+                                <option value="above">Above</option>
+                                <option value="below">Below</option>
+                            </select>
+                            <input id="alert-price" type="number" step="any" placeholder="Price" class="flex-1 p-2 rounded-lg text-sm search-input border" required>
+                        </div>
+                        <button type="submit" class="w-full py-2 bg-neon-blue text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition" data-i18n="create_alert">Create Alert</button>
+                    </form>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="glass rounded-xl p-4">
+                    <h3 class="font-bold mb-2 flex items-center gap-2">
+                        <span>📧</span>
+                        <span data-i18n="newsletter">Newsletter</span>
+                    </h3>
+                    <p class="text-xs opacity-60 mb-3" data-i18n="newsletter_desc">Get daily crypto news digest in your inbox.</p>
+                    <form id="newsletter-form" onsubmit="subscribeNewsletter(event)" class="space-y-2">
+                        <input id="newsletter-email" type="email" placeholder="your@email.com" class="w-full p-2 rounded-lg text-sm search-input border" required>
+                        <button type="submit" class="w-full py-2 bg-neon-purple text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition" data-i18n="subscribe">Subscribe</button>
+                    </form>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass mt-12 py-6 px-4 text-center text-sm opacity-60">
+        <p>CryptositNews &copy; 2024 | Real-time Crypto News & AI Analysis</p>
+        <div class="flex justify-center gap-4 mt-2">
+            <a href="/rss" class="hover:opacity-100">RSS</a>
+            <a href="/sitemap.xml" class="hover:opacity-100">Sitemap</a>
+            <a href="/health" class="hover:opacity-100">Health</a>
+        </div>
+    </footer>
+
+    <script>
+    // ===== I18N =====
+    const i18n = {
+        en: {
+            market_cap:"Market Cap", volume_24h:"24h Volume", btc_dominance:"BTC Dominance",
+            fear_greed:"Fear & Greed", fear_greed_index:"Fear & Greed Index",
+            extreme_fear:"Extreme Fear", neutral:"Neutral", extreme_greed:"Extreme Greed",
+            live_prices:"Live Prices", latest_news:"Latest News", all:"All", important:"Important",
+            market:"Market", regulation:"Regulation", security:"Security", exchange:"Exchange",
+            ai_intelligence:"AI Market Intelligence", trending:"Trending",
+            price_alerts:"Price Alerts", newsletter:"Newsletter",
+            newsletter_desc:"Get daily crypto news digest in your inbox.",
+            subscribe:"Subscribe", create_alert:"Create Alert", bookmarks:"Bookmarks",
+            no_bookmarks:"No bookmarks yet.", loading:"Loading...", load_more:"Load More",
+            above:"Above", below:"Below", search_placeholder:"Search news...",
+            copy_link:"Copy Link", share_twitter:"Share on X", share_telegram:"Share on Telegram",
+            bookmark_added:"Bookmark added!", bookmark_removed:"Bookmark removed!",
+            alert_created:"Alert created!", subscribed:"Subscribed!",
+            unsubscribed:"Unsubscribed!", copied:"Link copied!",
+        },
+        ar: {
+            market_cap:"القيمة السوقية", volume_24h:"حجم التداول 24س",
+            btc_dominance:"هيمنة بيتكوين", fear_greed:"الخوف والطمع",
+            fear_greed_index:"مؤشر الخوف والطمع", extreme_fear:"خوف شديد",
+            neutral:"محايد", extreme_greed:"طمع شديد", live_prices:"أسعار مباشرة",
+            latest_news:"آخر الأخبار", all:"الكل", important:"مهم",
+            market:"السوق", regulation:"تنظيم", security:"أمان",
+            exchange:"منصات تداول", ai_intelligence:"ذكاء السوق الاصطناعي",
+            trending:"رائج", price_alerts:"تنبيهات الأسعار",
+            newsletter:"النشرة البريدية", newsletter_desc:"احصل على ملخص أخبار العملات يومياً.",
+            subscribe:"اشتراك", create_alert:"إنشاء تنبيه", bookmarks:"المحفوظات",
+            no_bookmarks:"لا توجد محفوظات بعد.", loading:"جاري التحميل...",
+            load_more:"تحميل المزيد", above:"فوق", below:"تحت",
+            search_placeholder:"البحث في الأخبار...", copy_link:"نسخ الرابط",
+            share_twitter:"مشاركة على X", share_telegram:"مشاركة على تيليجرام",
+            bookmark_added:"تمت الإضافة للمحفوظات!", bookmark_removed:"تمت الإزالة من المحفوظات!",
+            alert_created:"تم إنشاء التنبيه!", subscribed:"تم الاشتراك!",
+            unsubscribed:"تم إلغاء الاشتراك!", copied:"تم نسخ الرابط!",
+        }
+    };
+    let currentLang = "{{ lang }}" || "en";
+
+    function t(key) { return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key; }
+
+    function applyI18n() {
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+            const key = el.getAttribute("data-i18n");
+            const val = t(key);
+            if (el.tagName === "INPUT") el.placeholder = val;
+            else el.textContent = val;
+        });
+        document.documentElement.lang = currentLang === "ar" ? "ar" : "en";
+        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+    }
+
+    // ===== THEME =====
+    let currentTheme = "{{ theme }}" || "dark";
+
+    function toggleTheme() {
+        currentTheme = currentTheme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        document.getElementById("theme-dark").classList.toggle("hidden", currentTheme === "dark");
+        document.getElementById("theme-light").classList.toggle("hidden", currentTheme === "light");
+        fetch("/api/theme", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({theme:currentTheme}) });
+    }
+
+    // ===== LANGUAGE =====
+    function toggleLang() {
+        currentLang = currentLang === "en" ? "ar" : "en";
+        document.getElementById("lang-btn").textContent = currentLang === "ar" ? "EN" : "AR";
+        applyI18n();
+        fetch("/api/lang", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({lang:currentLang}) });
+    }
+
+    // ===== SOUND =====
+    let soundEnabled = localStorage.getItem("sound") !== "false";
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playNotificationSound() {
+        if (!soundEnabled) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } catch(e) {}
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem("sound", soundEnabled);
+        document.getElementById("sound-on").classList.toggle("hidden", !soundEnabled);
+        document.getElementById("sound-off").classList.toggle("hidden", soundEnabled);
+    }
+
+    // ===== TOAST =====
+    function showToast(message, type="success") {
+        const container = document.getElementById("toast-container");
+        const colors = { success:"bg-green-600", error:"bg-red-600", info:"bg-blue-600" };
+        const toast = document.createElement("div");
+        toast.className = `toast ${colors[type]||colors.info} text-white px-4 py-2 rounded-lg shadow-lg text-sm`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ===== API HELPER =====
+    async function g(url) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch(e) {
+            console.error("API Error:", url, e);
+            return null;
+        }
+    }
+
+    // ===== FORMAT HELPERS =====
+    function fmtNum(n) {
+        if (n == null) return "0";
+        n = Number(n);
+        if (n >= 1e12) return "$" + (n/1e12).toFixed(2) + "T";
+        if (n >= 1e9) return "$" + (n/1e9).toFixed(2) + "B";
+        if (n >= 1e6) return "$" + (n/1e6).toFixed(2) + "M";
+        if (n >= 1e3) return "$" + (n/1e3).toFixed(1) + "K";
+        return "$" + n.toLocaleString(undefined, {maximumFractionDigits:2});
+    }
+
+    function fmtPrice(p) {
+        if (p == null) return "$0";
+        p = Number(p);
+        if (p >= 1) return "$" + p.toLocaleString(undefined, {maximumFractionDigits:2});
+        if (p >= 0.001) return "$" + p.toFixed(4);
+        return "$" + p.toFixed(8);
+    }
+
+    function fmtPct(p) {
+        if (p == null) return "0%";
+        p = Number(p);
+        const sign = p >= 0 ? "+" : "";
+        const color = p >= 0 ? "text-green-400" : "text-red-400";
+        return `<span class="${color}">${sign}${p.toFixed(2)}%</span>`;
+    }
+
+    function timeAgo(dateStr) {
+        if (!dateStr) return "";
+        const now = new Date();
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "";
+        const diff = Math.floor((now - d) / 1000);
+        if (diff < 60) return "just now";
+        if (diff < 3600) return Math.floor(diff/60) + "m ago";
+        if (diff < 86400) return Math.floor(diff/3600) + "h ago";
+        return Math.floor(diff/86400) + "d ago";
+    }
+
+    // ===== BOOKMARKS =====
+    function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem("crypto_bookmarks") || "[]"); }
+        catch(e) { return []; }
+    }
+
+    function saveBookmarks(bm) {
+        localStorage.setItem("crypto_bookmarks", JSON.stringify(bm));
+        updateBookmarkCount();
+    }
+
+    function toggleBookmark(id, title) {
+        let bm = getBookmarks();
+        const idx = bm.findIndex(b => b.id === id);
+        if (idx >= 0) { bm.splice(idx, 1); showToast(t("bookmark_removed")); }
+        else { bm.unshift({id, title, time: new Date().toISOString()}); showToast(t("bookmark_added")); playNotificationSound(); }
+        saveBookmarks(bm);
+        renderBookmarks();
+        document.querySelectorAll(`.bookmark-btn[data-id="${id}"]`).forEach(btn => {
+            btn.classList.toggle("bookmarked", idx < 0);
+        });
+    }
+
+    function updateBookmarkCount() {
+        const count = getBookmarks().length;
+        const badge = document.getElementById("bookmark-count");
+        if (count > 0) { badge.textContent = count; badge.classList.remove("hidden"); }
+        else { badge.classList.add("hidden"); }
+    }
+
+    function renderBookmarks() {
+        const bm = getBookmarks();
+        const list = document.getElementById("bookmarks-list");
+        const empty = document.getElementById("no-bookmarks");
+        if (bm.length === 0) { list.innerHTML = ""; empty.classList.remove("hidden"); return; }
+        empty.classList.add("hidden");
+        list.innerHTML = bm.map(b => `
+            <a href="/article/${b.id}" class="block p-2 rounded-lg hover:bg-white/5 transition text-sm truncate" title="${b.title}">
+                📌 ${b.title}
+            </a>
+        `).join("");
+    }
+
+    function toggleBookmarksPanel() {
+        const panel = document.getElementById("bookmarks-panel");
+        panel.classList.toggle("hidden");
+        if (!panel.classList.contains("hidden")) renderBookmarks();
+    }
+
+    // ===== SEARCH =====
+    let searchTimeout;
+
+    function toggleSearch() {
+        const bar = document.getElementById("search-bar");
+        bar.classList.toggle("hidden");
+        if (!bar.classList.contains("hidden")) {
+            document.getElementById("search-input").focus();
+        }
+    }
+
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(doSearch, 300);
+    }
+
+    async function doSearch() {
+        const q = document.getElementById("search-input").value.trim();
+        const container = document.getElementById("search-results");
+        if (q.length < 2) { container.innerHTML = ""; return; }
+        const data = await g(`/api/search?q=${encodeURIComponent(q)}&limit=10`);
+        if (!data || !data.results || data.results.length === 0) {
+            container.innerHTML = `<p class="text-sm opacity-50 p-2">No results found</p>`;
+            return;
+        }
+        container.innerHTML = data.results.map(n => `
+            <a href="/article/${n.id}" class="block p-2 rounded-lg hover:bg-white/5 transition">
+                <p class="text-sm font-medium">${n.title}</p>
+                <p class="text-xs opacity-50">${n.source} &middot; ${timeAgo(n.published)}</p>
+            </a>
+        `).join("");
+    }
+
+    function clearSearch() {
+        document.getElementById("search-input").value = "";
+        document.getElementById("search-results").innerHTML = "";
+    }
+
+    // ===== CATEGORY FILTER =====
+    let currentCategory = "all";
+    let newsOffset = 0;
+
+    async function filterCategory(cat) {
+        currentCategory = cat;
+        newsOffset = 0;
+        document.querySelectorAll(".cat-tab").forEach(btn => {
+            const active = btn.getAttribute("data-cat") === cat;
+            btn.classList.toggle("active", active);
+            if (active) {
+                btn.style.background = currentTheme === "dark" ? "rgba(59,130,246,0.2)" : "rgba(59,130,246,0.3)";
+                btn.style.color = "#3b82f6";
+            } else {
+                btn.style.background = "";
+                btn.style.color = "";
+            }
+        });
+        await loadNews();
+    }
+
+    // ===== NEWS =====
+    async function loadNews(append=false) {
+        const container = document.getElementById("news-feed");
+        if (!append) container.innerHTML = `<div class="text-sm opacity-50">${t("loading")}</div>`;
+
+        const cat = currentCategory === "important" ? "all" : currentCategory;
+        const imp = currentCategory === "important" ? "true" : "false";
+        const data = await g(`/api/news?limit=20&offset=${newsOffset}&category=${cat}&important=${imp}`);
+
+        if (!data || !data.news || data.news.length === 0) {
+            if (!append) container.innerHTML = `<p class="text-sm opacity-50 text-center py-4">No news found</p>`;
+            return;
+        }
+
+        const bm = getBookmarks();
+        const html = data.news.map(n => {
+            const isBookmarked = bm.some(b => b.id === n.id);
+            const sentimentEmoji = {positive:"🟢",negative:"🔴",neutral:"⚪",bullish:"🚀",bearish:"📉"}[n.ai_sentiment] || "";
+            const catColors = {
+                regulation:"bg-blue-500/20 text-blue-400", defi:"bg-purple-500/20 text-purple-400",
+                nft:"bg-pink-500/20 text-pink-400", layer1:"bg-cyan-500/20 text-cyan-400",
+                layer2:"bg-indigo-500/20 text-indigo-400", meme:"bg-yellow-500/20 text-yellow-400",
+                ai_crypto:"bg-green-500/20 text-green-400", mining:"bg-orange-500/20 text-orange-400",
+                stablecoin:"bg-teal-500/20 text-teal-400", gaming:"bg-rose-500/20 text-rose-400",
+                exchange:"bg-amber-500/20 text-amber-400", security:"bg-red-500/20 text-red-400",
+                adoption:"bg-emerald-500/20 text-emerald-400", market:"bg-slate-500/20 text-slate-400",
+            };
+            const catClass = catColors[n.category] || catColors.market;
+
+            return `
+            <div class="news-card glass rounded-xl p-4 fade-in">
+                <div class="flex items-start justify-between gap-2">
+                    <a href="/article/${n.id}" class="flex-1 hover:text-neon-blue transition">
+                        <h3 class="font-semibold text-sm leading-snug">${n.title}</h3>
+                    </a>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="shareArticle(${n.id},'${encodeURIComponent(n.title)}')" class="p-1 rounded hover:bg-white/10 transition" title="Share">
+                            <svg class="w-4 h-4 opacity-50 hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                        </button>
+                        <button onclick="toggleBookmark(${n.id},this.closest('.news-card').querySelector('h3').textContent)" class="bookmark-btn p-1 rounded hover:bg-white/10 transition ${isBookmarked?'bookmarked':''}" data-id="${n.id}" title="Bookmark">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                    <span class="text-xs px-2 py-0.5 rounded-full ${catClass}">${n.category||"market"}</span>
+                    ${sentimentEmoji ? `<span class="text-xs">${sentimentEmoji} ${n.ai_sentiment||""}</span>` : ""}
+                    ${n.source ? `<span class="text-xs opacity-40">${n.source}</span>` : ""}
+                    <span class="text-xs opacity-40 ml-auto">${timeAgo(n.published)}</span>
+                </div>
+                ${n.ai_summary ? `<p class="text-xs opacity-60 mt-2 line-clamp-2">${n.ai_summary}</p>` : ""}
+            </div>`;
+        }).join("");
+
+        if (append) container.innerHTML += html;
+        else container.innerHTML = html;
+
+        newsOffset += 20;
+        document.getElementById("load-more-btn").style.display = data.news.length < 20 ? "none" : "block";
+    }
+
+    function loadMoreNews() { loadNews(true); }
+
+    // ===== PRICES =====
+    async function loadPrices() {
+        const data = await g("/api/prices");
+        if (!data || !data.prices) return;
+
+        const topCoins = ["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","LINK"];
+        const grid = document.getElementById("prices-grid");
+        grid.innerHTML = topCoins.filter(c => data.prices[c]).map(c => {
+            const p = data.prices[c];
+            return `
+            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition">
+                <div>
+                    <span class="font-bold text-sm">${c}</span>
+                    <span class="text-xs opacity-50 block">${fmtPrice(p.usd)}</span>
+                </div>
+                <div class="text-right">
+                    ${fmtPct(p.usd_24h_change)}
+                </div>
+            </div>`;
+        }).join("");
+
+        // Update alert coin selector
+        const sel = document.getElementById("alert-coin");
+        if (sel.options.length <= 1) {
+            topCoins.forEach(c => {
+                if (data.prices[c]) {
+                    const opt = document.createElement("option");
+                    opt.value = c; opt.textContent = c;
+                    sel.appendChild(opt);
+                }
+            });
+        }
+    }
+
+    // ===== HERO STATS =====
+    async function loadHeroStats() {
+        const globalData = await g("/api/global");
+        if (globalData && globalData.global) {
+            const g = globalData.global;
+            document.getElementById("stat-mcap").textContent = fmtNum(g.total_market_cap_usd);
+            document.getElementById("stat-vol").textContent = fmtNum(g.total_volume_usd);
+            document.getElementById("stat-btc").textContent = (g.btc_dominance || 0).toFixed(1) + "%";
+        }
+
+        const fgData = await g("/api/fear-greed");
+        if (fgData && fgData.fear_greed) {
+            const fg = fgData.fear_greed;
+            const val = fg.value || 50;
+            document.getElementById("fg-value").textContent = val;
+            document.getElementById("fg-label").textContent = fg.classification || "Neutral";
+
+            // Gauge indicator position
+            document.getElementById("fg-indicator").style.left = val + "%";
+
+            // Color based on value
+            let fgColor = "#22c55e";
+            if (val <= 25) fgColor = "#ef4444";
+            else if (val <= 45) fgColor = "#f59e0b";
+            else if (val <= 55) fgColor = "#64748b";
+
+            document.getElementById("fg-label").style.background = fgColor + "33";
+            document.getElementById("fg-label").style.color = fgColor;
+
+            // Emoji
+            const emoji = val <= 20 ? "😰" : val <= 40 ? "😟" : val <= 60 ? "😐" : val <= 80 ? "😊" : "🤑";
+            document.getElementById("fg-emoji").textContent = emoji;
+        }
+    }
+
+    // ===== TRENDING =====
+    async function loadTrending() {
+        const data = await g("/api/trending");
+        if (!data || !data.trending) return;
+        const container = document.getElementById("trending-list");
+        container.innerHTML = data.trending.slice(0, 7).map((coin, i) => `
+            <div class="flex items-center gap-2 p-1">
+                <span class="text-xs font-bold opacity-40 w-4">${i+1}</span>
+                ${coin.thumb ? `<img src="${coin.thumb}" class="w-5 h-5 rounded-full" alt="" onerror="this.style.display='none'">` : ""}
+                <span class="text-sm font-medium">${coin.name}</span>
+                <span class="text-xs opacity-50 uppercase">${coin.symbol}</span>
+                ${coin.market_cap_rank ? `<span class="text-xs opacity-30 ml-auto">#${coin.market_cap_rank}</span>` : ""}
+            </div>
+        `).join("");
+    }
+
+    // ===== AI INTELLIGENCE =====
+    async function loadAIIntel() {
+        const data = await g("/api/market-intelligence");
+        const container = document.getElementById("ai-intel");
+        if (!data || !data.intelligence) {
+            container.textContent = currentLang === "ar" ? "غير متاح حالياً" : "Not available at the moment";
+            return;
+        }
+        container.innerHTML = `<p>${data.intelligence}</p>`;
+    }
+
+    // ===== ALERTS =====
+    async function createAlert(e) {
+        e.preventDefault();
+        const symbol = document.getElementById("alert-coin").value;
+        const price = document.getElementById("alert-price").value;
+        const condition = document.getElementById("alert-condition").value;
+        if (!symbol || !price) return;
+
+        const data = await g("/api/alerts", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ symbol, target_price: parseFloat(price), condition })
+        });
+        if (data && data.success) {
+            showToast(t("alert_created"));
+            document.getElementById("alert-price").value = "";
+        }
+    }
+
+    // Override g for POST
+    async function g(url, options) {
+        try {
+            const res = await fetch(url, options || {});
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch(e) {
+            console.error("API Error:", url, e);
+            return null;
+        }
+    }
+
+    // ===== NEWSLETTER =====
+    async function subscribeNewsletter(e) {
+        e.preventDefault();
+        const email = document.getElementById("newsletter-email").value;
+        if (!email) return;
+        const data = await fetch("/api/newsletter/subscribe", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ email })
+        }).then(r => r.json());
+        if (data && data.success) {
+            showToast(t("subscribed"));
+            document.getElementById("newsletter-email").value = "";
+        } else {
+            showToast(data?.message || "Error", "error");
+        }
+    }
+
+    // ===== SOCIAL SHARING =====
+    function shareArticle(id, encodedTitle) {
+        const title = decodeURIComponent(encodedTitle);
+        const url = window.location.origin + "/article/" + id;
+
+        if (navigator.share) {
+            navigator.share({ title, url });
+        } else {
+            // Show share menu
+            const menu = document.createElement("div");
+            menu.className = "fixed inset-0 z-50 flex items-center justify-center bg-black/50";
+            menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
+            menu.innerHTML = `
+                <div class="glass rounded-xl p-4 space-y-2 min-w-[200px]">
+                    <p class="font-bold text-sm mb-2">Share</p>
+                    <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 text-sm transition">🐦 ${t("share_twitter")}</a>
+                    <a href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 text-sm transition">✈️ ${t("share_telegram")}</a>
+                    <button onclick="navigator.clipboard.writeText('${url}');this.closest('.fixed').remove();showToast('${t("copied")}')" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 text-sm w-full transition">🔗 ${t("copy_link")}</button>
+                </div>
+            `;
+            document.body.appendChild(menu);
+        }
+    }
+
+    // ===== SSE LIVE UPDATES =====
+    let sseConnected = false;
+
+    function connectSSE() {
+        if (sseConnected || !window.EventSource) return;
+        try {
+            const sse = new EventSource("/api/sse");
+            sseConnected = true;
+
+            sse.addEventListener("message", (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === "init") {
+                        if (data.fear_greed) updateFG(data.fear_greed);
+                    } else if (data.type === "update") {
+                        if (data.prices) {
+                            // Refresh prices
+                            loadPrices();
+                        }
+                        if (data.fear_greed) {
+                            updateFG(data.fear_greed);
+                        }
+                        if (data.latest_news) {
+                            playNotificationSound();
+                        }
+                    }
+                } catch(err) {}
+            });
+
+            sse.onerror = () => {
+                sseConnected = false;
+                sse.close();
+                setTimeout(connectSSE, 30000);
+            };
+        } catch(e) {
+            sseConnected = false;
+            setTimeout(connectSSE, 30000);
+        }
+    }
+
+    function updateFG(fg) {
+        if (!fg) return;
+        const val = fg.value || 50;
+        document.getElementById("fg-value").textContent = val;
+        document.getElementById("fg-label").textContent = fg.classification || "Neutral";
+        document.getElementById("fg-indicator").style.left = val + "%";
+    }
+
+    // ===== PWA =====
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+        });
+    }
+
+    // ===== INIT =====
+    document.addEventListener("DOMContentLoaded", () => {
+        applyI18n();
+        updateBookmarkCount();
+
+        // Set initial theme UI
+        document.getElementById("theme-dark").classList.toggle("hidden", currentTheme === "dark");
+        document.getElementById("theme-light").classList.toggle("hidden", currentTheme === "light");
+
+        // Set initial sound UI
+        document.getElementById("sound-on").classList.toggle("hidden", !soundEnabled);
+        document.getElementById("sound-off").classList.toggle("hidden", soundEnabled);
+
+        // Set active category tab style
+        filterCategory("all");
+
+        // Load data
+        loadHeroStats();
+        loadPrices();
+        loadNews();
+        loadTrending();
+        loadAIIntel();
+
+        // SSE live updates
+        connectSSE();
+
+        // Auto refresh every 5 minutes
+        setInterval(() => {
+            loadPrices();
+            loadNews();
+        }, 300000);
+    });
+    </script>
+</body>
+</html>
