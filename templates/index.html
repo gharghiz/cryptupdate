@@ -281,29 +281,6 @@ footer a{color:var(--purple);text-decoration:none;}
   <button class="tab-btn {% if active_tab=='altcoin' %}active{% endif %}" onclick="goTab('altcoin')">🪙 Altcoins</button>
 </div>
 
-<!-- HERO -->
-{% if not active_tab and news %}
-{% set top = news[0] %}
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-prices" id="heroPrices">
-      {% for sym in ['BTC','ETH','SOL','BNB','XRP'] %}
-      <div class="hero-price-row"><span class="hp-sym">{{ sym }}</span><span class="up" id="hp{{ sym }}">loading...</span></div>
-      {% endfor %}
-    </div>
-    <div class="hero-stat">
-      <div class="val">{{ stats.today }}</div>
-      <div class="lbl">Signals Today</div>
-    </div>
-    <div class="hero-top-story" onclick="window.location='/news/{{ top.id }}'">
-      <div class="hero-label">🔥 Top Story</div>
-      <div class="hero-title">{{ top.title }}</div>
-      <div class="hero-meta">{{ top.source }} · {{ top.posted_at[11:16] }} UTC</div>
-    </div>
-  </div>
-</div>
-{% endif %}
-
 <div class="container">
   <div class="stats-bar">
     <div class="stat-chip"><span class="v">🧠</span><span class="l">Decision Engine</span></div>
