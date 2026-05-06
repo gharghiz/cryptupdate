@@ -212,6 +212,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .pagination a,.pagination span{font-family:var(--mono);font-size:.65rem;padding:.35rem .62rem;border:1px solid var(--border);border-radius:6px;color:var(--muted);text-decoration:none;transition:all .15s;}
 .pagination a:hover{border-color:var(--purple);color:var(--purple);}
 .pagination span.cur{background:var(--purple);border-color:var(--purple);color:#fff;}
+.pagination{display:none;}
 
 /* FOOTER */
 footer{border-top:1px solid var(--border);margin-top:2rem;padding:1.2rem 1.5rem;text-align:center;font-family:var(--mono);font-size:.58rem;color:var(--muted);background:color-mix(in srgb,var(--surface) 92%, transparent);}
@@ -423,6 +424,24 @@ footer a{color:var(--purple);text-decoration:none;}
       {% endif %}
     {% endif %}
 
+    <div id="scrollTrigger" style="height:1px;width:100%;"></div>
+    <div id="skeletonContainer" style="display:none;margin-top:.55rem;">
+      <div class="news-card" style="pointer-events:none;">
+        <div style="display:flex;gap:.7rem;">
+          <div style="flex:1;"><div class="skeleton" style="width:85%;height:16px;margin-bottom:6px;"></div><div class="skeleton" style="width:60%;height:12px;"></div></div>
+          <div class="skeleton" style="width:20px;height:20px;"></div>
+        </div>
+      </div>
+      <div class="news-card" style="pointer-events:none;margin-top:.55rem;">
+        <div style="display:flex;gap:.7rem;">
+          <div style="flex:1;"><div class="skeleton" style="width:90%;height:16px;margin-bottom:6px;"></div><div class="skeleton" style="width:55%;height:12px;"></div></div>
+          <div class="skeleton" style="width:20px;height:20px;"></div>
+        </div>
+      </div>
+    </div>
+    <div id="endOfFeed" style="display:none;text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--muted);padding:2rem 0;border-top:1px solid var(--border);margin-top:1.5rem;">
+      🧠 You've reached the edge of the matrix. No more signals.
+    </div>
     </main>
 
     <aside class="sidebar">
@@ -507,6 +526,93 @@ footer a{color:var(--purple);text-decoration:none;}
 </footer>
 
 <script>
+const scrollState = {
+  currentPage: {{ page }},
+  perPage: 20,
+  isLoading: false,
+  hasMore: {{ 'true' if page < pages else 'false' }},
+  search: {{ search|tojson }},
+  category: {{ active_tab|tojson }},
+  totalInitialCards: document.querySelectorAll('#mainFeed .news-card').length,
+  enabled: {{ 'true' if active_tab else 'false' }}
+};
+
+function detectCategory(title = '') {
+  const t = title.toLowerCase();
+  if (t.includes('breaking') || t.includes('urgent') || ((t.includes('hack') || t.includes('exploit')) && t.includes('million'))) return 'breaking';
+  if (t.includes('bitcoin') || t.includes(' btc ') || t.startsWith('btc')) return 'bitcoin';
+  if (t.includes('ethereum') || t.includes(' eth ')) return 'ethereum';
+  if (t.includes('defi') || t.includes('uniswap') || t.includes('aave') || t.includes('staking')) return 'defi';
+  if (t.includes('nft') || t.includes('opensea') || t.includes('metaverse')) return 'nft';
+  if (t.includes('sec ') || t.includes('regulation') || t.includes('lawsuit')) return 'regulation';
+  if (t.includes('solana') || t.includes('ripple') || t.includes('bnb') || t.includes('dogecoin') || t.includes(' xrp ')) return 'altcoin';
+  return 'market';
+}
+
+function escapeHtml(v=''){return v.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+function buildCardHTML(item, idx) {
+  const cat = scrollState.category || detectCategory(item.title || '');
+  const t = (item.title || '').toLowerCase();
+  const sent = (t.includes('surge') || t.includes('pump') || t.includes('bull') || t.includes('rise') || t.includes('approved') || t.includes('gain')) ? '🟢' : ((t.includes('crash') || t.includes('dump') || t.includes('fall') || t.includes('hack') || t.includes('drop') || t.includes('ban')) ? '🔴' : '🟡');
+  const isBreaking = t.includes('breaking') || t.includes('urgent');
+  const words = (item.title || '').split(' ').length;
+  const readMin = Math.max(1, Math.floor(words / 200) + 1);
+  const encTitle = escapeHtml(item.title || '');
+  const articleUrl = `/news/${item.id}`;
+  const twUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(item.title || '')}&url=${encodeURIComponent(window.location.origin + articleUrl)}`;
+  const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin + articleUrl)}&text=${encodeURIComponent(item.title || '')}`;
+  return `<article class="news-card nc-${cat}" onclick="window.location='${articleUrl}'">
+    <div class="card-top"><div class="card-content"><div class="card-title" id="ct${cat}${idx}">${escapeHtml(item.title || '')}</div></div><span class="sentiment">${sent}</span></div>
+    ${item.summary ? `<div class="ai-preview"><b>🧠</b> ${escapeHtml(item.summary)}</div>` : ''}
+    <div class="card-meta">
+      ${isBreaking ? '<span class="breaking-tag">🚨 BREAKING</span>' : ''}
+      <span class="source-tag">${escapeHtml(item.source || '')}</span>
+      <span class="time-tag">${(item.posted_at || '').substring(11,16)} UTC</span>
+      <span class="read-time">· ${readMin}m read</span>
+      <div class="share-btns" onclick="event.stopPropagation()">
+        <a class="share-btn share-tw" href="${twUrl}" target="_blank">𝕏</a>
+        <a class="share-btn share-tg" href="${tgUrl}" target="_blank">✈</a>
+        <button class="tr-btn" onclick="trCard('${cat}${idx}',this,'${encTitle}')" data-tr="">🌐</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+async function loadNextPage() {
+  if (!scrollState.enabled || scrollState.isLoading || !scrollState.hasMore) return;
+  scrollState.isLoading = true;
+  document.getElementById('skeletonContainer').style.display = 'block';
+  scrollState.currentPage += 1;
+  try {
+    let url = `/api/news?page=${scrollState.currentPage}&per_page=${scrollState.perPage}`;
+    if (scrollState.search) url += `&q=${encodeURIComponent(scrollState.search)}`;
+    if (scrollState.category) url += `&cat=${encodeURIComponent(scrollState.category)}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Network error');
+    const data = await response.json();
+    const feed = document.getElementById('mainFeed');
+    const baseIdx = scrollState.totalInitialCards;
+    (data.news || []).forEach((item, i) => feed.insertAdjacentHTML('beforeend', buildCardHTML(item, baseIdx + i + 1)));
+    scrollState.totalInitialCards += (data.news || []).length;
+    const totalPages = Math.ceil((data.total || 0) / scrollState.perPage);
+    if (scrollState.currentPage >= totalPages || (data.news || []).length === 0) {
+      scrollState.hasMore = false;
+      document.getElementById('endOfFeed').style.display = 'block';
+      scrollObserver.unobserve(document.getElementById('scrollTrigger'));
+    }
+  } catch (e) {
+    scrollState.currentPage -= 1;
+  } finally {
+    scrollState.isLoading = false;
+    document.getElementById('skeletonContainer').style.display = 'none';
+  }
+}
+
+const scrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => { if (entry.isIntersecting) loadNextPage(); });
+}, { rootMargin: '300px' });
+if (scrollState.enabled && scrollState.hasMore) scrollObserver.observe(document.getElementById('scrollTrigger'));
+
 // Theme
 const savedTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
