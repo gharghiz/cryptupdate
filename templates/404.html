@@ -1,54 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found | CryptositNews</title>
+    <title>404 - CryptositNews</title>
+    <meta name="theme-color" content="#050508">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        :root{--bg:#0a0e1a;--bg-elevated:#0f1424;--text-primary:#edf2f7;--text-secondary:#8b9dc3;--text-muted:#4a5e85;--border:#1c2540;--accent:#3b82f6;--purple:#8b5cf6}
-        body{background:var(--bg);color:var(--text-primary);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
-        .nav{border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center}
-        .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary)}
-        .nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center}
-        .nav-logo-text{font-size:17px;font-weight:800;letter-spacing:-0.03em}
-        .nav-logo-text span{color:var(--accent)}
-        .content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
-        .error-code{font-family:'JetBrains Mono',monospace;font-size:clamp(100px,20vw,200px);font-weight:700;letter-spacing:-0.05em;line-height:1;background:linear-gradient(135deg,var(--text-primary),var(--text-muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px}
-        .error-title{font-size:20px;font-weight:700;margin-bottom:8px}
-        .error-desc{font-size:14px;color:var(--text-muted);max-width:400px;line-height:1.6;margin-bottom:32px}
-        .actions{display:flex;gap:12px}
-        .btn{padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:all 0.15s;border:1px solid var(--border)}
-        .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-        .btn-primary:hover{opacity:0.9}
-        .btn-secondary{background:transparent;color:var(--text-secondary)}
-        .btn-secondary:hover{border-color:var(--text-muted);color:var(--text-primary)}
-        .footer{border-top:1px solid var(--border);padding:20px 24px;text-align:center}
-        .footer-text{font-size:12px;color:var(--text-muted)}
+        body{background:#050508;color:#c8cad0;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;min-height:100vh}
+        [data-theme="light"] body{background:#f5f5f8}
+        a{color:inherit;text-decoration:none}
+        .err{text-align:center;padding:20px}
+        .err-code{font-family:'Inter',monospace;font-size:120px;font-weight:900;background:linear-gradient(135deg,#2563eb,#00dc82);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+        [data-theme="light"] .err-code{background:linear-gradient(135deg,#1d4ed8,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .err-msg{font-size:16px;color:#8888a8;margin:16px 0 28px}
+        .err-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;background:#2563eb;color:#fff;font-size:13px;font-weight:600;transition:all .2s}
+        .err-btn:hover{box-shadow:0 0 20px rgba(37,99,235,0.3)}
+        [data-theme="light"] .err-btn{background:#1d4ed8}
     </style>
 </head>
-<body>
-    <nav class="nav">
-        <a href="/" class="nav-logo">
-            <div class="nav-logo-icon"><svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-            <span class="nav-logo-text">Crypto<span>sit</span>News</span>
-        </a>
-    </nav>
-    <div class="content">
-        <div class="error-code">404</div>
-        <div class="error-title">Page Not Found</div>
-        <div class="error-desc">The page you're looking for doesn't exist or has been moved.</div>
-        <div class="actions">
-            <a href="/" class="btn btn-primary">Back to Home</a>
-            <a href="/" class="btn btn-secondary">Search News</a>
-        </div>
+<body data-theme="{{ theme or 'dark' }}">
+    <div class="err">
+        <div class="err-code">404</div>
+        <p class="err-msg">This page doesn't exist or has been moved.</p>
+        <a href="/" class="err-btn">← Back Home</a>
     </div>
-    <footer class="footer">
-        <div class="footer-text">© 2024 CryptositNews. All rights reserved.</div>
-    </footer>
 </body>
 </html>

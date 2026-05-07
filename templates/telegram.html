@@ -3,514 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptositNews - Telegram Bot | Never Miss a Crypto Move</title>
-    <meta name="description" content="Get instant crypto news, AI-powered summaries, and price alerts delivered straight to your Telegram.">
-    <meta property="og:title" content="CryptositNews - Telegram Bot">
-    <meta property="og:description" content="Get instant crypto news, AI-powered summaries, and price alerts on Telegram.">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#0a0e1a">
+    <title>Telegram Bot - CryptositNews</title>
+    <meta name="theme-color" content="#050508">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: ['class', '[data-theme="dark"]'],
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        /* ── Theme Variables ── */
-        [data-theme="dark"] {
-            --bg: #0a0e1a; --bg-elevated: #0f1424; --bg-card: #141929; --bg-card-hover: #181e33;
-            --bg-input: #111728; --text-primary: #edf2f7; --text-secondary: #8b9dc3; --text-muted: #4a5e85;
-            --border: #1c2540; --border-hover: #2a3658; --accent: #3b82f6; --accent-hover: #2563eb;
-            --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --purple: #8b5cf6;
-            --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2);
-            --shadow-lg: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px rgba(0,0,0,0.3);
-            --ticker-bg: #080c16; --nav-bg: rgba(10,14,26,0.92);
-        }
-        [data-theme="light"] {
-            --bg: #f7f9fc; --bg-elevated: #ffffff; --bg-card: #ffffff; --bg-card-hover: #f0f4fa;
-            --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8;
-            --border: #e2e8f0; --border-hover: #cbd5e1; --accent: #2563eb; --accent-hover: #1d4ed8;
-            --green: #16a34a; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
-            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-lg: 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
-            --ticker-bg: #f1f5f9; --nav-bg: rgba(255,255,255,0.92);
-        }
-
-        html { scroll-behavior: smooth; }
-        body {
-            background: var(--bg); color: var(--text-primary);
-            font-family: 'Inter', system-ui, sans-serif;
-            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-            line-height: 1.6; overflow-x: hidden;
-        }
-
-        /* ── Ticker Bar ── */
-        .ticker-bar {
-            background: var(--ticker-bg); border-bottom: 1px solid var(--border);
-            overflow: hidden; white-space: nowrap; height: 36px;
-        }
-        .ticker-track { display: inline-flex; animation: scroll 60s linear infinite; height: 100%; align-items: center; }
-        .ticker-track:hover { animation-play-state: paused; }
-        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .ticker-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; font-size: 12px; font-weight: 500; }
-        .ticker-item .price { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary); }
-        .ticker-item .change { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; }
-
-        /* ── Navigation ── */
-        .site-nav {
-            background: var(--nav-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
-        }
-        .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
-        .nav-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
-        .nav-logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
-        .nav-logo-text span { color: var(--accent); }
-        .nav-live { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 8px 2px 6px; border-radius: 4px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.15); font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; }
-        .nav-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); position: relative; }
-        .nav-live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(34,197,94,0.3); animation: pulse-ring 2s ease-out infinite; }
-        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
-        .nav-links { display: flex; align-items: center; gap: 2px; }
-        .nav-link { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); text-decoration: none; transition: all 0.15s; cursor: pointer; border: none; background: none; font-family: inherit; }
-        .nav-link:hover { color: var(--text-primary); background: var(--bg-input); }
-        .nav-link.active { color: var(--accent); background: rgba(59,130,246,0.1); }
-        .nav-actions { display: flex; align-items: center; gap: 4px; }
-        .nav-btn { width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-        .nav-btn:hover { background: var(--bg-input); color: var(--text-primary); }
-        .nav-btn svg { width: 18px; height: 18px; }
-        .nav-divider { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
-
-        /* ── Mobile Menu ── */
-        .mobile-menu-btn { display: none; width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; align-items: center; justify-content: center; }
-        .mobile-menu-btn svg { width: 20px; height: 20px; }
-        .mobile-nav { display: none; flex-direction: column; gap: 4px; padding: 16px 24px 20px; background: var(--bg-elevated); border-bottom: 1px solid var(--border); }
-        .mobile-nav.open { display: flex; }
-        .mobile-nav .nav-link { font-size: 14px; padding: 10px 12px; }
-        @media (max-width: 768px) {
-            .desktop-links { display: none !important; }
-            .mobile-menu-btn { display: flex; }
-        }
-
-        /* ── Container ── */
-        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-
-        /* ── Page Hero ── */
-        .page-hero { padding: 80px 0 60px; text-align: center; }
-        @media (max-width: 768px) { .page-hero { padding: 48px 0 36px; } }
-        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.15); font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
-        .hero-badge svg { width: 14px; height: 14px; }
-        .hero-title { font-size: 48px; font-weight: 900; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 16px; }
-        .hero-title span { color: var(--accent); }
-        @media (max-width: 768px) { .hero-title { font-size: 32px; } }
-        .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
-        @media (max-width: 768px) { .hero-desc { font-size: 15px; } }
-
-        /* ── CTA Buttons ── */
-        .cta-primary { display: inline-flex; align-items: center; gap: 10px; padding: 14px 32px; border-radius: 10px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.15s; border: none; cursor: pointer; font-family: inherit; }
-        .cta-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-        .cta-primary svg { width: 18px; height: 18px; }
-        .cta-secondary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 10px; background: transparent; color: var(--text-primary); font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.15s; border: 1px solid var(--border); cursor: pointer; font-family: inherit; }
-        .cta-secondary:hover { border-color: var(--border-hover); background: var(--bg-card); }
-
-        /* ── Section ── */
-        .section { padding: 64px 0; }
-        @media (max-width: 768px) { .section { padding: 40px 0; } }
-        .section-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-        .section-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
-        @media (max-width: 768px) { .section-title { font-size: 24px; } }
-        .section-subtitle { font-size: 15px; color: var(--text-secondary); max-width: 560px; line-height: 1.7; }
-        .section-title-accent { display: inline-block; width: 4px; height: 20px; background: var(--accent); border-radius: 2px; margin-right: 12px; vertical-align: middle; }
-
-        /* ── Feature Cards ── */
-        .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
-        @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
-        .feature-card { padding: 28px 24px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); transition: all 0.2s; }
-        .feature-card:hover { border-color: var(--border-hover); background: var(--bg-card-hover); box-shadow: var(--shadow); }
-        .feature-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-        .feature-icon svg { width: 22px; height: 22px; }
-        .feature-icon-blue { background: rgba(59,130,246,0.1); color: var(--accent); }
-        .feature-icon-green { background: rgba(34,197,94,0.1); color: var(--green); }
-        .feature-icon-amber { background: rgba(245,158,11,0.1); color: var(--amber); }
-        .feature-icon-purple { background: rgba(139,92,246,0.1); color: var(--purple); }
-        .feature-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
-        .feature-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
-
-        /* ── Steps ── */
-        .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 40px; position: relative; }
-        @media (max-width: 768px) { .steps-grid { grid-template-columns: 1fr; gap: 24px; } }
-        .step-item { padding: 28px 24px; text-align: center; position: relative; }
-        .step-number { width: 48px; height: 48px; border-radius: 12px; background: var(--bg-card); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--accent); margin: 0 auto 16px; font-family: 'Inter', sans-serif; }
-        .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-        .step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 220px; margin: 0 auto; }
-        .step-connector { position: absolute; top: 52px; left: calc(50% + 32px); width: calc(100% - 64px); height: 2px; background: var(--border); }
-        @media (max-width: 768px) { .step-connector { display: none; } }
-
-        /* ── Big CTA ── */
-        .big-cta-section { padding: 80px 0; }
-        @media (max-width: 768px) { .big-cta-section { padding: 48px 0; } }
-        .big-cta-card { padding: 56px 40px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); text-align: center; }
-        @media (max-width: 768px) { .big-cta-card { padding: 36px 24px; } }
-        .big-cta-title { font-size: 36px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 12px; }
-        @media (max-width: 768px) { .big-cta-title { font-size: 26px; } }
-        .big-cta-desc { font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.7; }
-        .big-cta-btn { display: inline-flex; align-items: center; gap: 12px; padding: 16px 40px; border-radius: 12px; background: var(--accent); color: #fff; font-size: 17px; font-weight: 700; text-decoration: none; transition: all 0.15s; border: none; cursor: pointer; font-family: inherit; }
-        .big-cta-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-        .big-cta-btn svg { width: 22px; height: 22px; }
-        .big-cta-subtext { margin-top: 16px; font-size: 12px; color: var(--text-muted); }
-
-        /* ── FAQ ── */
-        .faq-list { max-width: 720px; margin: 40px auto 0; display: flex; flex-direction: column; gap: 8px; }
-        .faq-item { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); overflow: hidden; transition: border-color 0.15s; }
-        .faq-item:hover { border-color: var(--border-hover); }
-        .faq-question { width: 100%; padding: 18px 24px; background: none; border: none; color: var(--text-primary); font-size: 14px; font-weight: 700; font-family: inherit; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        .faq-question:hover { color: var(--accent); }
-        .faq-question svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--text-muted); transition: transform 0.2s; }
-        .faq-item.open .faq-question svg { transform: rotate(180deg); }
-        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
-        .faq-item.open .faq-answer { max-height: 300px; }
-        .faq-answer-inner { padding: 0 24px 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
-
-        /* ── Footer ── */
-        .site-footer { border-top: 1px solid var(--border); margin-top: 0; padding: 40px 0 24px; }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
-        @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
-        .footer-brand { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
-        .footer-brand span { color: var(--accent); }
-        .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 300px; }
-        .footer-heading { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
-        .footer-link { display: block; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0; transition: color 0.15s; }
-        .footer-link:hover { color: var(--accent); }
-        .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .footer-copy { font-size: 12px; color: var(--text-muted); }
-
-        /* ── Scrollbar ── */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
-
-        /* ── RTL ── */
-        [dir="rtl"] .ticker-track { animation-direction: reverse; }
-        [dir="rtl"] .faq-question { text-align: right; }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth}
+        body{background:#050508;color:#c8cad0;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
+        a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:none;background:none}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:3px}
+        :root{--bg:#050508;--bg2:#0a0a12;--bg3:#10101c;--border:#1a1a2e;--border2:#252540;--text:#e4e4ec;--text2:#8888a8;--text3:#4a4a6a;--blue:#2563eb;--blue2:#3b82f6;--blue-glow:rgba(37,99,235,0.3);--green:#00dc82;--green-glow:rgba(0,220,130,0.2)}
+        [data-theme="light"]{--bg:#f5f5f8;--bg2:#eeeef4;--bg3:#fff;--border:#dddde8;--border2:#ccccdd;--text:#0a0a1a;--text2:#555570;--text3:#9999aa;--blue:#1d4ed8;--blue2:#2563eb;--green:#059669}
+        .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+        .nav{position:sticky;top:0;z-index:100;height:56px;background:rgba(5,5,8,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+        [data-theme="light"] .nav{background:rgba(245,245,248,0.85)}
+        .nav-inner{max-width:1240px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:center;justify-content:space-between}
+        .logo{display:flex;align-items:center;gap:8px}
+        .logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center}
+        .logo-txt{font-size:16px;font-weight:800;letter-spacing:-0.04em;color:var(--text)}
+        .logo-txt em{font-style:normal;color:var(--blue2)}
+        .nav-a{padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text2);transition:all .15s}
+        .nav-a:hover{color:var(--text);background:var(--bg3)}
+        .nav-btn{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s}
+        .nav-btn:hover{background:var(--bg3);color:var(--text)}
+        .nav-btn svg{width:17px;height:17px}
+        .hero{padding:64px 0 48px;text-align:center}
+        .tg-icon-big{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,rgba(37,99,235,0.15),rgba(0,220,130,0.1));border:1px solid rgba(37,99,235,0.2);display:inline-flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:24px}
+        .hero h1{font-size:32px;font-weight:900;letter-spacing:-0.03em;color:var(--text);margin-bottom:12px}
+        .hero p{font-size:15px;color:var(--text2);max-width:480px;margin:0 auto 28px;line-height:1.7}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;background:var(--blue);transition:all .2s}
+        .btn:hover{box-shadow:0 0 24px var(--blue-glow)}
+        .features{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 0 48px}
+        @media(max-width:600px){.features{grid-template-columns:1fr}}
+        .feat{padding:24px;border-radius:12px;background:var(--bg2);border:1px solid var(--border)}
+        .feat-icon{font-size:24px;margin-bottom:12px}
+        .feat h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+        .feat p{font-size:12px;color:var(--text2);line-height:1.7}
+        .flow{padding:0 0 48px}
+        .flow h2{font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px;text-align:center}
+        .flow-steps{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:0 auto}
+        .flow-step{display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:10px;background:var(--bg2);border:1px solid var(--border)}
+        .flow-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+        .flow-step h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+        .flow-step p{font-size:11px;color:var(--text2);line-height:1.6}
+        .footer{border-top:1px solid var(--border);padding:24px 0}
+        .footer-copy{font-size:11px;color:var(--text3);text-align:center}
     </style>
 </head>
 <body>
-
-    <!-- ═══ TOP TICKER BAR ═══ -->
-    <div class="ticker-bar">
-        <div id="prices-ticker" class="ticker-track">
-            <div class="ticker-item" style="color:var(--text-muted)">Loading prices...</div>
-        </div>
-    </div>
-
-    <!-- ═══ NAVIGATION ═══ -->
-    <nav class="site-nav">
+    <nav class="nav">
         <div class="nav-inner">
-            <div style="display:flex;align-items:center;gap:24px;">
-                <a href="/" class="nav-logo">
-                    <div class="nav-logo-icon">
-                        <svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <span class="nav-logo-text">Crypto<span>sit</span>News</span>
-                    <span class="nav-live"><span class="nav-live-dot"></span>Live</span>
-                </a>
-                <div class="nav-links desktop-links" style="display:flex;">
-                    <a href="/" class="nav-link">Home</a>
-                    <a href="/about" class="nav-link">About</a>
-                    <a href="/telegram" class="nav-link active">Telegram</a>
-                </div>
-            </div>
-            <div class="nav-actions">
-                <button class="mobile-menu-btn" onclick="document.getElementById('mobile-nav').classList.toggle('open')" aria-label="Menu">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <div class="nav-divider" style="display:none;" class="mobile-only"></div>
-                <button onclick="toggleTheme()" id="theme-btn" class="nav-btn" title="Theme">
-                    <svg id="theme-dark-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                </button>
-            </div>
+            <a href="/" class="logo"><div class="logo-icon"><svg width="14" height="14" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><span class="logo-txt">Crypto<em>sit</em>News</span></a>
+            <div style="display:flex;gap:2px"><a href="/" class="nav-a">Home</a><a href="/news" class="nav-a">News</a><a href="/market" class="nav-a">Markets</a></div>
+            <div class="nav-right"><button onclick="toggleTheme()" class="nav-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></button></div>
         </div>
     </nav>
-    <!-- Mobile Nav -->
-    <div id="mobile-nav" class="mobile-nav">
-        <a href="/" class="nav-link">Home</a>
-        <a href="/about" class="nav-link">About</a>
-        <a href="/telegram" class="nav-link active">Telegram</a>
+
+    <div class="wrap">
+        <div class="hero">
+            <div class="tg-icon-big">🤖</div>
+            <h1>Telegram Bot</h1>
+            <p>Get instant breaking crypto news, AI-powered summaries, and market alerts delivered straight to your Telegram.</p>
+            <a href="https://t.me/" target="_blank" class="btn">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                Join Channel
+            </a>
+        </div>
+
+        <div class="features">
+            <div class="feat">
+                <div class="feat-icon">⚡</div>
+                <h3>Breaking News First</h3>
+                <p>Important news sent instantly with AI-generated summaries and sentiment analysis.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">🧠</div>
+                <h3>AI Analysis</h3>
+                <p>Every important article is analyzed by GPT for sentiment, summary, and key insights.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">🔔</div>
+                <h3>Price Alerts</h3>
+                <p>Set custom price alerts for any coin and get notified when the target is reached.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">🌐</div>
+                <h3>50+ Sources</h3>
+                <p>Aggregated from the most reliable crypto, forex, and finance news sources worldwide.</p>
+            </div>
+        </div>
+
+        <div class="flow">
+            <h2>How It Works</h2>
+            <div class="flow-steps">
+                <div class="flow-step"><span class="flow-num">1</span><div><h4>Scrape & Collect</h4><p>RSS feeds and APIs from 50+ sources are scraped every 5 minutes.</p></div></div>
+                <div class="flow-step"><span class="flow-num">2</span><div><h4>Clean & Filter</h4><p>Duplicates removed, content cleaned, importance scored by keywords.</p></div></div>
+                <div class="flow-step"><span class="flow-num">3</span><div><h4>AI Analysis</h4><p>GPT generates summaries, sentiment, and reasoning for important news.</p></div></div>
+                <div class="flow-step"><span class="flow-num">4</span><div><h4>Publish & Store</h4><p>Formatted messages sent to Telegram and stored in the database for the website.</p></div></div>
+            </div>
+        </div>
     </div>
 
-    <!-- ═══ HERO ═══ -->
-    <section class="page-hero">
-        <div class="container">
-            <div class="hero-badge">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                Telegram Integration
-            </div>
-            <h1 class="hero-title">Never Miss a<br><span>Crypto Move</span></h1>
-            <p class="hero-desc">Get breaking crypto news, AI-powered summaries, and real-time price alerts delivered straight to your Telegram. Stay ahead of the market 24/7.</p>
-            <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
-                <a href="https://t.me/cryptositnews" target="_blank" rel="noopener noreferrer" class="cta-primary">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                    Open Telegram
-                </a>
-                <a href="#how-it-works" class="cta-secondary">How it works</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══ FEATURES ═══ -->
-    <section class="section">
-        <div class="container">
-            <div style="text-align:center;">
-                <div class="section-label">Features</div>
-                <h2 class="section-title">Everything you need,<br>right in Telegram</h2>
-                <p class="section-subtitle" style="margin:8px auto 0;">Our Telegram bot combines real-time news delivery with powerful AI analysis tools.</p>
-            </div>
-            <div class="features-grid">
-                <!-- Feature 1: Instant News -->
-                <div class="feature-card">
-                    <div class="feature-icon feature-icon-blue">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <div class="feature-title">Instant News Delivery</div>
-                    <p class="feature-desc">Breaking crypto news delivered to your Telegram within seconds of publication. No delays, no missed stories.</p>
-                </div>
-                <!-- Feature 2: AI Summaries -->
-                <div class="feature-card">
-                    <div class="feature-icon feature-icon-purple">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                    </div>
-                    <div class="feature-title">AI-Powered Summaries</div>
-                    <p class="feature-desc">Every article is analyzed and summarized by AI. Get the key points in seconds without reading full articles.</p>
-                </div>
-                <!-- Feature 3: Price Alerts -->
-                <div class="feature-card">
-                    <div class="feature-icon feature-icon-green">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    </div>
-                    <div class="feature-title">Price Alerts</div>
-                    <p class="feature-desc">Set custom price alerts for any cryptocurrency. Get notified instantly when your target price is reached.</p>
-                </div>
-                <!-- Feature 4: Multi-language -->
-                <div class="feature-card">
-                    <div class="feature-icon feature-icon-amber">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
-                    </div>
-                    <div class="feature-title">Multi-Language Support</div>
-                    <p class="feature-desc">Receive news in English or Arabic. Our AI translates and adapts content while preserving accuracy.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══ HOW IT WORKS ═══ -->
-    <section class="section" id="how-it-works" style="border-top:1px solid var(--border);">
-        <div class="container">
-            <div style="text-align:center;">
-                <div class="section-label">Getting Started</div>
-                <h2 class="section-title">How it works</h2>
-                <p class="section-subtitle" style="margin:8px auto 0;">Four simple steps to stay on top of the crypto market.</p>
-            </div>
-            <div class="steps-grid">
-                <!-- Step 1 -->
-                <div class="step-item">
-                    <div class="step-connector"></div>
-                    <div class="step-number">1</div>
-                    <div class="step-title">Subscribe to Channel</div>
-                    <p class="step-desc">Click the link below to open our Telegram channel and hit the Join button.</p>
-                </div>
-                <!-- Step 2 -->
-                <div class="step-item">
-                    <div class="step-connector"></div>
-                    <div class="step-number">2</div>
-                    <div class="step-title">Get Instant News</div>
-                    <p class="step-desc">Breaking crypto news from 40+ sources starts appearing in your chat in real time.</p>
-                </div>
-                <!-- Step 3 -->
-                <div class="step-item">
-                    <div class="step-connector"></div>
-                    <div class="step-number">3</div>
-                    <div class="step-title">Set Price Alerts</div>
-                    <p class="step-desc">Use the bot commands to set custom price alerts for any coin you're tracking.</p>
-                </div>
-                <!-- Step 4 -->
-                <div class="step-item">
-                    <div class="step-number">4</div>
-                    <div class="step-title">Stay Informed</div>
-                    <p class="step-desc">Sit back and receive AI-summarized updates. Never miss a market-moving event.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══ BIG CTA ═══ -->
-    <section class="big-cta-section">
-        <div class="container">
-            <div class="big-cta-card">
-                <div style="margin-bottom:24px;">
-                    <svg width="56" height="56" viewBox="0 0 24 24" fill="var(--accent)" style="opacity:0.8;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                </div>
-                <h2 class="big-cta-title">Ready to stay ahead?</h2>
-                <p class="big-cta-desc">Join thousands of crypto enthusiasts who trust CryptositNews for their daily market intelligence.</p>
-                <a href="https://t.me/cryptositnews" target="_blank" rel="noopener noreferrer" class="big-cta-btn">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                    Open Telegram
-                </a>
-                <p class="big-cta-subtext">Free to join &middot; No sign-up required &middot; Unsubscribe anytime</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══ FAQ ═══ -->
-    <section class="section" style="border-top:1px solid var(--border);">
-        <div class="container">
-            <div style="text-align:center;">
-                <div class="section-label">FAQ</div>
-                <h2 class="section-title">Frequently asked questions</h2>
-            </div>
-            <div class="faq-list">
-                <!-- FAQ 1 -->
-                <div class="faq-item">
-                    <button class="faq-question" onclick="toggleFaq(this)">
-                        Is the Telegram channel free to join?
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer">
-                        <div class="faq-answer-inner">Yes, the CryptositNews Telegram channel is completely free. You can subscribe, receive news, and set price alerts at no cost. We believe crypto intelligence should be accessible to everyone.</div>
-                    </div>
-                </div>
-                <!-- FAQ 2 -->
-                <div class="faq-item">
-                    <button class="faq-question" onclick="toggleFaq(this)">
-                        How fast are the news updates?
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer">
-                        <div class="faq-answer-inner">Our system monitors 40+ crypto news sources continuously. Breaking news is typically delivered to your Telegram within 30-60 seconds of publication, making it one of the fastest crypto news services available.</div>
-                    </div>
-                </div>
-                <!-- FAQ 3 -->
-                <div class="faq-item">
-                    <button class="faq-question" onclick="toggleFaq(this)">
-                        How do I set up price alerts?
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer">
-                        <div class="faq-answer-inner">After joining the channel, you can use our bot commands to create price alerts. Simply specify the cryptocurrency, target price, and whether you want to be notified when the price goes above or below your target. You can also set alerts through our website.</div>
-                    </div>
-                </div>
-                <!-- FAQ 4 -->
-                <div class="faq-item">
-                    <button class="faq-question" onclick="toggleFaq(this)">
-                        Can I choose which news categories to receive?
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer">
-                        <div class="faq-answer-inner">Currently, the Telegram channel delivers all categories including market updates, regulations, DeFi, security alerts, and AI news. We are working on customizable notification preferences that will let you filter by category and importance level.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══ FOOTER ═══ -->
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <div class="footer-brand">Crypto<span>sit</span>News</div>
-                    <p class="footer-desc" style="margin-top:8px">Your trusted source for real-time cryptocurrency news, market intelligence, and AI-powered analysis from 40+ sources.</p>
-                </div>
-                <div>
-                    <div class="footer-heading">Pages</div>
-                    <a href="/" class="footer-link">Home</a>
-                    <a href="/about" class="footer-link">About</a>
-                    <a href="/telegram" class="footer-link">Telegram</a>
-                </div>
-                <div>
-                    <div class="footer-heading">Features</div>
-                    <span class="footer-link" style="cursor:default">Live Prices</span>
-                    <span class="footer-link" style="cursor:default">AI Analysis</span>
-                    <span class="footer-link" style="cursor:default">Price Alerts</span>
-                </div>
-                <div>
-                    <div class="footer-heading">Platform</div>
-                    <span class="footer-link" style="cursor:default">PWA Enabled</span>
-                    <span class="footer-link" style="cursor:default">SSE Live</span>
-                    <span class="footer-link" style="cursor:default">Multi-language</span>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <span class="footer-copy">&copy; 2024 CryptositNews. All rights reserved.</span>
-                <span class="footer-copy">Powered by AI</span>
-            </div>
-        </div>
-    </footer>
-
-    <!-- ═══ SCRIPTS ═══ -->
-    <script>
-        /* ===== Theme Toggle ===== */
-        let currentTheme = "{{ theme }}" || "dark";
-        function applyTheme() {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-            const dk = document.getElementById('theme-dark-icon');
-            const lt = document.getElementById('theme-light-icon');
-            if (dk && lt) { dk.style.display = currentTheme === 'dark' ? 'none' : 'block'; lt.style.display = currentTheme === 'dark' ? 'block' : 'none'; }
-            const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.content = currentTheme === 'dark' ? '#0a0e1a' : '#f7f9fc';
-        }
-        function toggleTheme() { currentTheme = currentTheme === 'dark' ? 'light' : 'dark'; document.cookie = 'theme=' + currentTheme + ';path=/;max-age=31536000'; applyTheme(); }
-        applyTheme();
-
-        /* ===== FAQ Accordion ===== */
-        function toggleFaq(btn) {
-            const item = btn.closest('.faq-item');
-            const wasOpen = item.classList.contains('open');
-            document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
-            if (!wasOpen) item.classList.add('open');
-        }
-
-        /* ===== Ticker Prices ===== */
-        (function() {
-            const ticker = document.getElementById('prices-ticker');
-            if (!ticker) return;
-            const coins = ['BTC','ETH','BNB','SOL','XRP','ADA','DOGE','AVAX','DOT','MATIC'];
-            const display = coins.map(c => '<div class="ticker-item" data-coin="' + c + '"><span style="color:var(--text-muted)">' + c + '</span> <span class="price">...</span> <span class="change">...</span></div>').join('');
-            ticker.innerHTML = display + display;
-            fetch('/api/market/prices').then(r => r.json()).then(data => {
-                if (!data.prices) return;
-                const items = ticker.querySelectorAll('.ticker-item[data-coin]');
-                const seen = new Set();
-                items.forEach(el => {
-                    const coin = el.getAttribute('data-coin');
-                    if (seen.has(coin)) return;
-                    seen.add(coin);
-                    const p = data.prices[coin];
-                    if (!p) return;
-                    el.querySelector('.price').textContent = '$' + (p.usd >= 1 ? p.usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : p.usd.toFixed(6));
-                    const changeEl = el.querySelector('.change');
-                    if (p.usd_24h_change !== undefined) {
-                        const val = p.usd_24h_change.toFixed(2);
-                        changeEl.textContent = (val >= 0 ? '+' : '') + val + '%';
-                        changeEl.style.color = val >= 0 ? 'var(--green)' : 'var(--red)';
-                    }
-                });
-            }).catch(() => {});
-            // Duplicate for seamless scroll
-            setTimeout(() => { ticker.innerHTML = ticker.innerHTML + ticker.innerHTML; }, 100);
-        })();
-    </script>
+    <footer class="footer"><div class="wrap"><span class="footer-copy">© 2025 CryptositNews</span></div></footer>
+    <script>function toggleTheme(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;document.cookie=`theme=${t};path=/;max-age=31536000`;location.reload()}</script>
 </body>
 </html>
