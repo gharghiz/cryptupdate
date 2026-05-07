@@ -476,6 +476,13 @@ footer a{color:var(--purple);text-decoration:none;}
           <div class="skeleton" style="width:100%;height:13px;"></div>
         </div>
       </div>
+      <div class="widget">
+        <div class="widget-title">🔥 Top Opportunity Today</div>
+        <div id="topOpportunity" style="font-family:var(--mono);font-size:.63rem;line-height:1.6;color:var(--text);">
+          <div class="skeleton" style="width:90%;height:14px;margin-bottom:6px;"></div>
+          <div class="skeleton" style="width:75%;height:12px;"></div>
+        </div>
+      </div>
 
       <div class="widget">
         <div class="widget-title">📊 Sentiment Trend</div>
@@ -635,7 +642,13 @@ function toggleTheme() {
   document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
 }
 function saveBookmark(){localStorage.setItem('cryptosit_bookmark', window.location.href);alert('Bookmarked ✅');}
-function subscribeEmail(e){e.preventDefault();const v=document.getElementById('emailInput').value;localStorage.setItem('cryptosit_email',v);alert('Subscribed ✅');e.target.reset();}
+async function subscribeEmail(e){
+  e.preventDefault();
+  const v=document.getElementById('emailInput').value;
+  const r=await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:v})});
+  const d=await r.json();
+  if(r.ok&&d.ok){alert('Subscribed to daily digest ✅');e.target.reset();}else{alert('Subscribe failed');}
+}
 async function enableNotifications(){if(!('Notification' in window))return;const p=await Notification.requestPermission();if(p==='granted')alert('Notifications enabled ✅');}
 
 // Tab nav
@@ -733,8 +746,15 @@ async function loadIntel() {
       aiWrap.innerHTML = `
         <div class="ai-preview"><b>${ai.coin || 'N/A'}:</b> ${(ai.signal || 'Neutral')} momentum detected</div>
         <div class="price-row"><span class="coin-sym">Confidence</span><span class="up">${ai.confidence || 0}%</span></div>
+        <div class="fg-sub">Timeframe: ${ai.timeframe || 'Short-term'}</div>
+        <div class="fg-sub">Trigger: ${ai.trigger || 'Sentiment + momentum shift'}</div>
+        <div class="fg-sub">Watch: ${ai.watch || 'Volume + macro headlines'}</div>
         <div class="fg-sub">Reason: ${ai.reason || 'No signal context available yet.'}</div>
       `;
+    }
+    const topOpp = document.getElementById('topOpportunity');
+    if (topOpp) {
+      topOpp.innerHTML = `<b>${ai.coin || 'BTC'} ${ai.signal || 'Neutral'}</b><br>Confidence: ${ai.confidence || 0}%<br><span style="color:var(--muted)">${ai.watch || ''}</span>`;
     }
     const sentimentWrap = document.getElementById('sentimentWrap');
     if (sentimentWrap) {

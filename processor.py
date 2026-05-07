@@ -140,7 +140,7 @@ def format_message(item: dict):
     market = get_market_data(title)
 
     # AI فقط للأخبار المهمة
-    ai = {"summary": "", "sentiment": "", "reason": ""}
+    ai = {"summary": " ".join(title.split()[:14]) + ("..." if len(title.split()) > 14 else ""), "sentiment": sentiment, "reason": "Headline keyword momentum"}
     if breaking or high:
         ai = generate_ai_insight(title)
 

@@ -118,6 +118,12 @@ def init_db():
                     posted_at  TEXT
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS subscribers (
+                    email TEXT PRIMARY KEY,
+                    created_at TEXT
+                )
+            """)
 
             for col in ["summary", "sentiment", "reason", "category"]:
                 try:
@@ -138,6 +144,11 @@ def init_db():
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS telegram_log (
                         id TEXT PRIMARY KEY, posted_at TEXT
+                    )
+                """)
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS subscribers (
+                        email TEXT PRIMARY KEY, created_at TEXT
                     )
                 """)
                 for col in ["summary", "sentiment", "reason", "category"]:
@@ -215,6 +226,25 @@ def save_news(news_id: str, title: str, source: str,
         cache_clear()
     except Exception as e:
         logger.error(f"❌ save_news: {e}")
+
+def save_subscriber(email: str) -> bool:
+    email = (email or "").strip().lower()
+    if "@" not in email or "." not in email:
+        return False
+    created_at = now_utc().isoformat()
+    try:
+        if USE_POSTGRES:
+            conn = get_pg_conn(); cur = conn.cursor()
+            cur.execute("INSERT INTO subscribers (email, created_at) VALUES (%s, %s) ON CONFLICT (email) DO NOTHING", (email, created_at))
+            conn.commit(); cur.close(); conn.close()
+        else:
+            with get_sqlite_conn() as conn:
+                conn.execute("INSERT OR IGNORE INTO subscribers (email, created_at) VALUES (?, ?)", (email, created_at))
+                conn.commit()
+        return True
+    except Exception as e:
+        logger.error(f"❌ save_subscriber: {e}")
+        return False
 
 # ============================================================
 # تنظيف telegram_log فقط — كل X ساعات

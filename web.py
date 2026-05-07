@@ -9,7 +9,7 @@ import time
 import requests
 import re
 from datetime import datetime, timezone, timedelta
-from database import init_db, get_news, get_news_by_id, get_stats
+from database import init_db, get_news, get_news_by_id, get_stats, save_subscriber
 
 app = Flask(__name__)
 init_db()
@@ -127,7 +127,10 @@ def compute_market_intelligence(items: list) -> dict:
             "coin": best_coin,
             "signal": signal,
             "confidence": confidence,
-            "reason": f"Positive signals {c['pos']} vs negative {c['neg']} across {c['mentions']} related stories"
+            "reason": f"Positive signals {c['pos']} vs negative {c['neg']} across {c['mentions']} related stories",
+            "timeframe": "Short-term (24-72h)",
+            "trigger": "Momentum + sentiment divergence in latest headlines",
+            "watch": f"Watch ETF/regulation headlines and {best_coin} volume spikes"
         },
         "sentiment": {
             "bullish": bullish_pct,
@@ -287,6 +290,17 @@ def api_prices():
 @app.route("/api/intel")
 def api_intel():
     return jsonify(get_cached_intel())
+
+@app.route("/api/subscribe", methods=["POST"])
+def api_subscribe():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    if not email:
+        return jsonify({"ok": False, "error": "email required"}), 400
+    ok = save_subscriber(email)
+    if not ok:
+        return jsonify({"ok": False, "error": "invalid or failed"}), 400
+    return jsonify({"ok": True, "email": email, "message": "Subscribed to daily digest"})
 
 @app.route("/health")
 def health():
