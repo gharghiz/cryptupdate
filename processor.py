@@ -171,4 +171,19 @@ def format_message(item: dict):
 # ============================
 
 def prioritize(news_list):
-    return news_list
+    coin_weights = {
+        "bitcoin": 5, "btc": 5,
+        "ethereum": 4, "eth": 4,
+        "solana": 3, "sol": 3,
+        "bnb": 3, "xrp": 3,
+        "ripple": 3, "dogecoin": 2, "doge": 2,
+    }
+    def score(item):
+        title = item.get("title", "").lower()
+        breaking = 100 if item.get("breaking") else 0
+        high = 60 if item.get("high_impact") else 0
+        coin = max((w for k, w in coin_weights.items() if k in title), default=0)
+        keyword_hits = sum(1 for k in IMPORTANT_KEYWORDS if k in title)
+        return breaking + high + coin + min(keyword_hits, 8)
+
+    return sorted(news_list, key=score, reverse=True)

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CryptositNews — AI Crypto Intelligence Platform</title>
+<title>{% if active_tab %}{{ active_tab|title }} News & AI Signals — CryptositIQ{% elif search %}Search: {{ search }} — CryptositIQ{% else %}CryptositNews — AI Crypto Intelligence Platform{% endif %}</title>
 <meta name="description" content="AI crypto intelligence platform with market signals, sentiment trends, and decision support.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="CryptositIQ — AI Crypto Intelligence Platform">
@@ -280,6 +280,12 @@ footer a{color:var(--purple);text-decoration:none;}
   <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">📊 Market</button>
   <button class="tab-btn {% if active_tab=='altcoin' %}active{% endif %}" onclick="goTab('altcoin')">🪙 Altcoins</button>
 </div>
+<div style="padding:.5rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:.5rem;flex-wrap:wrap;">
+  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('bitcoin')">تابع BTC فقط</button>
+  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('defi')">تابع DeFi</button>
+  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('breaking')">تابع Breaking</button>
+  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="clearPreference()">إلغاء التخصيص</button>
+</div>
 
 <section style="padding:1.4rem 1.5rem;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,77,255,.1),rgba(0,229,255,.06));">
   <div style="max-width:1400px;margin:0 auto;display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap;">
@@ -463,6 +469,7 @@ footer a{color:var(--purple);text-decoration:none;}
 
       <div class="widget">
         <div class="widget-title">🤖 AI Market Signal</div>
+        <div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-bottom:.45rem;">Your daily edge: decision-ready sentiment signal.</div>
         <div id="aiSignalWrap">
           <div class="skeleton" style="width:92%;height:16px;margin-bottom:7px;"></div>
           <div class="skeleton" style="width:58%;height:14px;margin-bottom:7px;"></div>
@@ -638,6 +645,13 @@ function goTab(tab) {
   url.searchParams.delete('page');
   window.location = url;
 }
+function setPreference(tab){localStorage.setItem('preferred_tab',tab);goTab(tab);}
+function clearPreference(){localStorage.removeItem('preferred_tab');goTab('');}
+(() => {
+  const pref = localStorage.getItem('preferred_tab');
+  const currentTab = new URL(window.location).searchParams.get('tab');
+  if(pref && !currentTab && window.location.pathname === '/') goTab(pref);
+})();
 
 // Prices
 const COINS = [{sym:'BTC',id:'bitcoin'},{sym:'ETH',id:'ethereum'},{sym:'SOL',id:'solana'},{sym:'BNB',id:'binancecoin'},{sym:'XRP',id:'ripple'}];
