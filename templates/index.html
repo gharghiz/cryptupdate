@@ -23,223 +23,312 @@
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
                     colors: {
                         brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8' },
-                        surface: { 0:'#080b12',1:'#0c1018',2:'#111621',3:'#161c2a',4:'#1b2233',5:'#222a3c',6:'#2a3349',7:'#333d55',8:'#3d4968' }
+                        surface: { 0:'#060910',1:'#0a0f18',2:'#0f1520',3:'#141c2c',4:'#1a2438',5:'#212d44',6:'#2a3752',7:'#34415f',8:'#3e4d6e' }
                     }
                 }
             }
         }
     </script>
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        :root { --brand: #3b82f6; --brand-glow: rgba(59,130,246,0.15); --accent: #8b5cf6; }
-        [data-theme="light"] { --bg: #f0f4f8; --surface: #ffffff; --surface2: #f8fafc; --text: #0f172a; --text2: #475569; --border: rgba(0,0,0,0.08); }
-        [data-theme="dark"] { --bg: #080b12; --surface: #0f1420; --surface2: #141b28; --text: #e8ecf2; --text2: #8892a6; --border: rgba(255,255,255,0.06); }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-        /* Ambient Glow */
-        .hero-glow { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 800px; height: 600px; background: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-        .hero-glow-2 { position: fixed; top: -100px; right: -200px; width: 500px; height: 500px; background: radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-        /* Cards */
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
-        .card:hover { border-color: rgba(59,130,246,0.2); box-shadow: 0 0 0 1px rgba(59,130,246,0.05), 0 8px 32px -8px rgba(0,0,0,0.3); }
-        .card-elevated { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
-        /* News Card */
-        .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; transition: all 0.2s ease; position: relative; overflow: hidden; }
-        .news-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(to bottom, var(--brand), var(--accent)); opacity: 0; transition: opacity 0.2s; border-radius: 3px 0 0 3px; }
-        .news-card:hover { border-color: rgba(59,130,246,0.15); transform: translateY(-1px); box-shadow: 0 4px 20px -4px rgba(0,0,0,0.25); }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --brand: #3b82f6; --brand-glow: rgba(59,130,246,0.12); --accent: #8b5cf6; --accent2: #06b6d4; }
+        [data-theme="light"] {
+            --bg: #f4f6fb; --bg2: #edf0f7; --surface: rgba(255,255,255,0.82); --surface-solid: #ffffff; --surface2: rgba(248,250,255,0.9); --surface3: rgba(240,244,252,0.6);
+            --text: #0f172a; --text2: #64748b; --text3: #94a3b8; --border: rgba(15,23,42,0.07); --border2: rgba(15,23,42,0.12);
+            --shadow: rgba(15,23,42,0.06); --glow1: rgba(59,130,246,0.06); --glow2: rgba(139,92,246,0.05); --glow3: rgba(6,182,212,0.04);
+        }
+        [data-theme="dark"] {
+            --bg: #060910; --bg2: #080c14; --surface: rgba(14,20,33,0.75); --surface-solid: #0e1421; --surface2: rgba(18,26,42,0.7); --surface3: rgba(22,32,52,0.5);
+            --text: #e8ecf4; --text2: #7b8ba5; --text3: #4a5a75; --border: rgba(255,255,255,0.05); --border2: rgba(255,255,255,0.09);
+            --shadow: rgba(0,0,0,0.4); --glow1: rgba(59,130,246,0.07); --glow2: rgba(139,92,246,0.06); --glow3: rgba(6,182,212,0.04);
+        }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; min-height: 100vh; }
+
+        /* === ANIMATED MESH BACKGROUND === */
+        .mesh-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .mesh-bg .orb { position: absolute; border-radius: 50%; filter: blur(120px); }
+        .mesh-bg .orb-1 { width: 900px; height: 700px; background: var(--glow1); top: -300px; left: -200px; animation: orbFloat1 25s ease-in-out infinite; }
+        .mesh-bg .orb-2 { width: 700px; height: 600px; background: var(--glow2); top: -100px; right: -250px; animation: orbFloat2 30s ease-in-out infinite; }
+        .mesh-bg .orb-3 { width: 500px; height: 500px; background: var(--glow3); bottom: -200px; left: 30%; animation: orbFloat3 20s ease-in-out infinite; }
+        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0)}33%{transform:translate(80px,60px)}66%{transform:translate(-40px,100px)} }
+        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0)}33%{transform:translate(-60px,80px)}66%{transform:translate(40px,-50px)} }
+        @keyframes orbFloat3 { 0%,100%{transform:translate(0,0)}50%{transform:translate(100px,-80px)} }
+
+        /* === GRID PATTERN === */
+        .grid-pattern { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px; opacity: 0.3; mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%);
+        }
+
+        /* === GLASSMORPHISM === */
+        .glass { background: var(--surface); backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); border: 1px solid var(--border); }
+        .glass-solid { background: var(--surface-solid); border: 1px solid var(--border); }
+        .glass-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .glass-hover:hover { border-color: var(--border2); box-shadow: 0 8px 40px -12px var(--shadow); transform: translateY(-2px); }
+
+        /* === CARDS === */
+        .stat-card { background: var(--surface); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; padding: 20px 24px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+        .stat-card::after { content:''; position:absolute; inset:0; border-radius:20px; background:linear-gradient(135deg, rgba(59,130,246,0.03) 0%, transparent 50%); pointer-events:none; }
+        .stat-card:hover { border-color: rgba(59,130,246,0.15); transform: translateY(-2px); box-shadow: 0 12px 40px -8px var(--shadow); }
+
+        .widget { background: var(--surface); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: border-color 0.3s; }
+        .widget:hover { border-color: var(--border2); }
+        .widget-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        .widget-body { padding: 20px; }
+
+        /* === NEWS CARDS === */
+        .news-card { background: var(--surface); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+        .news-card::before { content: ''; position: absolute; inset: 0; border-radius: 16px; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            background: linear-gradient(135deg, rgba(59,130,246,0.04) 0%, rgba(139,92,246,0.02) 100%); }
+        .news-card:hover { border-color: rgba(59,130,246,0.15); transform: translateY(-2px); box-shadow: 0 16px 48px -12px var(--shadow); }
         .news-card:hover::before { opacity: 1; }
-        .news-card.important-card { border-left: 3px solid #f59e0b; }
-        .news-card.important-card::before { display: none; }
-        /* Ticker */
+        .news-card.important { border-color: rgba(251,191,36,0.25); }
+        .news-card.important::after { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom, #f59e0b, #f97316); border-radius:16px 0 0 16px; }
+
+        /* === TICKER === */
         .ticker-wrap { overflow: hidden; white-space: nowrap; }
-        .ticker-content { display: inline-flex; animation: ticker 60s linear infinite; }
-        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .ticker-content { display: inline-flex; animation: ticker 80s linear infinite; }
         .ticker-content:hover { animation-play-state: paused; }
-        /* Gauge */
-        .gauge-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, #ef4444 0%, #f59e0b 35%, #eab308 50%, #22c55e 75%, #16a34a 100%); }
-        .gauge-thumb { width: 16px; height: 16px; border-radius: 50%; background: white; border: 3px solid var(--brand); box-shadow: 0 0 12px rgba(59,130,246,0.4); position: absolute; top: 50%; transform: translate(-50%, -50%); transition: left 1.2s cubic-bezier(0.4,0,0.2,1); }
-        /* Animations */
-        .fade-up { animation: fadeUp 0.4s ease forwards; opacity: 0; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .stagger-1 { animation-delay: 0.05s; } .stagger-2 { animation-delay: 0.1s; } .stagger-3 { animation-delay: 0.15s; }
-        /* Pulse */
-        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; position: relative; }
-        .live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(34,197,94,0.3); animation: livePulse 2s ease-in-out infinite; }
-        @keyframes livePulse { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.6); opacity: 0; } }
-        /* Category Pills */
-        .pill { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.2s; white-space: nowrap; background: transparent; }
-        .pill:hover { border-color: rgba(59,130,246,0.3); color: var(--text); }
-        .pill.active { background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 0 16px rgba(59,130,246,0.25); }
-        /* Bookmark */
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .ticker-coin { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; margin: 0 4px; transition: background 0.2s; }
+        .ticker-coin:hover { background: var(--surface2); }
+
+        /* === GAUGE === */
+        .gauge-container { position: relative; width: 100%; height: 80px; overflow: hidden; }
+        .gauge-track { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 240px; height: 120px; border-radius: 120px 120px 0 0;
+            background: conic-gradient(from 180deg at 50% 100%, #ef4444 0deg, #f59e0b 54deg, #eab308 72deg, #22c55e 108deg, #16a34a 180deg);
+            -webkit-mask: radial-gradient(circle at 50% 100%, transparent 56px, black 58px);
+            mask: radial-gradient(circle at 50% 100%, transparent 56px, black 58px); }
+        .gauge-value-ring { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 70px; border-radius: 140px 140px 0 0;
+            border-bottom: 3px solid var(--border); }
+        .gauge-needle { position: absolute; bottom: 0; left: 50%; width: 3px; height: 52px; background: linear-gradient(to top, var(--brand), #fff); border-radius: 2px;
+            transform-origin: bottom center; transform: translateX(-50%) rotate(0deg); transition: transform 1.5s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 0 12px rgba(59,130,246,0.5); }
+        .gauge-center { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; border-radius: 50%;
+            background: var(--brand); box-shadow: 0 0 16px rgba(59,130,246,0.6); z-index: 2; border: 3px solid var(--surface-solid); }
+
+        /* === ANIMATIONS === */
+        .fade-up { animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger-1 { animation-delay: 0.06s; } .stagger-2 { animation-delay: 0.12s; } .stagger-3 { animation-delay: 0.18s; } .stagger-4 { animation-delay: 0.24s; }
+
+        /* === LIVE DOT === */
+        .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; position: relative; flex-shrink: 0; }
+        .live-dot::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; background: rgba(34,197,94,0.25); animation: livePulse 2s ease-in-out infinite; }
+        @keyframes livePulse { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.8); opacity: 0; } }
+
+        /* === PILLS === */
+        .pill { padding: 7px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); color: var(--text2); cursor: pointer;
+            transition: all 0.25s; white-space: nowrap; background: transparent; letter-spacing: 0.01em; }
+        .pill:hover { border-color: rgba(59,130,246,0.25); color: var(--text); background: var(--surface2); }
+        .pill.active { background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.1)); color: #60a5fa; border-color: rgba(59,130,246,0.2);
+            box-shadow: 0 0 20px rgba(59,130,246,0.1), inset 0 0 20px rgba(59,130,246,0.05); }
+
+        /* === BADGE === */
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+
+        /* === INPUT === */
+        .input-field { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 10px 14px; font-size: 13px; outline: none;
+            transition: all 0.25s; width: 100%; font-family: inherit; }
+        .input-field:focus { border-color: rgba(59,130,246,0.4); box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
+        .input-field::placeholder { color: var(--text3); }
+
+        /* === BUTTONS === */
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 12px; padding: 11px 22px; font-weight: 600;
+            font-size: 13px; cursor: pointer; transition: all 0.25s; font-family: inherit; letter-spacing: 0.01em; }
+        .btn-primary:hover { box-shadow: 0 8px 30px rgba(59,130,246,0.25); transform: translateY(-1px); }
+        .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 11px 22px;
+            font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.25s; font-family: inherit; }
+        .btn-secondary:hover { border-color: rgba(59,130,246,0.25); background: var(--surface); }
+
+        /* === BOOKMARK === */
         .bm-btn.bookmarked svg { fill: #f59e0b; color: #f59e0b; }
-        /* Input */
-        .input-field { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 14px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
-        .input-field:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); }
-        .input-field::placeholder { color: var(--text2); }
-        /* Badge */
-        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
-        /* Toast */
-        .toast-item { animation: toastIn 0.35s cubic-bezier(0.4,0,0.2,1), toastOut 0.3s ease 2.7s forwards; }
-        @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* === TOAST === */
+        .toast-item { animation: toastIn 0.4s cubic-bezier(0.4,0,0.2,1), toastOut 0.3s ease 2.7s forwards;
+            backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        @keyframes toastIn { from { transform: translateX(120%) scale(0.9); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
         @keyframes toastOut { to { transform: translateX(120%); opacity: 0; } }
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        /* Skeleton */
-        .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+
+        /* === SKELETON === */
+        .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface-solid) 50%, var(--surface2) 75%); background-size: 200% 100%;
+            animation: shimmer 1.5s infinite; border-radius: 12px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        /* Nav */
-        .nav-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
-        /* Btn Primary */
-        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .btn-primary:hover { box-shadow: 0 0 24px rgba(59,130,246,0.3); transform: translateY(-1px); }
-        .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 20px; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .btn-secondary:hover { border-color: rgba(59,130,246,0.3); }
-        /* Footer Link */
-        .foot-link { color: var(--text2); font-size: 13px; transition: color 0.2s; text-decoration: none; }
+
+        /* === NOTIFICATION BADGE === */
+        .notif-badge { position: absolute; top: -1px; right: -1px; width: 16px; height: 16px; background: #ef4444; border-radius: 50%; font-size: 9px;
+            font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid var(--surface-solid); }
+
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+        /* === NAV === */
+        .nav-bar { background: var(--surface); backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5);
+            border-bottom: 1px solid var(--border); }
+
+        /* === FOOTER === */
+        .foot-link { color: var(--text3); font-size: 13px; transition: all 0.2s; text-decoration: none; }
         .foot-link:hover { color: var(--brand); }
-        /* Notification badge */
-        .notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; background: #ef4444; border-radius: 50%; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid var(--surface); }
-        /* RTL */
-        [dir="rtl"] .news-card::before { left: auto; right: 0; }
-        [dir="rtl"] .news-card { border-left: none; }
-        [dir="rtl"] .news-card.important-card { border-right: 3px solid #f59e0b; border-left: none; }
+
+        /* === RTL === */
+        [dir="rtl"] .news-card.important::after { left: auto; right: 0; border-radius: 0 16px 16px 0; }
         [dir="rtl"] .ticker-content { animation-direction: reverse; }
     </style>
 </head>
 <body class="min-h-screen relative">
-    <div class="hero-glow"></div>
-    <div class="hero-glow-2"></div>
+    <!-- Animated Background -->
+    <div class="mesh-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grid-pattern"></div>
 
     <!-- Toast -->
     <div id="toast-container" class="fixed top-20 right-4 z-[100] space-y-2"></div>
 
     <!-- ===== NAVIGATION ===== -->
     <nav class="nav-bar sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between">
             <a href="/" class="flex items-center gap-3 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-300">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
-                <div>
-                    <span class="text-[15px] font-bold tracking-tight">Crypto<span class="text-blue-500">sit</span>News</span>
-                    <span class="hidden sm:flex items-center gap-1.5 ml-2"><span class="live-dot"></span><span class="text-[10px] text-green-500 font-semibold uppercase tracking-wider">Live</span></span>
+                <div class="flex items-center gap-2.5">
+                    <span class="text-[16px] font-extrabold tracking-tight">Crypto<span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">sit</span>News</span>
+                    <span class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15)">
+                        <span class="live-dot"></span>
+                        <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Live</span>
+                    </span>
                 </div>
             </a>
-            <div class="flex items-center gap-1">
-                <button onclick="toggleSearch()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition" title="Search">
-                    <svg class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <div class="flex items-center gap-0.5">
+                <button onclick="toggleSearch()" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all duration-200" title="Search">
+                    <svg class="w-[18px] h-[18px]" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </button>
-                <button onclick="toggleBookmarksPanel()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition relative" title="Bookmarks">
-                    <svg class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                <button onclick="toggleBookmarksPanel()" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all duration-200 relative" title="Bookmarks">
+                    <svg class="w-[18px] h-[18px]" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                     <span id="bookmark-count" class="notif-badge hidden">0</span>
                 </button>
-                <button onclick="toggleSound()" id="sound-btn" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition" title="Sound">
-                    <svg id="sound-on" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 10H3v4h3l4 4V6L6 10z"/></svg>
-                    <svg id="sound-off" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707A1 1 0 0112 5.586v12.828a1 1 0 01-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+                <button onclick="toggleSound()" id="sound-btn" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all duration-200" title="Sound">
+                    <svg id="sound-on" class="w-[18px] h-[18px]" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 10H3v4h3l4 4V6L6 10z"/></svg>
+                    <svg id="sound-off" class="w-[18px] h-[18px] hidden" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707A1 1 0 0112 5.586v12.828a1 1 0 01-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
                 </button>
-                <div class="w-px h-5 mx-1" style="background:var(--border)"></div>
-                <button onclick="toggleLang()" id="lang-btn" class="h-9 px-3 rounded-xl flex items-center justify-center hover:bg-white/5 transition text-xs font-semibold tracking-wide opacity-60 hover:opacity-100" title="Language">
+                <div class="w-px h-6 mx-1.5 rounded-full" style="background:var(--border)"></div>
+                <button onclick="toggleLang()" id="lang-btn" class="h-10 px-3.5 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all duration-200 text-[11px] font-bold tracking-wider uppercase" style="color:var(--text2)" title="Language">
                     {{ 'EN' if lang == 'ar' else 'AR' }}
                 </button>
-                <button onclick="toggleTheme()" id="theme-btn" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition" title="Theme">
-                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light-icon" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <button onclick="toggleTheme()" id="theme-btn" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-all duration-200" title="Theme">
+                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] hidden" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" class="w-[18px] h-[18px]" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- ===== SEARCH OVERLAY ===== -->
-    <div id="search-bar" class="hidden fixed inset-0 z-[60] fade-up" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(4px)">
-        <div class="max-w-2xl mx-auto px-4 pt-24">
+    <div id="search-bar" class="hidden fixed inset-0 z-[60]" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(8px)">
+        <div class="max-w-2xl mx-auto px-4 pt-28">
             <div class="relative">
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input id="search-input" type="text" placeholder="Search news..." class="input-field pl-12 pr-12 py-4 text-lg rounded-2xl shadow-2xl" style="background:var(--surface)" oninput="debounceSearch()" onkeydown="if(event.key==='Escape')toggleSearch()">
-                <button onclick="toggleSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition">
-                    <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5" style="color:var(--text3)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="search-input" type="text" placeholder="Search news..." class="input-field pl-14 pr-14 py-5 text-[17px] rounded-2xl shadow-2xl font-medium" style="background:var(--surface-solid)" oninput="debounceSearch()" onkeydown="if(event.key==='Escape')toggleSearch()">
+                <button onclick="toggleSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/10 transition" style="background:var(--surface2)">
+                    <svg class="w-4 h-4" style="color:var(--text3)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div id="search-results" class="mt-3 space-y-1 max-h-[50vh] overflow-y-auto rounded-2xl shadow-2xl" style="background:var(--surface); border:1px solid var(--border)"></div>
+            <div id="search-results" class="mt-3 space-y-1 max-h-[50vh] overflow-y-auto rounded-2xl shadow-2xl" style="background:var(--surface-solid); border:1px solid var(--border)"></div>
         </div>
     </div>
 
     <!-- ===== BOOKMARKS PANEL ===== -->
-    <div id="bookmarks-panel" class="hidden fixed right-0 top-16 bottom-0 w-80 z-40 overflow-y-auto p-5 fade-up" style="background:var(--surface); border-left:1px solid var(--border)">
-        <div class="flex items-center justify-between mb-5">
-            <h3 class="font-bold text-base" data-i18n="bookmarks">Bookmarks</h3>
-            <button onclick="toggleBookmarksPanel()" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 text-xs opacity-50">✕</button>
+    <div id="bookmarks-panel" class="hidden fixed right-0 top-[60px] bottom-0 w-[320px] z-40 overflow-y-auto p-6 fade-up" style="background:var(--surface-solid); border-left:1px solid var(--border)">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="font-bold text-[15px]" data-i18n="bookmarks">Bookmarks</h3>
+            <button onclick="toggleBookmarksPanel()" class="w-8 h-8 rounded-xl flex items-center justify-center transition" style="color:var(--text3);background:var(--surface2)">✕</button>
         </div>
         <div id="bookmarks-list" class="space-y-1"></div>
-        <p id="no-bookmarks" class="text-sm text-center py-10" style="color:var(--text2)" data-i18n="no_bookmarks">No bookmarks yet.</p>
+        <p id="no-bookmarks" class="text-sm text-center py-12" style="color:var(--text3)" data-i18n="no_bookmarks">No bookmarks yet.</p>
     </div>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-16 space-y-6 relative z-10">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 space-y-6 relative z-10">
 
-        <!-- HERO STATS ROW -->
-        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 fade-up">
-            <div class="card p-5">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="market_cap">Market Cap</span>
+        <!-- MARKET STATS -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card fade-up">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)" data-i18n="market_cap">Market Cap</span>
                 </div>
-                <p id="stat-mcap" class="text-xl font-bold font-mono tracking-tight">-</p>
+                <p id="stat-mcap" class="text-[22px] font-extrabold font-mono tracking-tight">-</p>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="volume_24h">24h Volume</span>
+            <div class="stat-card fade-up stagger-1">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)" data-i18n="volume_24h">24h Volume</span>
                 </div>
-                <p id="stat-vol" class="text-xl font-bold font-mono tracking-tight">-</p>
+                <p id="stat-vol" class="text-[22px] font-extrabold font-mono tracking-tight">-</p>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="btc_dominance">BTC Dominance</span>
+            <div class="stat-card fade-up stagger-2">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)" data-i18n="btc_dominance">BTC Dominance</span>
                 </div>
-                <p id="stat-btc" class="text-xl font-bold font-mono tracking-tight">-</p>
+                <p id="stat-btc" class="text-[22px] font-extrabold font-mono tracking-tight">-</p>
             </div>
-            <div class="card p-5">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)" data-i18n="fear_greed">Fear & Greed</span>
+            <div class="stat-card fade-up stagger-3">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/15 to-rose-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)" data-i18n="fear_greed">Fear & Greed</span>
                 </div>
-                <div class="flex items-baseline gap-3">
-                    <span id="fg-value" class="text-xl font-bold font-mono">-</span>
-                    <span id="fg-label" class="badge text-[11px]" style="background:rgba(100,116,139,0.15);color:var(--text2)">-</span>
+                <div class="flex items-center gap-3">
+                    <span id="fg-value" class="text-[22px] font-extrabold font-mono">-</span>
+                    <span id="fg-label" class="badge text-[10px]" style="background:rgba(100,116,139,0.12);color:var(--text2)">-</span>
                 </div>
             </div>
         </section>
 
-        <!-- FEAR & GREED GAUGE -->
-        <section class="card p-5 fade-up stagger-1">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <span id="fg-emoji" class="text-xl">😐</span>
-                    <h2 class="text-sm font-semibold" data-i18n="fear_greed_index">Fear & Greed Index</h2>
+        <!-- FEAR & GREED GAUGE + LIVE PRICES ROW -->
+        <section class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <!-- F&G Gauge -->
+            <div class="lg:col-span-2 widget fade-up stagger-2">
+                <div class="widget-header">
+                    <span id="fg-emoji" class="text-lg">😐</span>
+                    <h2 class="text-[13px] font-bold" data-i18n="fear_greed_index">Fear & Greed Index</h2>
+                </div>
+                <div class="widget-body flex flex-col items-center py-4">
+                    <div class="gauge-container">
+                        <div class="gauge-track"></div>
+                        <div id="fg-indicator" class="gauge-needle" style="transform: translateX(-50%) rotate(0deg)"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+                    <div class="flex justify-between w-full max-w-[220px] mt-2">
+                        <span class="text-[10px] font-semibold uppercase tracking-wider" style="color:#ef4444" data-i18n="extreme_fear">Extreme Fear</span>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider" style="color:var(--text3)" data-i18n="neutral">Neutral</span>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider" style="color:#22c55e" data-i18n="extreme_greed">Extreme Greed</span>
+                    </div>
                 </div>
             </div>
-            <div class="relative">
-                <div class="gauge-track"></div>
-                <div id="fg-indicator" class="gauge-thumb" style="left:50%"></div>
-            </div>
-            <div class="flex justify-between mt-2">
-                <span class="text-[10px] font-medium" style="color:var(--text2)" data-i18n="extreme_fear">Extreme Fear</span>
-                <span class="text-[10px] font-medium" style="color:var(--text2)" data-i18n="neutral">Neutral</span>
-                <span class="text-[10px] font-medium" style="color:var(--text2)" data-i18n="extreme_greed">Extreme Greed</span>
-            </div>
-        </section>
-
-        <!-- PRICE TICKER -->
-        <section class="card overflow-hidden fade-up stagger-2">
-            <div class="px-5 py-3 flex items-center justify-between" style="border-bottom:1px solid var(--border)">
-                <div class="flex items-center gap-2">
+            <!-- Live Prices -->
+            <div class="lg:col-span-3 widget fade-up stagger-3 overflow-hidden">
+                <div class="widget-header">
                     <span class="live-dot"></span>
-                    <h2 class="text-sm font-semibold" data-i18n="live_prices">Live Prices</h2>
+                    <h2 class="text-[13px] font-bold" data-i18n="live_prices">Live Prices</h2>
                 </div>
-            </div>
-            <div class="ticker-wrap py-3 px-2">
-                <div id="prices-ticker" class="ticker-content">
-                    <div class="text-sm" style="color:var(--text2)">Loading prices...</div>
+                <div class="ticker-wrap py-3 px-2">
+                    <div id="prices-ticker" class="ticker-content">
+                        <div class="ticker-coin text-sm" style="color:var(--text3)">Loading prices...</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -248,10 +337,13 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             <!-- NEWS FEED -->
-            <section class="lg:col-span-2 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <h2 class="text-lg font-bold" data-i18n="latest_news">Latest News</h2>
-                    <div class="flex gap-1.5 overflow-x-auto pb-1" id="category-tabs">
+            <section class="lg:col-span-2 space-y-5 fade-up stagger-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-[20px] font-extrabold tracking-tight" data-i18n="latest_news">Latest News</h2>
+                        <p class="text-[12px] mt-1" style="color:var(--text3)">Real-time crypto news from trusted sources</p>
+                    </div>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" id="category-tabs">
                         <button onclick="filterCategory('all')" class="pill active" data-cat="all" data-i18n="all">All</button>
                         <button onclick="filterCategory('important')" class="pill" data-cat="important">⚡ Important</button>
                         <button onclick="filterCategory('market')" class="pill" data-cat="market" data-i18n="market">Market</button>
@@ -263,79 +355,83 @@
                     </div>
                 </div>
                 <div id="news-feed" class="space-y-3">
-                    <div class="skeleton h-24 w-full"></div>
-                    <div class="skeleton h-24 w-full"></div>
-                    <div class="skeleton h-24 w-full"></div>
+                    <div class="skeleton h-28 w-full"></div>
+                    <div class="skeleton h-28 w-full"></div>
+                    <div class="skeleton h-28 w-full"></div>
                 </div>
-                <button onclick="loadMoreNews()" id="load-more-btn" class="btn-secondary w-full py-3 text-sm" data-i18n="load_more">Load More</button>
+                <button onclick="loadMoreNews()" id="load-more-btn" class="btn-secondary w-full py-3.5 text-sm" data-i18n="load_more">Load More</button>
             </section>
 
             <!-- SIDEBAR -->
-            <aside class="space-y-5">
+            <aside class="space-y-5 fade-up stagger-4">
                 <!-- AI Intelligence -->
-                <div class="card-elevated p-5">
-                    <div class="flex items-center gap-2 mb-3">
+                <div class="widget">
+                    <div class="widget-header">
                         <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                         </div>
-                        <h3 class="text-sm font-bold" data-i18n="ai_intelligence">AI Market Intelligence</h3>
+                        <h3 class="text-[13px] font-bold" data-i18n="ai_intelligence">AI Market Intelligence</h3>
                     </div>
-                    <div id="ai-intel" class="text-[13px] leading-relaxed" style="color:var(--text2)">
-                        <div class="skeleton h-16 w-full mb-2"></div>
-                        <div class="skeleton h-16 w-3/4"></div>
+                    <div class="widget-body">
+                        <div id="ai-intel" class="text-[13px] leading-[1.75]" style="color:var(--text2)">
+                            <div class="skeleton h-16 w-full mb-2.5"></div>
+                            <div class="skeleton h-16 w-3/4"></div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Trending -->
-                <div class="card-elevated overflow-hidden">
-                    <div class="px-5 py-3 flex items-center gap-2" style="border-bottom:1px solid var(--border)">
+                <div class="widget">
+                    <div class="widget-header">
                         <span class="text-base">🔥</span>
-                        <h3 class="text-sm font-bold" data-i18n="trending">Trending</h3>
+                        <h3 class="text-[13px] font-bold" data-i18n="trending">Trending</h3>
                     </div>
                     <div id="trending-list" class="divide-y" style="border-color:var(--border)">
-                        <div class="skeleton h-12 w-full"></div>
-                        <div class="skeleton h-12 w-full"></div>
-                        <div class="skeleton h-12 w-full"></div>
+                        <div class="skeleton h-14 w-full"></div>
+                        <div class="skeleton h-14 w-full"></div>
+                        <div class="skeleton h-14 w-full"></div>
                     </div>
                 </div>
 
                 <!-- Price Alerts -->
-                <div class="card-elevated p-5">
-                    <div class="flex items-center gap-2 mb-4">
+                <div class="widget">
+                    <div class="widget-header">
                         <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         </div>
-                        <h3 class="text-sm font-bold" data-i18n="price_alerts">Price Alerts</h3>
+                        <h3 class="text-[13px] font-bold" data-i18n="price_alerts">Price Alerts</h3>
                     </div>
-                    <form id="alert-form" onsubmit="createAlert(event)" class="space-y-2.5">
-                        <select id="alert-coin" class="input-field text-sm">
-                            <option value="">Select coin...</option>
-                        </select>
-                        <div class="flex gap-2">
-                            <select id="alert-condition" class="input-field text-sm" style="width:auto">
-                                <option value="above">Above ↑</option>
-                                <option value="below">Below ↓</option>
+                    <div class="widget-body">
+                        <form id="alert-form" onsubmit="createAlert(event)" class="space-y-3">
+                            <select id="alert-coin" class="input-field text-sm">
+                                <option value="">Select coin...</option>
                             </select>
-                            <input id="alert-price" type="number" step="any" placeholder="Target price" class="input-field text-sm flex-1" required>
-                        </div>
-                        <button type="submit" class="btn-primary w-full" data-i18n="create_alert">Create Alert</button>
-                    </form>
+                            <div class="flex gap-2">
+                                <select id="alert-condition" class="input-field text-sm" style="width:auto">
+                                    <option value="above">Above ↑</option>
+                                    <option value="below">Below ↓</option>
+                                </select>
+                                <input id="alert-price" type="number" step="any" placeholder="Target price" class="input-field text-sm flex-1" required>
+                            </div>
+                            <button type="submit" class="btn-primary w-full" data-i18n="create_alert">Create Alert</button>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Newsletter -->
-                <div class="card-elevated p-5 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full"></div>
-                    <div class="relative">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            </div>
-                            <h3 class="text-sm font-bold" data-i18n="newsletter">Newsletter</h3>
+                <div class="widget relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-blue-500/8 to-transparent rounded-bl-[80px] pointer-events-none"></div>
+                    <div class="widget-header">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         </div>
-                        <p class="text-[12px] mb-3" style="color:var(--text2)" data-i18n="newsletter_desc">Get daily crypto news digest in your inbox.</p>
+                        <h3 class="text-[13px] font-bold" data-i18n="newsletter">Newsletter</h3>
+                    </div>
+                    <div class="widget-body relative">
+                        <p class="text-[12px] mb-4 leading-relaxed" style="color:var(--text3)" data-i18n="newsletter_desc">Get daily crypto news digest in your inbox.</p>
                         <form id="newsletter-form" onsubmit="subscribeNewsletter(event)" class="flex gap-2">
                             <input id="newsletter-email" type="email" placeholder="your@email.com" class="input-field text-sm flex-1" required>
-                            <button type="submit" class="btn-primary px-4 shrink-0" data-i18n="subscribe">Subscribe</button>
+                            <button type="submit" class="btn-primary px-5 shrink-0" data-i18n="subscribe">Subscribe</button>
                         </form>
                     </div>
                 </div>
@@ -344,21 +440,38 @@
     </main>
 
     <!-- ===== FOOTER ===== -->
-    <footer style="background:var(--surface); border-top:1px solid var(--border)">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <footer class="relative z-10 mt-8" style="border-top:1px solid var(--border)">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        </div>
+                        <span class="text-[16px] font-extrabold tracking-tight">Crypto<span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">sit</span>News</span>
                     </div>
-                    <span class="text-xs font-semibold">CryptositNews</span>
-                    <span class="text-xs" style="color:var(--text2)">© 2024</span>
+                    <p class="text-[13px] leading-relaxed max-w-sm" style="color:var(--text3)">Your trusted source for real-time cryptocurrency news, market intelligence, and AI-powered analysis.</p>
                 </div>
-                <div class="flex items-center gap-5">
-                    <a href="/rss" class="foot-link">RSS</a>
-                    <a href="/sitemap.xml" class="foot-link">Sitemap</a>
-                    <a href="/health" class="foot-link">Health</a>
+                <div>
+                    <h4 class="text-[11px] font-bold uppercase tracking-[0.1em] mb-4" style="color:var(--text3)">Resources</h4>
+                    <div class="space-y-2.5">
+                        <a href="/rss" class="foot-link block">RSS Feed</a>
+                        <a href="/sitemap.xml" class="foot-link block">Sitemap</a>
+                        <a href="/health" class="foot-link block">Health Status</a>
+                    </div>
                 </div>
+                <div>
+                    <h4 class="text-[11px] font-bold uppercase tracking-[0.1em] mb-4" style="color:var(--text3)">Features</h4>
+                    <div class="space-y-2.5">
+                        <span class="foot-link block cursor-default">Live Prices</span>
+                        <span class="foot-link block cursor-default">AI Analysis</span>
+                        <span class="foot-link block cursor-default">Price Alerts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3" style="border-top:1px solid var(--border)">
+                <span class="text-[12px]" style="color:var(--text3)">© 2024 CryptositNews. All rights reserved.</span>
+                <span class="text-[12px]" style="color:var(--text3)">Powered by AI</span>
             </div>
         </div>
     </footer>
@@ -387,7 +500,7 @@
     function toggleSound(){ soundEnabled=!soundEnabled; localStorage.setItem("sound",soundEnabled); document.getElementById("sound-on").classList.toggle("hidden",!soundEnabled); document.getElementById("sound-off").classList.toggle("hidden",soundEnabled); }
 
     /* ===== TOAST ===== */
-    function showToast(msg,type="success"){ const c=document.getElementById("toast-container"); const colors={success:"background:linear-gradient(135deg,#059669,#10b981)",error:"background:linear-gradient(135deg,#dc2626,#ef4444)",info:"background:linear-gradient(135deg,#2563eb,#3b82f6)"}; const d=document.createElement("div"); d.className="toast-item text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium"; d.style.cssText=colors[type]||colors.info; d.textContent=msg; c.appendChild(d); setTimeout(()=>d.remove(),3000); }
+    function showToast(msg,type="success"){ const c=document.getElementById("toast-container"); const colors={success:"background:linear-gradient(135deg,rgba(5,150,105,0.9),rgba(16,185,129,0.9))",error:"background:linear-gradient(135deg,rgba(220,38,38,0.9),rgba(239,68,68,0.9))",info:"background:linear-gradient(135deg,rgba(37,99,235,0.9),rgba(59,130,246,0.9))"}; const d=document.createElement("div"); d.className="toast-item text-white px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold"; d.style.cssText=colors[type]||colors.info; d.textContent=msg; c.appendChild(d); setTimeout(()=>d.remove(),3000); }
 
     /* ===== API ===== */
     async function g(url,opts){ try{ const r=await fetch(url,opts||{}); if(!r.ok)throw new Error(`HTTP ${r.status}`); return await r.json(); }catch(e){ console.error("API:",url,e); return null; } }
@@ -403,14 +516,14 @@
     function saveBookmarks(b){ localStorage.setItem("crypto_bookmarks",JSON.stringify(b)); updateBookmarkCount(); }
     function toggleBookmark(id,title){ let bm=getBookmarks(); const i=bm.findIndex(b=>b.id===id); if(i>=0){bm.splice(i,1);showToast(t("bookmark_removed"));}else{bm.unshift({id,title,time:new Date().toISOString()});showToast(t("bookmark_added"));playNotificationSound();} saveBookmarks(bm); renderBookmarks(); document.querySelectorAll(`.bm-btn[data-id="${id}"]`).forEach(b=>b.classList.toggle("bookmarked",i<0)); }
     function updateBookmarkCount(){ const c=getBookmarks().length; const b=document.getElementById("bookmark-count"); if(c>0){b.textContent=c;b.classList.remove("hidden");}else b.classList.add("hidden"); }
-    function renderBookmarks(){ const bm=getBookmarks(); const l=document.getElementById("bookmarks-list"); const e=document.getElementById("no-bookmarks"); if(!bm.length){l.innerHTML="";e.classList.remove("hidden");return;} e.classList.add("hidden"); l.innerHTML=bm.map(b=>`<a href="/article/${b.id}" class="block px-3 py-2.5 rounded-lg text-[13px] hover:bg-white/5 transition truncate" style="color:var(--text2)" title="${b.title}">${b.title}</a>`).join(""); }
+    function renderBookmarks(){ const bm=getBookmarks(); const l=document.getElementById("bookmarks-list"); const e=document.getElementById("no-bookmarks"); if(!bm.length){l.innerHTML="";e.classList.remove("hidden");return;} e.classList.add("hidden"); l.innerHTML=bm.map(b=>`<a href="/article/${b.id}" class="block px-3 py-3 rounded-xl text-[13px] hover:bg-white/5 transition truncate" style="color:var(--text2)" title="${b.title}">${b.title}</a>`).join(""); }
     function toggleBookmarksPanel(){ document.getElementById("bookmarks-panel").classList.toggle("hidden"); if(!document.getElementById("bookmarks-panel").classList.contains("hidden"))renderBookmarks(); }
 
     /* ===== SEARCH ===== */
     let searchTimeout;
     function toggleSearch(){ document.getElementById("search-bar").classList.toggle("hidden"); if(!document.getElementById("search-bar").classList.contains("hidden"))document.getElementById("search-input").focus(); }
     function debounceSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(doSearch,250); }
-    async function doSearch(){ const q=document.getElementById("search-input").value.trim(); const c=document.getElementById("search-results"); if(q.length<2){c.innerHTML="";return;} const d=await g(`/api/search?q=${encodeURIComponent(q)}&limit=10`); if(!d||!d.results||!d.results.length){c.innerHTML=`<p class="text-sm p-4" style="color:var(--text2)">No results found</p>`;return;} c.innerHTML=d.results.map(n=>`<a href="/article/${n.id}" class="block px-4 py-3 hover:bg-white/5 transition" style="border-bottom:1px solid var(--border)"><p class="text-sm font-medium">${n.title}</p><p class="text-[11px] mt-0.5" style="color:var(--text2)">${n.source||""} · ${timeAgo(n.published)}</p></a>`).join(""); }
+    async function doSearch(){ const q=document.getElementById("search-input").value.trim(); const c=document.getElementById("search-results"); if(q.length<2){c.innerHTML="";return;} const d=await g(`/api/search?q=${encodeURIComponent(q)}&limit=10`); if(!d||!d.results||!d.results.length){c.innerHTML=`<p class="text-sm p-5" style="color:var(--text3)">No results found</p>`;return;} c.innerHTML=d.results.map(n=>`<a href="/article/${n.id}" class="block px-5 py-4 hover:bg-white/5 transition" style="border-bottom:1px solid var(--border)"><p class="text-sm font-semibold">${n.title}</p><p class="text-[11px] mt-1" style="color:var(--text3)">${n.source||""} · ${timeAgo(n.published)}</p></a>`).join(""); }
     function clearSearch(){ document.getElementById("search-input").value=""; document.getElementById("search-results").innerHTML=""; }
 
     /* ===== CATEGORY ===== */
@@ -420,119 +533,132 @@
     /* ===== NEWS ===== */
     async function loadNews(append=false){
         const container=document.getElementById("news-feed");
-        if(!append) container.innerHTML='<div class="skeleton h-24 w-full"></div><div class="skeleton h-24 w-full"></div><div class="skeleton h-24 w-full"></div>';
+        if(!append) container.innerHTML='<div class="skeleton h-28 w-full"></div><div class="skeleton h-28 w-full"></div><div class="skeleton h-28 w-full"></div>';
         const cat=currentCategory==="important"?"all":currentCategory;
         const imp=currentCategory==="important"?"true":"false";
         const data=await g(`/api/news?limit=20&offset=${newsOffset}&category=${cat}&important=${imp}`);
-        if(!data||!data.news||!data.news.length){ if(!append)container.innerHTML=`<p class="text-sm text-center py-10" style="color:var(--text2)">No news found</p>`; return; }
+        if(!data||!data.news||!data.news.length){ if(!append)container.innerHTML=`<p class="text-sm text-center py-16" style="color:var(--text3)">No news found</p>`; return; }
         const bm=getBookmarks();
-        const catColors={regulation:"background:rgba(59,130,246,0.12);color:#60a5fa",defi:"background:rgba(139,92,246,0.12);color:#a78bfa",nft:"background:rgba(236,72,153,0.12);color:#f472b6",layer1:"background:rgba(6,182,212,0.12);color:#22d3ee",layer2:"background:rgba(99,102,241,0.12);color:#818cf8",meme:"background:rgba(245,158,11,0.12);color:#fbbf24",ai_crypto:"background:rgba(16,185,129,0.12);color:#34d399",mining:"background:rgba(249,115,22,0.12);color:#fb923c",stablecoin:"background:rgba(20,184,166,0.12);color:#2dd4bf",gaming:"background:rgba(244,63,94,0.12);color:#fb7185",exchange:"background:rgba(251,191,36,0.12);color:#fbbf24",security:"background:rgba(239,68,68,0.12);color:#f87171",adoption:"background:rgba(52,211,153,0.12);color:#34d399",market:"background:rgba(100,116,139,0.12);color:#94a3b8"};
-        const html=data.news.map((n,i)=>{
-            const isBM=bm.some(b=>b.id===n.id);
-            const sentEmoji={positive:"🟢",negative:"🔴",neutral:"⚪",bullish:"🚀",bearish:"📉"}[n.ai_sentiment]||"";
+        const catColors={regulation:"background:rgba(59,130,246,0.1);color:#60a5fa",defi:"background:rgba(139,92,246,0.1);color:#a78bfa",nft:"background:rgba(236,72,153,0.1);color:#f472b6",layer1:"background:rgba(6,182,212,0.1);color:#22d3ee",layer2:"background:rgba(99,102,241,0.1);color:#818cf8",meme:"background:rgba(245,158,11,0.1);color:#fbbf24",ai_crypto:"background:rgba(16,185,129,0.1);color:#34d399",mining:"background:rgba(249,115,22,0.1);color:#fb923c",stablecoin:"background:rgba(20,184,166,0.1);color:#2dd4bf",gaming:"background:rgba(244,63,94,0.1);color:#fb7185",exchange:"background:rgba(251,191,36,0.1);color:#fbbf24",security:"background:rgba(239,68,68,0.1);color:#f87171",adoption:"background:rgba(52,211,153,0.1);color:#34d399",market:"background:rgba(100,116,139,0.1);color:#94a3b8"};
+        const sentColors={positive:"color:#34d399",negative:"color:#f87171",bullish:"color:#34d399",bearish:"color:#f87171",neutral:"color:#94a3b8"};
+        let html='';
+        data.news.forEach((n,idx)=>{
+            const isBm=bm.some(b=>b.id===n.id);
             const catStyle=catColors[n.category]||catColors.market;
-            const isImp=n.is_important;
-            return `
-            <div class="news-card ${isImp?'important-card':''} fade-up" style="animation-delay:${i*0.03}s">
-                <div class="flex items-start justify-between gap-3">
-                    <a href="/article/${n.id}" class="flex-1 group">
-                        <h3 class="font-semibold text-[14px] leading-snug group-hover:text-blue-500 transition-colors">${n.title}</h3>
-                    </a>
-                    <div class="flex items-center gap-0.5 shrink-0 mt-0.5">
-                        <button onclick="shareArticle(${n.id},'${encodeURIComponent(n.title)}')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition opacity-40 hover:opacity-100">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        </button>
-                        <button onclick="toggleBookmark(${n.id},this.closest('.news-card').querySelector('h3').textContent)" class="bm-btn w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition ${isBM?'bookmarked':''}" data-id="${n.id}">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                        </button>
+            const sentStyle=sentColors[n.ai_sentiment]||sentColors.neutral;
+            const sentIcon=n.ai_sentiment==='positive'?'🟢':n.ai_sentiment==='negative'?'🔴':n.ai_sentiment==='bullish'?'🚀':n.ai_sentiment==='bearish'?'📉':'⚪';
+            const impClass=n.important?'important':'';
+            const impBadge=n.important?`<span class="badge" style="background:rgba(251,191,36,0.1);color:#fbbf24"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/></svg> Important</span>`:'';
+            html+=`<a href="/article/${n.id}" class="news-card ${impClass} block group">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-2.5 flex-wrap">
+                            <span class="badge" style="${catStyle}">${n.category||'market'}</span>
+                            ${n.ai_sentiment?`<span class="badge" style="${sentStyle}">${sentIcon} ${n.ai_sentiment}</span>`:''}
+                            ${impBadge}
+                        </div>
+                        <h3 class="text-[15px] font-bold leading-snug mb-2 group-hover:text-blue-400 transition-colors">${n.title}</h3>
+                        ${n.summary?`<p class="text-[13px] leading-relaxed line-clamp-2" style="color:var(--text3)">${n.summary.substring(0,150)}${n.summary.length>150?'...':''}</p>`:''}
+                        <div class="flex items-center gap-3 mt-3">
+                            ${n.source?`<span class="text-[11px] font-medium" style="color:var(--text3)">${n.source}</span>`:''}
+                            ${n.published?`<span class="text-[11px]" style="color:var(--text3)">· ${timeAgo(n.published)}</span>`:''}
+                        </div>
                     </div>
+                    <button onclick="event.preventDefault();toggleBookmark(${n.id},'${(n.title||'').replace(/'/g,"\\'")}')" class="bm-btn ${isBm?'bookmarked':''} w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition hover:bg-white/5" data-id="${n.id}" title="Bookmark">
+                        <svg class="w-4 h-4" style="color:var(--text3)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    </button>
                 </div>
-                <div class="flex items-center gap-2 mt-2.5 flex-wrap">
-                    <span class="badge" style="${catStyle}">${n.category||"market"}</span>
-                    ${sentEmoji?`<span class="text-[11px]" style="color:var(--text2)">${sentEmoji} ${n.ai_sentiment}</span>`:""}
-                    ${n.source?`<span class="text-[11px]" style="color:var(--text2)">${n.source.length>20?n.source.substring(0,20)+'…':n.source}</span>`:""}
-                    <span class="text-[11px] ml-auto" style="color:var(--text2)">${timeAgo(n.published)}</span>
-                </div>
-                ${n.ai_summary?`<p class="text-[12px] mt-2.5 leading-relaxed line-clamp-2" style="color:var(--text2)">${n.ai_summary}</p>`:""}
-            </div>`;
-        }).join("");
-        if(append) container.innerHTML+=html; else container.innerHTML=html;
-        newsOffset+=20;
-        document.getElementById("load-more-btn").style.display=data.news.length<20?"none":"block";
+            </a>`;
+        });
+        if(append) container.insertAdjacentHTML('beforeend',html);
+        else container.innerHTML=html;
+        newsOffset+=data.news.length;
+        if(data.news.length<20) document.getElementById("load-more-btn").style.display='none';
+        else document.getElementById("load-more-btn").style.display='';
     }
     function loadMoreNews(){loadNews(true);}
 
-    /* ===== PRICES ===== */
-    async function loadPrices(){
-        const data=await g("/api/prices"); if(!data||!data.prices)return;
-        const coins=["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","LINK"];
-        const items=coins.filter(c=>data.prices[c]).map(c=>{const p=data.prices[c]; return `<div class="flex items-center gap-3 px-4 py-2.5 shrink-0"><span class="font-bold text-sm font-mono">${c}</span><span class="text-sm font-mono" style="color:var(--text)">${fmtPrice(p.usd)}</span><span class="text-xs font-mono">${fmtPct(p.usd_24h_change)}</span></div>`; }).join("");
-        document.getElementById("prices-ticker").innerHTML=items+items; // duplicate for seamless loop
-        const sel=document.getElementById("alert-coin");
-        if(sel.options.length<=1) coins.forEach(c=>{ if(data.prices[c]){const o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);} });
-    }
-
-    /* ===== HERO STATS ===== */
+    /* ===== MARKET DATA ===== */
     async function loadHeroStats(){
-        const gd=await g("/api/global");
-        if(gd&&gd.global){const g=gd.global;document.getElementById("stat-mcap").textContent=fmtNum(g.total_market_cap_usd);document.getElementById("stat-vol").textContent=fmtNum(g.total_volume_usd);document.getElementById("stat-btc").textContent=(g.btc_dominance||0).toFixed(1)+"%";}
-        const fd=await g("/api/fear-greed");
-        if(fd&&fd.fear_greed){const fg=fd.fear_greed;const val=fg.value||50;
-            document.getElementById("fg-value").textContent=val;
-            document.getElementById("fg-label").textContent=fg.classification||"Neutral";
-            document.getElementById("fg-indicator").style.left=val+"%";
-            let fgC="#64748b";if(val<=25)fgC="#ef4444";else if(val<=45)fgC="#f59e0b";else if(val>=75)fgC="#22c55e";
-            document.getElementById("fg-label").style.cssText=`background:${fgC}22;color:${fgC}`;
-            document.getElementById("fg-emoji").textContent=val<=20?"😰":val<=40?"😟":val<=60?"😐":val<=80?"😊":"🤑";
-        }
+        const d=await g("/api/global");
+        if(d&&d.global){ const m=d.global; document.getElementById("stat-mcap").textContent=fmtNum(m.total_market_cap_usd); document.getElementById("stat-vol").textContent=fmtNum(m.total_volume_usd); document.getElementById("stat-btc").textContent=(m.btc_dominance||0).toFixed(1)+"%"; }
+    }
+    async function updateFG(fg){ const v=fg.value||50; document.getElementById("fg-value").textContent=v; const labels={Extreme_Fear:"Extreme Fear",Fear:"Fear",Neutral:"Neutral",Greed:"Greed",Extreme_Greed:"Extreme Greed"}; const l=labels[fg.classification]||fg.classification||"Neutral"; document.getElementById("fg-label").textContent=l; const emojis={Extreme_Fear:"😱",Fear:"😟",Neutral:"😐",Greed:"😊",Extreme_Greed:"🤑"}; document.getElementById("fg-emoji").textContent=emojis[fg.classification]||"😐"; const angle=-90+(v/100)*180; document.getElementById("fg-indicator").style.transform=`translateX(-50%) rotate(${angle}deg)`; const el=document.getElementById("fg-label"); if(v<=25){el.style.background='rgba(239,68,68,0.12)';el.style.color='#f87171';}else if(v<=45){el.style.background='rgba(251,191,36,0.12)';el.style.color='#fbbf24';}else if(v<=55){el.style.background='rgba(100,116,139,0.12)';el.style.color='#94a3b8';}else if(v<=75){el.style.background='rgba(34,197,94,0.12)';el.style.color='#34d399';}else{el.style.background='rgba(16,185,129,0.12)';el.style.color='#2dd4bf';} }
+
+    async function loadPrices(){
+        const d=await g("/api/prices");
+        if(!d||!d.prices) return;
+        const tick=document.getElementById("prices-ticker");
+        let h='';
+        const coins=Object.entries(d.prices).slice(0,12);
+        coins.forEach(([sym,p])=>{
+            const ch=p.usd_24h_change||0;
+            const color=ch>=0?'color:#22c55e':'color:#ef4444';
+            const sign=ch>=0?'+':'';
+            h+=`<div class="ticker-coin"><span class="text-[12px] font-bold" style="color:var(--text)">${sym}</span><span class="text-[13px] font-semibold font-mono">${fmtPrice(p.usd)}</span><span class="text-[11px] font-semibold font-mono" style="${color}">${sign}${ch.toFixed(2)}%</span></div>`;
+        });
+        tick.innerHTML=h+h;
     }
 
-    /* ===== TRENDING ===== */
     async function loadTrending(){
-        const data=await g("/api/trending"); if(!data||!data.trending)return;
-        document.getElementById("trending-list").innerHTML=data.trending.slice(0,7).map((c,i)=>`
-            <div class="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition" style="border-bottom:1px solid var(--border)">
-                <span class="text-[11px] font-bold w-4 text-center" style="color:var(--text2)">${i+1}</span>
-                ${c.thumb?`<img src="${c.thumb}" class="w-6 h-6 rounded-full" alt="" onerror="this.style.display='none'">`:""}
-                <span class="text-sm font-medium flex-1">${c.name}</span>
-                <span class="text-[11px] font-mono font-semibold" style="color:var(--text2)">${c.symbol.toUpperCase()}</span>
-                ${c.market_cap_rank?`<span class="text-[10px] font-mono" style="color:var(--text2)">#${c.market_cap_rank}</span>`:""}
-            </div>`).join("");
+        const d=await g("/api/trending");
+        if(!d||!d.trending) return;
+        const el=document.getElementById("trending-list");
+        el.innerHTML=d.trending.slice(0,7).map((c,i)=>`<div class="flex items-center gap-3 px-5 py-3 hover:bg-white/3 transition"><span class="text-[11px] font-bold font-mono w-5 text-center" style="color:var(--text3)">${i+1}</span>${c.thumb?`<img src="${c.thumb}" class="w-6 h-6 rounded-full" alt="${c.name}" onerror="this.style.display='none'">`:`<span class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style="background:var(--surface2)">${(c.symbol||'?')[0]}</span>`}<div class="flex-1 min-w-0"><p class="text-[13px] font-semibold truncate">${c.name}</p><p class="text-[11px]" style="color:var(--text3)">${c.symbol}</p></div>${c.market_cap_rank?`<span class="text-[10px] font-mono px-2 py-0.5 rounded-md" style="background:var(--surface2);color:var(--text3)">#${c.market_cap_rank}</span>`:''}</div>`).join('');
     }
 
-    /* ===== AI INTEL ===== */
     async function loadAIIntel(){
-        const data=await g("/api/market-intelligence");const c=document.getElementById("ai-intel");
-        if(!data||!data.intelligence){c.innerHTML=`<p style="color:var(--text2)">${currentLang==="ar"?"غير متاح حالياً":"Not available at the moment"}</p>`;return;}
-        c.innerHTML=`<p class="leading-relaxed">${data.intelligence}</p>`;
+        const d=await g("/api/market-intelligence");
+        const el=document.getElementById("ai-intel");
+        if(d&&d.intelligence){ el.innerHTML=`<p class="leading-[1.8]">${d.intelligence}</p>`; }
+        else{ el.innerHTML=`<p style="color:var(--text3)">Market intelligence is being generated...</p>`; }
     }
 
     /* ===== ALERTS ===== */
-    async function createAlert(e){e.preventDefault();const s=document.getElementById("alert-coin").value,p=document.getElementById("alert-price").value,c=document.getElementById("alert-condition").value;if(!s||!p)return;const d=await g("/api/alerts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbol:s,target_price:parseFloat(p),condition:c})});if(d&&d.success){showToast(t("alert_created"));document.getElementById("alert-price").value="";}}
+    async function populateAlertCoins(){
+        const d=await g("/api/prices");
+        if(!d||!d.prices) return;
+        const sel=document.getElementById("alert-coin");
+        sel.innerHTML='<option value="">Select coin...</option>'+Object.keys(d.prices).map(s=>`<option value="${s}">${s}</option>`).join('');
+    }
+
+    async function createAlert(e){
+        e.preventDefault();
+        const s=document.getElementById("alert-coin").value,p=document.getElementById("alert-price").value,c=document.getElementById("alert-condition").value;
+        if(!s||!p)return;
+        const d=await g("/api/alerts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbol:s,target_price:parseFloat(p),condition:c})});
+        if(d&&d.success){showToast(t("alert_created"));document.getElementById("alert-price").value="";}
+    }
 
     /* ===== NEWSLETTER ===== */
-    async function subscribeNewsletter(e){e.preventDefault();const em=document.getElementById("newsletter-email").value;if(!em)return;const d=await fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em})}).then(r=>r.json());if(d&&d.success){showToast(t("subscribed"));document.getElementById("newsletter-email").value="";}else showToast(d?.message||"Error","error");}
-
-    /* ===== SOCIAL ===== */
-    function shareArticle(id,encTitle){const title=decodeURIComponent(encTitle);const url=window.location.origin+"/article/"+id;if(navigator.share){navigator.share({title,url});}else{const m=document.createElement("div");m.className="fixed inset-0 z-[70] flex items-center justify-center";m.style.cssText="background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)";m.onclick=e=>{if(e.target===m)m.remove();};m.innerHTML=`<div class="card-elevated p-5 space-y-1 min-w-[220px]"><p class="font-bold text-sm mb-3">Share</p><a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-white/5 transition">🐦 Share on X</a><a href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-white/5 transition">✈️ Telegram</a><button onclick="navigator.clipboard.writeText('${url}');this.closest('.fixed').remove();showToast('${t("copied")}')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full hover:bg-white/5 transition">🔗 Copy Link</button></div>`;document.body.appendChild(m);}}
+    async function subscribeNewsletter(e){
+        e.preventDefault();
+        const em=document.getElementById("newsletter-email").value;
+        if(!em)return;
+        const d=await fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em})}).then(r=>r.json());
+        if(d&&d.success){showToast(t("subscribed"));document.getElementById("newsletter-email").value="";}
+        else showToast(d?.message||"Error","error");
+    }
 
     /* ===== SSE ===== */
     let sseOn=false;
-    function connectSSE(){if(sseOn||!window.EventSource)return;try{const s=new EventSource("/api/sse");sseOn=true;s.addEventListener("message",e=>{try{const d=JSON.parse(e.data);if(d.type==="update"){if(d.prices)loadPrices();if(d.fear_greed)updateFG(d.fear_greed);if(d.latest_news)playNotificationSound();}}catch(err){}});s.onerror=()=>{sseOn=false;s.close();setTimeout(connectSSE,30000);};}catch(e){sseOn=false;setTimeout(connectSSE,30000);}}
-    function updateFG(fg){if(!fg)return;document.getElementById("fg-value").textContent=fg.value||50;document.getElementById("fg-indicator").style.left=(fg.value||50)+"%";}
-
-    /* ===== PWA ===== */
-    if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+    function connectSSE(){
+        if(sseOn||!window.EventSource)return;
+        try{
+            const s=new EventSource("/api/sse"); sseOn=true;
+            s.addEventListener("message",e=>{ try{ const d=JSON.parse(e.data); if(d.type==="update"){ if(d.prices)loadPrices(); if(d.fear_greed)updateFG(d.fear_greed); if(d.latest_news)playNotificationSound(); } }catch(err){} });
+            s.onerror=()=>{ sseOn=false; s.close(); setTimeout(connectSSE,30000); };
+        }catch(e){ sseOn=false; setTimeout(connectSSE,30000); }
+    }
 
     /* ===== INIT ===== */
-    document.addEventListener("DOMContentLoaded",()=>{
-        applyI18n(); updateBookmarkCount();
-        document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");
-        document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");
-        document.getElementById("sound-on").classList.toggle("hidden",!soundEnabled);
-        document.getElementById("sound-off").classList.toggle("hidden",soundEnabled);
-        loadHeroStats(); loadPrices(); loadNews(); loadTrending(); loadAIIntel(); connectSSE();
-        setInterval(()=>{loadPrices();loadNews();},300000);
+    document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");
+    document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");
+    if(!soundEnabled) document.getElementById("sound-on").classList.add("hidden"), document.getElementById("sound-off").classList.remove("hidden");
+    updateBookmarkCount();
+    applyI18n();
+    window.addEventListener("load",()=>{
+        loadHeroStats(); loadPrices(); loadNews(); loadTrending(); loadAIIntel(); connectSSE(); populateAlertCoins();
     });
     </script>
 </body>

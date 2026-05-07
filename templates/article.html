@@ -10,206 +10,243 @@
     <meta property="og:type" content="article">
     <meta property="og:url" content="{{ news.url or request.url }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#080b12">
+    <meta name="theme-color" content="#060910">
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: ['class', '[data-theme="dark"]'],
             theme: { extend: { fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['JetBrains Mono','monospace'] },
-                colors: { brand:{500:'#3b82f6',600:'#2563eb'}, surface:{0:'#080b12',1:'#0f1420',2:'#141b28',3:'#1b2233'} }
+                colors: { brand:{500:'#3b82f6',600:'#2563eb'}, surface:{0:'#060910',1:'#0a0f18',2:'#0f1520',3:'#1a2438'} }
             }}
         }
     </script>
     <style>
-        :root { --brand:#3b82f6; --bg:#080b12; --surface:#0f1420; --surface2:#141b28; --text:#e8ecf2; --text2:#8892a6; --border:rgba(255,255,255,0.06); }
-        [data-theme="light"] { --bg:#f0f4f8; --surface:#ffffff; --surface2:#f8fafc; --text:#0f172a; --text2:#475569; --border:rgba(0,0,0,0.08); }
+        *, *::before, *::after { box-sizing: border-box; }
+        :root { --brand: #3b82f6; }
+        [data-theme="light"] { --bg:#f4f6fb; --surface:rgba(255,255,255,0.82); --surface-solid:#ffffff; --surface2:rgba(248,250,255,0.9); --text:#0f172a; --text2:#64748b; --text3:#94a3b8; --border:rgba(15,23,42,0.07); --border2:rgba(15,23,42,0.12); --shadow:rgba(15,23,42,0.06); }
+        [data-theme="dark"] { --bg:#060910; --surface:rgba(14,20,33,0.75); --surface-solid:#0e1421; --surface2:rgba(18,26,42,0.7); --text:#e8ecf4; --text2:#7b8ba5; --text3:#4a5a75; --border:rgba(255,255,255,0.05); --border2:rgba(255,255,255,0.09); --shadow:rgba(0,0,0,0.4); }
         body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
-        .hero-glow { position:fixed; top:-200px; left:50%; transform:translateX(-50%); width:800px; height:500px; background:radial-gradient(ellipse,rgba(59,130,246,0.06) 0%,transparent 70%); pointer-events:none; z-index:0; }
-        .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; }
-        .card-elevated { background:var(--surface); border:1px solid var(--border); border-radius:20px; }
-        .nav-bar { background:var(--surface); border-bottom:1px solid var(--border); }
-        .badge { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:0.3px; }
+        /* Background */
+        .mesh-bg { position:fixed; inset:0; z-index:0; pointer-events:none; }
+        .mesh-bg .orb { position:absolute; border-radius:50%; filter:blur(120px); }
+        .mesh-bg .orb-1 { width:700px; height:500px; background:rgba(59,130,246,0.05); top:-200px; left:-100px; animation:oF1 25s ease-in-out infinite; }
+        .mesh-bg .orb-2 { width:500px; height:400px; background:rgba(139,92,246,0.04); top:100px; right:-150px; animation:oF2 30s ease-in-out infinite; }
+        @keyframes oF1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+        @keyframes oF2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,60px)}}
+
+        /* Glass */
+        .glass { background:var(--surface); backdrop-filter:blur(20px) saturate(1.2); -webkit-backdrop-filter:blur(20px) saturate(1.2); border:1px solid var(--border); }
+        .nav-bar { background:var(--surface); backdrop-filter:blur(24px) saturate(1.5); -webkit-backdrop-filter:blur(24px) saturate(1.5); border-bottom:1px solid var(--border); }
+        .widget { background:var(--surface); backdrop-filter:blur(16px); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+
+        /* Typography */
+        .article-title { font-size: 28px; line-height: 1.3; font-weight: 800; letter-spacing: -0.02em; }
+        @media(min-width:640px){ .article-title { font-size: 36px; } }
+
+        /* Badge */
+        .badge { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:12px; font-size:11px; font-weight:600; letter-spacing:0.02em; }
+
+        /* AI Box */
+        .ai-box { background:linear-gradient(135deg,rgba(139,92,246,0.06),rgba(59,130,246,0.06)); border:1px solid rgba(139,92,246,0.12); border-radius:20px; position:relative; overflow:hidden; }
+        .ai-box::before { content:''; position:absolute; top:0; right:0; width:200px; height:200px; background:radial-gradient(circle, rgba(139,92,246,0.06), transparent 70%); pointer-events:none; }
+
+        /* Bookmark */
         .bm-btn.bookmarked svg { fill:#f59e0b; color:#f59e0b; }
-        .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text2); border-radius:10px; padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
-        .btn-outline:hover { border-color:rgba(59,130,246,0.3); color:var(--text); }
-        .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
-        .btn-primary:hover { box-shadow:0 0 20px rgba(59,130,246,0.3); }
-        .ai-box { background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(59,130,246,0.08)); border:1px solid rgba(139,92,246,0.15); border-radius:16px; }
-        .toast-item { animation:toastIn 0.3s ease,toastOut 0.3s ease 2.7s forwards; }
-        @keyframes toastIn { from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;} }
-        @keyframes toastOut { to{transform:translateX(120%);opacity:0;} }
-        .related-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 20px; transition:all 0.2s; }
-        .related-card:hover { border-color:rgba(59,130,246,0.15); transform:translateY(-1px); box-shadow:0 4px 16px -4px rgba(0,0,0,0.2); }
-        ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+        /* Buttons */
+        .btn-outline { background:var(--surface2); border:1px solid var(--border); color:var(--text2); border-radius:12px; padding:9px 16px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.25s; display:inline-flex; align-items:center; gap:7px; font-family:inherit; }
+        .btn-outline:hover { border-color:rgba(59,130,246,0.25); color:var(--text); background:var(--surface); }
+        .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; border-radius:12px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.25s; font-family:inherit; }
+        .btn-primary:hover { box-shadow:0 8px 30px rgba(59,130,246,0.25); transform:translateY(-1px); }
+
+        /* Related */
+        .related-card { background:var(--surface); backdrop-filter:blur(12px); border:1px solid var(--border); border-radius:16px; padding:20px; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .related-card:hover { border-color:rgba(59,130,246,0.15); transform:translateY(-2px); box-shadow:0 12px 40px -8px var(--shadow); }
+
+        /* Toast */
+        .toast-item { animation:tI .4s cubic-bezier(.4,0,.2,1),tO .3s ease 2.7s forwards; backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); }
+        @keyframes tI{from{transform:translateX(120%) scale(.9);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+        @keyframes tO{to{transform:translateX(120%);opacity:0}}
+
+        /* Scrollbar */
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+        .fade-up{animation:fU .5s cubic-bezier(.4,0,.2,1) forwards;opacity:0}
+        @keyframes fU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Progress bar */
+        #reading-progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,#3b82f6,#8b5cf6); z-index:100; transition:width 0.1s; border-radius:0 2px 2px 0; }
     </style>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"NewsArticle","headline":"{{ news.title }}","description":"{{ news.ai_summary or '' }}","datePublished":"{{ news.published or news.created_at }}","author":{"@type":"Organization","name":"{{ news.source or 'CryptositNews' }}"},"publisher":{"@type":"Organization","name":"CryptositNews"}}
     </script>
 </head>
 <body class="min-h-screen relative">
-    <div class="hero-glow"></div>
+    <div id="reading-progress" style="width:0%"></div>
+    <div class="mesh-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
     <div id="toast-container" class="fixed top-20 right-4 z-[100] space-y-2"></div>
 
     <!-- NAV -->
     <nav class="nav-bar sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between">
             <a href="/" class="flex items-center gap-3 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-300">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
-                <span class="text-[15px] font-bold tracking-tight">Crypto<span class="text-blue-500">sit</span>News</span>
+                <span class="text-[16px] font-extrabold tracking-tight">Crypto<span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">sit</span>News</span>
             </a>
-            <div class="flex items-center gap-1">
-                <button onclick="toggleLang()" id="lang-btn" class="h-9 px-3 rounded-xl flex items-center justify-center hover:bg-white/5 transition text-xs font-semibold opacity-60 hover:opacity-100">
+            <div class="flex items-center gap-0.5">
+                <button onclick="toggleLang()" id="lang-btn" class="h-10 px-3.5 rounded-xl flex items-center justify-center hover:bg-white/5 transition text-[11px] font-bold tracking-wider uppercase" style="color:var(--text2)">
                     {{ 'EN' if lang == 'ar' else 'AR' }}
                 </button>
-                <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition">
-                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light-icon" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition">
+                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] hidden" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" class="w-[18px] h-[18px]" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-16 relative z-10">
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-20 relative z-10">
 
         <!-- BREADCRUMB -->
-        <div class="flex items-center gap-2 mb-6 text-[12px]" style="color:var(--text2)">
-            <a href="/" class="hover:text-blue-500 transition">Home</a>
-            <svg class="w-3 h-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <span class="truncate max-w-[200px]">{{ news.category or 'market' }}</span>
+        <div class="flex items-center gap-2 mb-8 text-[12px] font-medium fade-up" style="color:var(--text3)">
+            <a href="/" class="hover:text-blue-400 transition">Home</a>
+            <svg class="w-3.5 h-3.5 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="capitalize">{{ news.category or 'market' }}</span>
         </div>
 
         <!-- ARTICLE -->
-        <article class="card-elevated p-6 sm:p-8">
-            <!-- Meta -->
-            <div class="flex items-center gap-2 mb-4 flex-wrap">
-                <span class="badge" style="background:rgba(59,130,246,0.12);color:#60a5fa">{{ news.category or 'market' }}</span>
-                {% if news.ai_sentiment %}
-                <span class="badge" style="{% if news.ai_sentiment == 'positive' %}background:rgba(34,197,94,0.12);color:#34d399{% elif news.ai_sentiment == 'negative' %}background:rgba(239,68,68,0.12);color:#f87171{% elif news.ai_sentiment == 'bullish' %}background:rgba(34,197,94,0.12);color:#34d399{% elif news.ai_sentiment == 'bearish' %}background:rgba(239,68,68,0.12);color:#f87171{% else %}background:rgba(100,116,139,0.12);color:#94a3b8{% endif %}">
-                    {% if news.ai_sentiment == 'positive' %}🟢{% elif news.ai_sentiment == 'negative' %}🔴{% elif news.ai_sentiment == 'bullish' %}🚀{% elif news.ai_sentiment == 'bearish' %}📉{% else %}⚪{% endif %}
-                    {{ news.ai_sentiment }}
-                </span>
-                {% endif %}
-            </div>
-
-            <!-- Title -->
-            <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight mb-5">{{ news.title }}</h1>
-
-            <!-- Info Row -->
-            <div class="flex flex-wrap items-center gap-4 mb-6 pb-6" style="border-bottom:1px solid var(--border)">
-                {% if news.source %}
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center text-[10px] font-bold">{{ news.source[0] }}</div>
-                    <span class="text-sm font-medium">{{ news.source }}</span>
-                </div>
-                {% endif %}
-                <span class="text-xs" style="color:var(--text2)">
-                    {% if news.published %}{{ news.published[:16] }}{% elif news.created_at %}{{ news.created_at[:16] }}{% endif %}
-                </span>
-                {% if news.category_confidence %}
-                <span class="text-[10px] font-mono px-2 py-1 rounded-md" style="background:var(--surface2);color:var(--text2)">confidence: {{ "%.0f"|format(news.category_confidence * 100) }}%</span>
-                {% endif %}
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex flex-wrap items-center gap-2 mb-8">
-                <button onclick="toggleBookmark({{ news.id }},'{{ news.title[:50]|e }}')" class="btn-outline bm-btn" data-id="{{ news.id }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                    <span class="bm-label">Bookmark</span>
-                </button>
-                <a href="https://twitter.com/intent/tweet?text={{ news.title|urlencode }}&url={{ (request.url_root ~ 'article/' ~ news.id)|urlencode }}" target="_blank" rel="noopener" class="btn-outline">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    Post
-                </a>
-                <a href="https://t.me/share/url?url={{ (request.url_root ~ 'article/' ~ news.id)|urlencode }}&text={{ news.title|urlencode }}" target="_blank" rel="noopener" class="btn-outline">
-                    ✈️ Telegram
-                </a>
-                <button onclick="navigator.clipboard.writeText(window.location.href);showToast(t('copied'))" class="btn-outline">
-                    🔗 Copy Link
-                </button>
-                {% if news.url %}
-                <a href="{{ news.url }}" target="_blank" rel="noopener" class="btn-primary ml-auto">
-                    Read Source ↗
-                </a>
-                {% endif %}
-            </div>
-
-            <!-- Summary -->
-            {% if news.summary %}
-            <div class="mb-8">
-                <h3 class="text-xs font-bold uppercase tracking-wider mb-3" style="color:var(--text2)">Summary</h3>
-                <p class="text-[15px] leading-[1.8]">{{ news.summary }}</p>
-            </div>
-            {% endif %}
-
-            <!-- AI Analysis -->
-            {% if news.ai_summary or news.ai_sentiment %}
-            <div class="ai-box p-6 mb-8">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                    </div>
-                    <h3 class="font-bold text-sm">AI Analysis</h3>
-                </div>
-                <div class="space-y-3">
-                    {% if news.ai_summary %}
-                    <div class="flex gap-3">
-                        <span class="text-sm mt-0.5">💡</span>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Summary</p>
-                            <p class="text-sm leading-relaxed">{{ news.ai_summary }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
+        <article class="widget fade-up">
+            <div class="p-6 sm:p-10">
+                <!-- Meta -->
+                <div class="flex items-center gap-2 mb-5 flex-wrap">
+                    <span class="badge" style="background:rgba(59,130,246,0.1);color:#60a5fa">{{ news.category or 'market' }}</span>
                     {% if news.ai_sentiment %}
-                    <div class="flex gap-3">
-                        <span class="text-sm mt-0.5">📊</span>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Sentiment</p>
-                            <p class="text-sm font-semibold">
-                                {% if news.ai_sentiment == 'positive' %}🟢 Positive{% elif news.ai_sentiment == 'negative' %}🔴 Negative{% elif news.ai_sentiment == 'bullish' %}🚀 Bullish{% elif news.ai_sentiment == 'bearish' %}📉 Bearish{% else %}⚪ Neutral{% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if news.ai_reason %}
-                    <div class="flex gap-3">
-                        <span class="text-sm mt-0.5">🔍</span>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Reasoning</p>
-                            <p class="text-sm leading-relaxed" style="color:var(--text2)">{{ news.ai_reason }}</p>
-                        </div>
-                    </div>
+                    <span class="badge" style="{% if news.ai_sentiment == 'positive' %}background:rgba(34,197,94,0.1);color:#34d399{% elif news.ai_sentiment == 'negative' %}background:rgba(239,68,68,0.1);color:#f87171{% elif news.ai_sentiment == 'bullish' %}background:rgba(34,197,94,0.1);color:#34d399{% elif news.ai_sentiment == 'bearish' %}background:rgba(239,68,68,0.1);color:#f87171{% else %}background:rgba(100,116,139,0.1);color:#94a3b8{% endif %}">
+                        {% if news.ai_sentiment == 'positive' %}🟢{% elif news.ai_sentiment == 'negative' %}🔴{% elif news.ai_sentiment == 'bullish' %}🚀{% elif news.ai_sentiment == 'bearish' %}📉{% else %}⚪{% endif %}
+                        {{ news.ai_sentiment }}
+                    </span>
                     {% endif %}
                 </div>
+
+                <!-- Title -->
+                <h1 class="article-title mb-6">{{ news.title }}</h1>
+
+                <!-- Info Row -->
+                <div class="flex flex-wrap items-center gap-4 mb-8 pb-8" style="border-bottom:1px solid var(--border)">
+                    {% if news.source %}
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/15 to-violet-500/15 flex items-center justify-center text-[11px] font-bold">{{ news.source[0] }}</div>
+                        <div>
+                            <span class="text-[13px] font-semibold block">{{ news.source }}</span>
+                            <span class="text-[11px]" style="color:var(--text3)">
+                                {% if news.published %}{{ news.published[:16] }}{% elif news.created_at %}{{ news.created_at[:16] }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if news.category_confidence %}
+                    <span class="text-[10px] font-mono font-semibold px-2.5 py-1 rounded-lg" style="background:var(--surface2);color:var(--text3)">confidence: {{ "%.0f"|format(news.category_confidence * 100) }}%</span>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center gap-2.5 mb-10">
+                    <button onclick="toggleBookmark({{ news.id }},'{{ news.title[:50]|e }}')" class="btn-outline bm-btn" data-id="{{ news.id }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                        <span class="bm-label">Bookmark</span>
+                    </button>
+                    <a href="https://twitter.com/intent/tweet?text={{ news.title|urlencode }}&url={{ (request.url_root ~ 'article/' ~ news.id)|urlencode }}" target="_blank" rel="noopener" class="btn-outline">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        Post
+                    </a>
+                    <a href="https://t.me/share/url?url={{ (request.url_root ~ 'article/' ~ news.id)|urlencode }}&text={{ news.title|urlencode }}" target="_blank" rel="noopener" class="btn-outline">✈️ Telegram</a>
+                    <button onclick="navigator.clipboard.writeText(window.location.href);showToast(t('copied'))" class="btn-outline">🔗 Copy Link</button>
+                    {% if news.url %}
+                    <a href="{{ news.url }}" target="_blank" rel="noopener" class="btn-primary ml-auto">Read Source ↗</a>
+                    {% endif %}
+                </div>
+
+                <!-- Summary -->
+                {% if news.summary %}
+                <div class="mb-10">
+                    <h3 class="text-[11px] font-bold uppercase tracking-[0.08em] mb-4" style="color:var(--text3)">Summary</h3>
+                    <p class="text-[15px] leading-[1.85]" style="color:var(--text2)">{{ news.summary }}</p>
+                </div>
+                {% endif %}
+
+                <!-- AI Analysis -->
+                {% if news.ai_summary or news.ai_sentiment %}
+                <div class="ai-box p-7 sm:p-8">
+                    <div class="flex items-center gap-3 mb-6 relative">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-[15px]">AI Analysis</h3>
+                            <p class="text-[11px]" style="color:var(--text3)">Powered by artificial intelligence</p>
+                        </div>
+                    </div>
+                    <div class="space-y-5 relative">
+                        {% if news.ai_summary %}
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 flex items-center justify-center shrink-0 mt-0.5"><span class="text-sm">💡</span></div>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-[0.06em] mb-2" style="color:var(--text3)">Summary</p>
+                                <p class="text-[14px] leading-[1.8] font-medium">{{ news.ai_summary }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if news.ai_sentiment %}
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center shrink-0 mt-0.5"><span class="text-sm">📊</span></div>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-[0.06em] mb-2" style="color:var(--text3)">Sentiment</p>
+                                <p class="text-[14px] font-semibold">
+                                    {% if news.ai_sentiment == 'positive' %}🟢 Positive{% elif news.ai_sentiment == 'negative' %}🔴 Negative{% elif news.ai_sentiment == 'bullish' %}🚀 Bullish{% elif news.ai_sentiment == 'bearish' %}📉 Bearish{% else %}⚪ Neutral{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if news.ai_reason %}
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 flex items-center justify-center shrink-0 mt-0.5"><span class="text-sm">🔍</span></div>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-[0.06em] mb-2" style="color:var(--text3)">Reasoning</p>
+                                <p class="text-[14px] leading-[1.8]" style="color:var(--text2)">{{ news.ai_reason }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </article>
 
         <!-- Back -->
-        <a href="/" class="inline-flex items-center gap-2 mt-6 text-sm font-medium hover:text-blue-500 transition" style="color:var(--text2)">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <a href="/" class="inline-flex items-center gap-2 mt-8 text-[13px] font-semibold hover:text-blue-400 transition group" style="color:var(--text3)">
+            <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to News
         </a>
 
         <!-- Related -->
         {% if related %}
-        <section class="mt-12">
-            <h2 class="text-lg font-bold mb-5">Related Articles</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <section class="mt-14">
+            <h2 class="text-[18px] font-extrabold tracking-tight mb-6">Related Articles</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {% for item in related %}
                 <a href="/article/{{ item.id }}" class="related-card block group">
-                    <div class="flex items-center gap-2 mb-2">
+                    <div class="flex items-center gap-2 mb-3">
                         <span class="badge text-[10px]" style="background:rgba(59,130,246,0.1);color:#60a5fa">{{ item.category or 'market' }}</span>
-                        {% if item.source %}<span class="text-[11px]" style="color:var(--text2)">{{ item.source }}</span>{% endif %}
+                        {% if item.source %}<span class="text-[11px]" style="color:var(--text3)">{{ item.source }}</span>{% endif %}
                     </div>
-                    <h3 class="font-semibold text-sm leading-snug group-hover:text-blue-500 transition-colors">{{ item.title }}</h3>
-                    {% if item.ai_summary %}<p class="text-xs mt-2 leading-relaxed" style="color:var(--text2)">{{ item.ai_summary[:120] }}</p>{% endif %}
+                    <h3 class="font-bold text-[14px] leading-snug group-hover:text-blue-400 transition-colors">{{ item.title }}</h3>
+                    {% if item.ai_summary %}<p class="text-[12px] mt-2 leading-relaxed" style="color:var(--text3)">{{ item.ai_summary[:120] }}</p>{% endif %}
                 </a>
                 {% endfor %}
             </div>
@@ -217,9 +254,15 @@
         {% endif %}
     </main>
 
-    <footer style="background:var(--surface);border-top:1px solid var(--border)">
-        <div class="max-w-4xl mx-auto px-4 py-6 text-center">
-            <span class="text-xs" style="color:var(--text2)">CryptositNews © 2024</span>
+    <footer class="relative z-10 mt-8" style="border-top:1px solid var(--border)">
+        <div class="max-w-4xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <span class="text-[13px] font-bold">CryptositNews</span>
+            </div>
+            <span class="text-[12px]" style="color:var(--text3)">© 2024 CryptositNews</span>
         </div>
     </footer>
 
@@ -229,12 +272,16 @@
     function t(k){return(i18n[currentLang]||{})[k]||i18n.en[k]||k;}
     function toggleTheme(){currentTheme=currentTheme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",currentTheme);document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");fetch("/api/theme",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({theme:currentTheme})});}
     function toggleLang(){currentLang=currentLang==="en"?"ar":"en";document.getElementById("lang-btn").textContent=currentLang==="ar"?"EN":"AR";document.documentElement.lang=currentLang==="ar"?"ar":"en";document.documentElement.dir=currentLang==="ar"?"rtl":"ltr";fetch("/api/lang",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lang:currentLang})});}
-    function showToast(msg){const c=document.getElementById("toast-container");const d=document.createElement("div");d.className="toast-item text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium";d.style.cssText="background:linear-gradient(135deg,#059669,#10b981)";d.textContent=msg;c.appendChild(d);setTimeout(()=>d.remove(),3000);}
+    function showToast(msg){const c=document.getElementById("toast-container");const d=document.createElement("div");d.className="toast-item text-white px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold";d.style.cssText="background:linear-gradient(135deg,rgba(5,150,105,0.9),rgba(16,185,129,0.9))";d.textContent=msg;c.appendChild(d);setTimeout(()=>d.remove(),3000);}
     function getBookmarks(){try{return JSON.parse(localStorage.getItem("crypto_bookmarks")||"[]");}catch(e){return[];}}
     function toggleBookmark(id,title){let bm=getBookmarks();const i=bm.findIndex(b=>b.id===id);if(i>=0){bm.splice(i,1);showToast(t("bookmark_removed"));}else{bm.unshift({id,title,time:new Date().toISOString()});showToast(t("bookmark_added"));}localStorage.setItem("crypto_bookmarks",JSON.stringify(bm));document.querySelectorAll(`.bm-btn[data-id="${id}"]`).forEach(b=>b.classList.toggle("bookmarked",i<0));}
     document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");
     document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");
     (function(){const bm=getBookmarks();const id={{news.id}};if(bm.some(b=>b.id===id))document.querySelectorAll(`.bm-btn[data-id="${id}"]`).forEach(b=>b.classList.add("bookmarked"));})();
+
+    // Reading progress
+    window.addEventListener("scroll",()=>{const h=document.documentElement;const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;document.getElementById("reading-progress").style.width=Math.min(pct,100)+"%";});
+
     if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
     </script>
 </body>

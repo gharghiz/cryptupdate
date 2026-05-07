@@ -6,26 +6,39 @@
     <title>404 - CryptositNews</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config={darkMode:['class','[data-theme="dark"]'],theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}
     </script>
     <style>
-        :root{--bg:#080b12;--surface:#0f1420;--text:#e8ecf2;--text2:#8892a6;--border:rgba(255,255,255,0.06);}
-        [data-theme="light"]{--bg:#f0f4f8;--surface:#ffffff;--text:#0f172a;--text2:#475569;--border:rgba(0,0,0,0.08);}
-        body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+        :root { --brand:#3b82f6; }
+        [data-theme="light"] { --bg:#f4f6fb; --text:#0f172a; --text2:#64748b; --text3:#94a3b8; }
+        [data-theme="dark"] { --bg:#060910; --text:#e8ecf4; --text2:#7b8ba5; --text3:#4a5a75; }
+        body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+        .orb { position:fixed; border-radius:50%; filter:blur(120px); pointer-events:none; }
+        .orb-1 { width:600px; height:400px; background:rgba(59,130,246,0.05); top:-150px; left:-100px; }
+        .orb-2 { width:400px; height:400px; background:rgba(139,92,246,0.04); bottom:-100px; right:-100px; }
+        .float { animation: floatAnim 6s ease-in-out infinite; }
+        @keyframes floatAnim { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center relative">
-    <div class="text-center px-6">
-        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center mx-auto mb-6">
-            <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/></svg>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="text-center px-6 relative z-10">
+        <div class="float inline-block mb-8">
+            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500/10 via-violet-500/10 to-fuchsia-500/10 flex items-center justify-center mx-auto" style="border:1px solid rgba(59,130,246,0.1)">
+                <svg class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/>
+                </svg>
+            </div>
         </div>
-        <h1 class="text-7xl font-extrabold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent mb-3">404</h1>
-        <p class="text-lg font-medium mb-2" style="color:var(--text2)">Page Not Found</p>
-        <p class="text-sm mb-8" style="color:var(--text2)">The page you're looking for doesn't exist or has been moved.</p>
-        <a href="/" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-blue-500/20" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">
+        <h1 class="text-8xl font-black bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-4 tracking-tight">404</h1>
+        <p class="text-xl font-bold mb-2">Page Not Found</p>
+        <p class="text-sm mb-10 max-w-md mx-auto leading-relaxed" style="color:var(--text2)">The page you're looking for doesn't exist or has been moved. Check the URL or head back to the homepage.</p>
+        <a href="/" class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-bold text-white transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Back to Home
         </a>

@@ -6,165 +6,209 @@
     <title>Admin Dashboard - CryptositNews</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: ['class', '[data-theme="dark"]'],
             theme: { extend: { fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['JetBrains Mono','monospace'] },
-                colors: { brand:{500:'#3b82f6',600:'#2563eb'}, surface:{0:'#080b12',1:'#0f1420',2:'#141b28',3:'#1b2233'} }
+                colors: { brand:{500:'#3b82f6',600:'#2563eb'}, surface:{0:'#060910',1:'#0a0f18',2:'#0f1520',3:'#1a2438'} }
             }}
         }
     </script>
     <style>
-        :root { --brand:#3b82f6; --bg:#080b12; --surface:#0f1420; --surface2:#141b28; --text:#e8ecf2; --text2:#8892a6; --border:rgba(255,255,255,0.06); }
-        [data-theme="light"] { --bg:#f0f4f8; --surface:#ffffff; --surface2:#f8fafc; --text:#0f172a; --text2:#475569; --border:rgba(0,0,0,0.08); }
+        *, *::before, *::after { box-sizing: border-box; }
+        :root { --brand: #3b82f6; }
+        [data-theme="light"] { --bg:#f4f6fb; --surface:rgba(255,255,255,0.82); --surface-solid:#ffffff; --surface2:rgba(248,250,255,0.9); --text:#0f172a; --text2:#64748b; --text3:#94a3b8; --border:rgba(15,23,42,0.07); --border2:rgba(15,23,42,0.12); --shadow:rgba(15,23,42,0.06); }
+        [data-theme="dark"] { --bg:#060910; --surface:rgba(14,20,33,0.75); --surface-solid:#0e1421; --surface2:rgba(18,26,42,0.7); --text:#e8ecf4; --text2:#7b8ba5; --text3:#4a5a75; --border:rgba(255,255,255,0.05); --border2:rgba(255,255,255,0.09); --shadow:rgba(0,0,0,0.4); }
         body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
-        .hero-glow { position:fixed; top:-200px; left:50%; transform:translateX(-50%); width:800px; height:500px; background:radial-gradient(ellipse,rgba(59,130,246,0.06) 0%,transparent 70%); pointer-events:none; z-index:0; }
-        .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; transition:all 0.25s cubic-bezier(0.4,0,0.2,1); }
-        .card:hover { border-color:rgba(59,130,246,0.15); }
-        .card-elevated { background:var(--surface); border:1px solid var(--border); border-radius:20px; }
-        .nav-bar { background:var(--surface); border-bottom:1px solid var(--border); }
-        .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; transition:all 0.2s; }
-        .stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px -8px rgba(0,0,0,0.2); }
+
+        .mesh-bg { position:fixed; inset:0; z-index:0; pointer-events:none; }
+        .mesh-bg .orb { position:absolute; border-radius:50%; filter:blur(120px); }
+        .mesh-bg .orb-1 { width:700px; height:500px; background:rgba(59,130,246,0.05); top:-200px; left:-100px; }
+        .mesh-bg .orb-2 { width:500px; height:400px; background:rgba(139,92,246,0.04); bottom:-100px; right:-150px; animation:oF 30s ease-in-out infinite; }
+        @keyframes oF{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,50px)}}
+
+        .nav-bar { background:var(--surface); backdrop-filter:blur(24px) saturate(1.5); -webkit-backdrop-filter:blur(24px) saturate(1.5); border-bottom:1px solid var(--border); }
+
+        .stat-card { background:var(--surface); backdrop-filter:blur(16px); border:1px solid var(--border); border-radius:20px; padding:24px; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); position:relative; overflow:hidden; }
+        .stat-card::after { content:''; position:absolute; inset:0; border-radius:20px; background:linear-gradient(135deg, rgba(59,130,246,0.03) 0%, transparent 50%); pointer-events:none; }
+        .stat-card:hover { border-color:rgba(59,130,246,0.15); transform:translateY(-2px); box-shadow:0 12px 40px -8px var(--shadow); }
+
+        .widget { background:var(--surface); backdrop-filter:blur(16px); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+        .widget-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+        .widget-body { padding:24px; }
+
         .bar-fill { transition:width 0.8s cubic-bezier(0.4,0,0.2,1); border-radius:4px; height:6px; }
-        .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
-        .btn-primary:hover { box-shadow:0 0 20px rgba(59,130,246,0.3); }
-        .btn-danger { background:rgba(239,68,68,0.1); color:#f87171; border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
-        .btn-danger:hover { background:rgba(239,68,68,0.2); }
-        ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+        .skeleton { background:linear-gradient(90deg,var(--surface2) 25%,var(--surface-solid) 50%,var(--surface2) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:12px; }
+        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+        .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; border-radius:12px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.25s; font-family:inherit; }
+        .btn-primary:hover { box-shadow:0 8px 30px rgba(59,130,246,0.25); transform:translateY(-1px); }
+        .btn-danger { background:rgba(239,68,68,0.08); color:#f87171; border:1px solid rgba(239,68,68,0.15); border-radius:12px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.25s; font-family:inherit; }
+        .btn-danger:hover { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.25); }
+
+        .badge { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:12px; font-size:11px; font-weight:600; }
+
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+        .fade-up{animation:fU .5s cubic-bezier(.4,0,.2,1) forwards;opacity:0}
+        @keyframes fU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        .stagger-1{animation-delay:.06s}.stagger-2{animation-delay:.12s}.stagger-3{animation-delay:.18s}.stagger-4{animation-delay:.24s}
     </style>
 </head>
 <body class="min-h-screen relative">
-    <div class="hero-glow"></div>
+    <div class="mesh-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
 
     <nav class="nav-bar sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-3 group">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-300">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     </div>
-                    <span class="text-[15px] font-bold tracking-tight">Crypto<span class="text-blue-500">sit</span>News</span>
+                    <span class="text-[16px] font-extrabold tracking-tight">Crypto<span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">sit</span>News</span>
                 </a>
-                <span class="badge" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(59,130,246,0.15));color:#a78bfa;border:1px solid rgba(139,92,246,0.2)">Admin</span>
+                <span class="badge" style="background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(59,130,246,0.12));color:#a78bfa;border:1px solid rgba(139,92,246,0.15)">Admin</span>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="loadAllData()" class="btn-primary text-xs px-3 py-2">Refresh</button>
-                <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5 transition">
-                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] opacity-60 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light-icon" class="w-[18px] h-[18px] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <button onclick="loadAllData()" class="btn-primary text-xs px-4 py-2.5">Refresh</button>
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition">
+                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] hidden" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" class="w-[18px] h-[18px]" style="color:var(--text2)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16 space-y-6 relative z-10">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 space-y-6 relative z-10">
 
-        <!-- Stats Grid -->
+        <!-- Primary Stats -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Total News</span>
+            <div class="stat-card fade-up">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)">Total News</span>
                 </div>
                 <p id="s-total" class="text-3xl font-extrabold font-mono tracking-tight">-</p>
             </div>
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Today</span>
+            <div class="stat-card fade-up stagger-1">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)">Today</span>
                 </div>
-                <p id="s-today" class="text-3xl font-extrabold font-mono tracking-tight text-blue-500">-</p>
+                <p id="s-today" class="text-3xl font-extrabold font-mono tracking-tight text-blue-400">-</p>
             </div>
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Important</span>
+            <div class="stat-card fade-up stagger-2">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)">Important</span>
                 </div>
-                <p id="s-important" class="text-3xl font-extrabold font-mono tracking-tight text-amber-500">-</p>
+                <p id="s-important" class="text-3xl font-extrabold font-mono tracking-tight text-amber-400">-</p>
             </div>
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Telegram</span>
+            <div class="stat-card fade-up stagger-3">
+                <div class="flex items-center gap-2.5 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/15 to-violet-500/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.08em]" style="color:var(--text3)">Telegram</span>
                 </div>
-                <p id="s-telegram" class="text-3xl font-extrabold font-mono tracking-tight text-violet-500">-</p>
+                <p id="s-telegram" class="text-3xl font-extrabold font-mono tracking-tight text-violet-400">-</p>
             </div>
         </div>
 
         <!-- Secondary Stats -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 fade-up stagger-3">
             <div class="stat-card" style="padding:18px 24px">
-                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">AI Analyzed</span>
-                <p id="s-ai" class="text-xl font-bold font-mono mt-1 text-cyan-500">-</p>
+                <span class="text-[10px] font-bold uppercase tracking-[0.08em] block mb-2" style="color:var(--text3)">AI Analyzed</span>
+                <p id="s-ai" class="text-xl font-bold font-mono text-cyan-400">-</p>
             </div>
             <div class="stat-card" style="padding:18px 24px">
-                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Sources</span>
-                <p id="s-sources" class="text-xl font-bold font-mono mt-1 text-emerald-500">-</p>
+                <span class="text-[10px] font-bold uppercase tracking-[0.08em] block mb-2" style="color:var(--text3)">Sources</span>
+                <p id="s-sources" class="text-xl font-bold font-mono text-emerald-400">-</p>
             </div>
             <div class="stat-card" style="padding:18px 24px">
-                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Newsletter</span>
-                <p id="s-newsletter" class="text-xl font-bold font-mono mt-1 text-orange-500">-</p>
+                <span class="text-[10px] font-bold uppercase tracking-[0.08em] block mb-2" style="color:var(--text3)">Newsletter</span>
+                <p id="s-newsletter" class="text-xl font-bold font-mono text-orange-400">-</p>
             </div>
             <div class="stat-card" style="padding:18px 24px">
-                <span class="text-[11px] font-semibold uppercase tracking-wider" style="color:var(--text2)">Alerts</span>
-                <p id="s-alerts" class="text-xl font-bold font-mono mt-1 text-red-500">-</p>
+                <span class="text-[10px] font-bold uppercase tracking-[0.08em] block mb-2" style="color:var(--text3)">Alerts</span>
+                <p id="s-alerts" class="text-xl font-bold font-mono text-red-400">-</p>
             </div>
         </div>
 
         <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card-elevated p-6">
-                <h3 class="font-bold text-sm mb-5">Categories Distribution</h3>
-                <div id="cat-chart" class="space-y-3">
-                    <div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 fade-up stagger-4">
+            <div class="widget">
+                <div class="widget-header">
+                    <h3 class="text-[13px] font-bold">Categories Distribution</h3>
+                </div>
+                <div class="widget-body">
+                    <div id="cat-chart" class="space-y-4">
+                        <div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div>
+                    </div>
                 </div>
             </div>
-            <div class="card-elevated p-6">
-                <h3 class="font-bold text-sm mb-5">Top Sources</h3>
-                <div id="sources-list" class="space-y-2.5 max-h-80 overflow-y-auto">
-                    <div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div>
+            <div class="widget">
+                <div class="widget-header">
+                    <h3 class="text-[13px] font-bold">Top Sources</h3>
+                </div>
+                <div class="widget-body">
+                    <div id="sources-list" class="space-y-3 max-h-80 overflow-y-auto">
+                        <div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div><div class="skeleton h-6 w-full"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Cache -->
-        <div class="card-elevated p-6">
-            <div class="flex items-center justify-between mb-5">
-                <h3 class="font-bold text-sm">Cache Statistics</h3>
-                <button onclick="clearCache()" class="btn-danger text-xs px-3 py-1.5">Clear Cache</button>
+        <div class="widget fade-up stagger-4">
+            <div class="widget-header">
+                <h3 class="text-[13px] font-bold flex-1">Cache Statistics</h3>
+                <button onclick="clearCache()" class="btn-danger text-xs px-3.5 py-2">Clear Cache</button>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Backend</p>
-                    <p id="c-backend" class="font-bold text-sm font-mono">-</p>
-                </div>
-                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Hits</p>
-                    <p id="c-hits" class="font-bold text-sm font-mono text-green-500">-</p>
-                </div>
-                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Misses</p>
-                    <p id="c-misses" class="font-bold text-sm font-mono text-red-500">-</p>
-                </div>
-                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Hit Rate</p>
-                    <p id="c-rate" class="font-bold text-sm font-mono text-blue-500">-</p>
-                </div>
-                <div class="text-center p-3 rounded-xl" style="background:var(--surface2)">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider mb-1" style="color:var(--text2)">Entries</p>
-                    <p id="c-entries" class="font-bold text-sm font-mono">-</p>
+            <div class="widget-body">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div class="text-center p-4 rounded-2xl" style="background:var(--surface2)">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.06em] mb-1.5" style="color:var(--text3)">Backend</p>
+                        <p id="c-backend" class="font-bold text-sm font-mono">-</p>
+                    </div>
+                    <div class="text-center p-4 rounded-2xl" style="background:var(--surface2)">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.06em] mb-1.5" style="color:var(--text3)">Hits</p>
+                        <p id="c-hits" class="font-bold text-sm font-mono text-emerald-400">-</p>
+                    </div>
+                    <div class="text-center p-4 rounded-2xl" style="background:var(--surface2)">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.06em] mb-1.5" style="color:var(--text3)">Misses</p>
+                        <p id="c-misses" class="font-bold text-sm font-mono text-red-400">-</p>
+                    </div>
+                    <div class="text-center p-4 rounded-2xl" style="background:var(--surface2)">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.06em] mb-1.5" style="color:var(--text3)">Hit Rate</p>
+                        <p id="c-rate" class="font-bold text-sm font-mono text-blue-400">-</p>
+                    </div>
+                    <div class="text-center p-4 rounded-2xl" style="background:var(--surface2)">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.06em] mb-1.5" style="color:var(--text3)">Entries</p>
+                        <p id="c-entries" class="font-bold text-sm font-mono">-</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Actions -->
-        <div class="card-elevated p-6">
-            <h3 class="font-bold text-sm mb-4">Admin Actions</h3>
-            <div class="flex flex-wrap gap-3">
-                <button onclick="initDB()" class="btn-primary">Init Database</button>
-                <button onclick="clearAllNews()" class="btn-danger">Clear All News</button>
+        <div class="widget fade-up stagger-4">
+            <div class="widget-header">
+                <h3 class="text-[13px] font-bold">Admin Actions</h3>
+            </div>
+            <div class="widget-body">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="initDB()" class="btn-primary">Init Database</button>
+                    <button onclick="clearAllNews()" class="btn-danger">Clear All News</button>
+                </div>
             </div>
         </div>
     </main>
@@ -196,12 +240,12 @@
             const cats=d.categories||{};
             const maxC=Math.max(...Object.values(cats),1);
             document.getElementById("cat-chart").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
-                <div><div class="flex justify-between text-xs mb-1.5"><span class="font-medium">${c}</span><span class="font-mono" style="color:var(--text2)">${n}</span></div><div style="background:var(--surface2);border-radius:4px;height:6px"><div class="bar-fill" style="width:${(n/maxC*100).toFixed(1)}%;background:${barColors[c]||'#64748b'}"></div></div></div>`).join("");
+                <div><div class="flex justify-between text-xs mb-2"><span class="font-semibold">${c}</span><span class="font-mono" style="color:var(--text3)">${n}</span></div><div style="background:var(--surface2);border-radius:6px;height:6px;overflow:hidden"><div class="bar-fill" style="width:${(n/maxC*100).toFixed(1)}%;background:${barColors[c]||'#64748b'}"></div></div></div>`).join("");
             if(d.cache_stats){const c=d.cache_stats;document.getElementById("c-backend").textContent=c.backend||"memory";document.getElementById("c-hits").textContent=c.hits||0;document.getElementById("c-misses").textContent=c.misses||0;document.getElementById("c-rate").textContent=(c.hit_rate||0).toFixed(1)+"%";document.getElementById("c-entries").textContent=c.memory_entries||0;}
         }
         const src=await api("/api/admin/sources",{headers:h()});
         if(src&&src.sources){const maxS=Math.max(...src.sources.map(s=>s.count),1);document.getElementById("sources-list").innerHTML=src.sources.slice(0,15).map(s=>`
-            <div><div class="flex justify-between text-xs mb-1.5"><span class="font-medium truncate max-w-[200px]">${s.source}</span><span class="font-mono shrink-0" style="color:var(--text2)">${s.count}</span></div><div style="background:var(--surface2);border-radius:4px;height:4px"><div class="bar-fill" style="width:${(s.count/maxS*100).toFixed(1)}%;background:var(--brand)"></div></div></div>`).join("");}
+            <div><div class="flex justify-between text-xs mb-2"><span class="font-semibold truncate max-w-[200px]">${s.source}</span><span class="font-mono shrink-0" style="color:var(--text3)">${s.count}</span></div><div style="background:var(--surface2);border-radius:6px;height:4px;overflow:hidden"><div class="bar-fill" style="width:${(s.count/maxS*100).toFixed(1)}%;background:var(--brand)"></div></div></div>`).join("");}
     }
 
     async function clearCache(){const r=await api("/api/admin/cache/clear",{method:"POST",headers:h()});if(r&&r.success){loadAllData();}}
