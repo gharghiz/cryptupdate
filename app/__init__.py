@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CryptositNews - App Factory
-Creates and configures the Flask application.
+CryptositNews v3 - App Factory
 """
 
 import os
@@ -21,11 +20,12 @@ logger = setup_logger("app")
 
 
 def create_app(config_class=None):
-    """Application factory pattern."""
     config_class = config_class or Config
 
-    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    # Validate configuration
+    config_class.validate()
 
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     app = Flask(
         __name__,
         template_folder=os.path.join(BASE_DIR, "templates"),
@@ -33,9 +33,6 @@ def create_app(config_class=None):
     )
     app.config.from_object(config_class)
 
-    # ============================================================
-    # REQUEST MIDDLEWARE
-    # ============================================================
     @app.before_request
     def add_request_context():
         request.request_id = generate_request_id()
@@ -50,26 +47,16 @@ def create_app(config_class=None):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        # HSTS in production
         if request.scheme == "https":
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
-    # ============================================================
-    # GLOBAL ERROR HANDLERS
-    # ============================================================
     @app.errorhandler(Exception)
     def handle_unexpected_error(e):
-        """Catch-all error handler."""
         req_id = getattr(request, "request_id", "unknown")
         logger.error(f"[{req_id}] Unhandled {type(e).__name__}: {e}", exc_info=True)
-
         if request.path.startswith("/api/"):
-            return jsonify({
-                "error": "Internal Server Error",
-                "code": 500,
-                "request_id": req_id,
-            }), 500
+            return jsonify({"error": "Internal Server Error", "code": 500, "request_id": req_id}), 500
         return render_template("404.html", theme="dark"), 500
 
     @app.errorhandler(400)
@@ -115,9 +102,6 @@ def create_app(config_class=None):
             return jsonify({"error": "Internal Server Error", "code": 500, "request_id": req_id}), 500
         return render_template("404.html", theme="dark"), 500
 
-    # ============================================================
-    # REGISTER BLUEPRINTS
-    # ============================================================
     from app.routes.pages import bp as pages_bp
     from app.routes.api_news import bp as api_news_bp
     from app.routes.api_market import bp as api_market_bp
@@ -132,23 +116,18 @@ def create_app(config_class=None):
     app.register_blueprint(api_user_bp, url_prefix="/api")
     app.register_blueprint(api_alerts_bp, url_prefix="/api")
 
-    # ============================================================
-    # INITIALIZE DATABASE
-    # ============================================================
     from app.models.db import init_db
     init_db()
 
-    # ============================================================
-    # STARTUP LOG
-    # ============================================================
     logger.info("=" * 60)
-    logger.info("CryptositNews v2.0 - SaaS Edition")
-    logger.info(f"  Database : {'PostgreSQL' if config_class.DATABASE_URL else 'SQLite'}")
+    logger.info("CryptositNews v3.0 - SaaS Edition (Redesigned)")
+    logger.info(f"  Database : {'PostgreSQL (Pooled)' if config_class.DATABASE_URL else 'SQLite'}")
     logger.info(f"  RSS Feeds: {len(config_class.RSS_FEEDS)}")
     logger.info(f"  Telegram : {'Configured' if config_class.BOT_TOKEN else 'NOT CONFIGURED'}")
     logger.info(f"  OpenAI   : {'Configured' if config_class.OPENAI_API_KEY else 'NOT CONFIGURED'}")
-    logger.info(f"  JWT Auth : Enabled")
-    logger.info(f"  Redis    : {config_class.REDIS_URL or 'In-memory cache'}")
+    logger.info(f"  JWT Auth : Strict Mode")
+    logger.info(f"  Redis    : {config_class.REDIS_URL or 'In-memory cache + rate limit'}")
+    logger.info(f"  Worker   : Parallel ({config_class.WORKER_PARALLEL_POSTS} threads)")
     logger.info("=" * 60)
 
     return app

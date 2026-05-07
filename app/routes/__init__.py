@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 """
-CryptositNews - Route Blueprints
+CryptositNews v3 - Route Blueprints
 """

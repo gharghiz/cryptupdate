@@ -1,197 +1,393 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}" dir="{% if lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ news.title | default('Article') }} - CryptositNews</title>
-    <meta name="description" content="{{ news.summary[:160] | default('') }}">
-    <meta property="og:title" content="{{ news.title | default('') }}">
-    <meta property="og:description" content="{{ news.summary[:160] | default('') }}">
-    <meta name="theme-color" content="#050508">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        html{scroll-behavior:smooth}
-        body{background:#050508;color:#c8cad0;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.7;overflow-x:hidden}
-        a{color:inherit;text-decoration:none}
-        button{font-family:inherit;cursor:pointer;border:none;background:none}
-        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:3px}
-        :root{--bg:#050508;--bg2:#0a0a12;--bg3:#10101c;--bg4:#161625;--border:#1a1a2e;--border2:#252540;--text:#e4e4ec;--text2:#8888a8;--text3:#4a4a6a;--blue:#2563eb;--blue2:#3b82f6;--blue-glow:rgba(37,99,235,0.3);--green:#00dc82;--green-glow:rgba(0,220,130,0.2);--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--mono:'JetBrains Mono',monospace}
-        [data-theme="light"]{--bg:#f5f5f8;--bg2:#eeeef4;--bg3:#fff;--bg4:#f0f0f8;--border:#dddde8;--border2:#ccccdd;--text:#0a0a1a;--text2:#555570;--text3:#9999aa;--blue:#1d4ed8;--blue2:#2563eb;--blue-glow:rgba(29,78,216,0.15);--green:#059669;--green-glow:rgba(5,150,105,0.12)}
-        .wrap{max-width:780px;margin:0 auto;padding:0 20px}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ news.title if news else 'Article' }} - CryptositNews</title>
+<meta name="description" content="{{ news.summary[:160] if news and news.summary else '' }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--surface:#111827;--surface2:#1a2332;--border:#1e293b;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#475569;
+  --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.15);
+  --emerald:#10b981;--emerald-dim:rgba(16,185,129,0.15);
+  --danger:#ef4444;--danger-dim:rgba(239,68,68,0.15);
+  --warning:#f59e0b;--warning-dim:rgba(245,158,11,0.15);
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --radius:12px;--radius-sm:8px;--shadow:0 4px 24px rgba(0,0,0,0.3);
+  --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"]{
+  --bg:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;--border:#e2e8f0;
+  --text:#0f172a;--text-muted:#64748b;--text-dim:#94a3b8;
+  --cyan-dim:rgba(6,182,212,0.1);--emerald-dim:rgba(16,185,129,0.1);
+  --danger-dim:rgba(239,68,68,0.1);--warning-dim:rgba(245,158,11,0.1);
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+[dir="rtl"]{direction:rtl;text-align:right}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:var(--cyan);text-decoration:none;transition:color var(--transition)}
+a:hover{color:#22d3ee}
+img{max-width:100%;height:auto}
 
-        /* Nav */
-        .nav{position:sticky;top:0;z-index:100;height:56px;background:rgba(5,5,8,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-        [data-theme="light"] .nav{background:rgba(245,245,248,0.85)}
-        .nav-inner{max-width:1240px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:center;justify-content:space-between}
-        .logo{display:flex;align-items:center;gap:8px}
-        .logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center}
-        .logo-txt{font-size:16px;font-weight:800;letter-spacing:-0.04em;color:var(--text)}
-        .logo-txt em{font-style:normal;color:var(--blue2)}
-        .nav-a{padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text2);transition:all .15s}
-        .nav-a:hover{color:var(--text);background:var(--bg3)}
-        .nav-right{display:flex;align-items:center;gap:4px}
-        .nav-btn{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s}
-        .nav-btn:hover{background:var(--bg3);color:var(--text)}
-        .nav-btn svg{width:17px;height:17px}
+/* NAV */
+.nav{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,0.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;transition:background var(--transition)}
+[data-theme="light"] .nav{background:rgba(255,255,255,0.8)}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:1.4rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:0.5rem}
+.logo em{color:var(--cyan);font-style:normal}
+.logo svg{width:22px;height:22px;color:var(--cyan)}
+.nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav-links a{color:var(--text-muted);font-size:0.9rem;font-weight:500;transition:color var(--transition);position:relative}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan)}
+.nav-links a.active::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--cyan);border-radius:1px}
+.nav-actions{display:flex;align-items:center;gap:0.75rem}
+.nav-btn{width:38px;height:38px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all var(--transition)}
+.nav-btn:hover{color:var(--cyan);border-color:var(--cyan);background:var(--cyan-dim)}
+.nav-btn svg{width:18px;height:18px}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:22px;height:2px;background:var(--text-muted);border-radius:2px;transition:var(--transition)}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;bottom:0;background:var(--bg);z-index:999;padding:1.5rem;flex-direction:column;gap:0.5rem}
+.mobile-menu.open{display:flex}
+.mobile-menu a{display:block;padding:1rem;color:var(--text-muted);font-size:1.1rem;border-bottom:1px solid var(--border);transition:color var(--transition)}
+.mobile-menu a:hover{color:var(--cyan)}
 
-        /* Article */
-        .article-wrap{padding:48px 0}
-        .art-back{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:32px;transition:all .15s}
-        .art-back:hover{color:var(--text);background:var(--bg3)}
-        .art-back svg{width:14px;height:14px}
-        .art-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-        .art-badge{padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
-        .art-badge.market{background:rgba(37,99,235,0.1);color:var(--blue2)}
-        .art-badge.regulation{background:rgba(59,130,246,0.1);color:var(--blue2)}
-        .art-badge.defi{background:rgba(139,92,246,0.1);color:var(--purple)}
-        .art-badge.security{background:rgba(239,68,68,0.1);color:var(--red)}
-        .art-badge.ai_crypto{background:rgba(0,220,130,0.1);color:var(--green)}
-        .art-badge.exchange{background:rgba(245,158,11,0.1);color:var(--amber)}
-        .art-badge.important{background:rgba(245,158,11,0.12);color:var(--amber)}
-        .art-badge.nft{background:rgba(236,72,153,0.1);color:#ec4899}
-        .art-badge.layer1{background:rgba(37,99,235,0.1);color:var(--blue2)}
-        .art-badge.layer2{background:rgba(139,92,246,0.1);color:var(--purple)}
-        .art-time{font-size:11px;color:var(--text3);font-family:var(--mono)}
-        .art-h1{font-size:clamp(24px,4vw,36px);font-weight:900;line-height:1.2;letter-spacing:-0.03em;color:var(--text);margin-bottom:20px}
-        .art-source-bar{display:flex;align-items:center;gap:10px;padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:28px}
-        .art-source-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
-        .art-source-name{font-size:13px;font-weight:600;color:var(--text2)}
-        .art-share{margin-left:auto;display:flex;gap:6px}
-        .art-share-btn{width:32px;height:32px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);transition:all .15s;font-size:14px}
-        .art-share-btn:hover{border-color:var(--border2);color:var(--text)}
+/* ARTICLE */
+.article-container{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.article-header{margin-bottom:2rem}
+.category-badge{display:inline-flex;align-items:center;gap:0.35rem;padding:0.3rem 0.85rem;border-radius:20px;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem}
+.badge-important{background:var(--danger-dim);color:var(--danger)}
+.badge-market{background:var(--cyan-dim);color:var(--cyan)}
+.badge-regulation{background:var(--warning-dim);color:var(--warning)}
+.badge-defi{background:var(--emerald-dim);color:var(--emerald)}
+.badge-security{background:var(--danger-dim);color:var(--danger)}
+.badge-ai{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.badge-exchange{background:rgba(59,130,246,0.15);color:#3b82f6}
+.badge-l1{background:var(--cyan-dim);color:var(--cyan)}
+.badge-l2{background:rgba(168,85,247,0.15);color:#a855f7}
+.badge-adoption{background:var(--emerald-dim);color:var(--emerald)}
+.badge-meme{background:var(--warning-dim);color:var(--warning)}
+.badge-gaming{background:rgba(236,72,153,0.15);color:#ec4899}
+.badge-nft{background:rgba(249,115,22,0.15);color:#f97316}
+.badge-stablecoin{background:rgba(20,184,166,0.15);color:#14b8a6}
+.article-title{font-size:2.2rem;font-weight:800;line-height:1.25;margin-bottom:1rem;color:var(--text)}
+.article-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;color:var(--text-muted);font-size:0.88rem}
+.article-meta svg{width:16px;height:16px;vertical-align:middle;margin-{% if lang == 'ar' %}right{% else %}left{% endif %}:0.3rem}
+.meta-divider{width:4px;height:4px;border-radius:50%;background:var(--text-dim)}
 
-        /* AI Summary Box */
-        .ai-box{padding:24px;border-radius:12px;background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(0,220,130,0.04));border:1px solid rgba(37,99,235,0.15);margin-bottom:32px}
-        .ai-box-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-        .ai-box-label{padding:2px 8px;border-radius:4px;background:var(--green-glow);font-size:9px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:0.08em}
-        .ai-box-head h3{font-size:13px;font-weight:700;color:var(--text)}
-        .ai-box p{font-size:14px;color:var(--text2);line-height:1.75}
-        .ai-sentiment{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:4px;margin-top:12px;font-size:11px;font-weight:600}
+/* AI ANALYSIS CARD */
+.ai-card{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem;position:relative;overflow:hidden}
+.ai-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--emerald))}
+.ai-card-header{display:flex;align-items:center;gap:0.65rem;margin-bottom:1rem}
+.ai-card-header svg{width:20px;height:20px;color:var(--cyan)}
+.ai-card-header span{font-weight:700;font-size:0.95rem;color:var(--text)}
+.sentiment-badge{display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;margin-{% if lang == 'ar' %}right{% else %}left{% endif %}:0.75rem}
+.sentiment-positive{background:var(--emerald-dim);color:var(--emerald)}
+.sentiment-negative{background:var(--danger-dim);color:var(--danger)}
+.sentiment-neutral{background:rgba(100,116,139,0.2);color:var(--text-muted)}
+.ai-summary{font-size:0.95rem;color:var(--text);line-height:1.7;margin-bottom:0.75rem}
+.ai-reason{font-size:0.85rem;color:var(--text-muted);line-height:1.6;padding-top:0.75rem;border-top:1px solid var(--border)}
+.ai-reason strong{color:var(--text-muted);font-weight:600}
 
-        /* Content */
-        .art-content{font-size:15px;color:var(--text2);line-height:1.8}
-        .art-content p{margin-bottom:16px}
+/* ARTICLE IMAGE */
+.article-image{width:100%;border-radius:var(--radius);overflow:hidden;margin-bottom:2rem;max-height:420px}
+.article-image img{width:100%;height:100%;object-fit:cover;transition:transform var(--transition)}
+.article-image:hover img{transform:scale(1.02)}
 
-        /* Source Link */
-        .art-src-link{display:inline-flex;align-items:center;gap:6px;padding:12px 20px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--blue2);transition:all .2s;margin-top:24px}
-        .art-src-link:hover{border-color:var(--blue);box-shadow:0 0 16px var(--blue-glow)}
+/* ARTICLE BODY */
+.article-body{font-size:1.05rem;line-height:1.85;color:var(--text);margin-bottom:2rem}
+.article-body p{margin-bottom:1.25rem}
 
-        /* Related */
-        .related{padding:48px 0;border-top:1px solid var(--border);margin-top:48px}
-        .related h2{font-size:16px;font-weight:800;color:var(--text);margin-bottom:20px;display:flex;align-items:center;gap:8px}
-        .related h2 .bar{width:3px;height:16px;border-radius:2px;background:linear-gradient(to bottom,var(--blue2),var(--green))}
-        .rel-item{display:block;padding:14px 0;border-bottom:1px solid var(--border);transition:all .15s}
-        .rel-item:last-child{border-bottom:none}
-        .rel-item:hover{padding-left:8px}
-        .rel-item h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;transition:color .15s}
-        .rel-item:hover h3{color:var(--blue2)}
-        .rel-item span{font-size:11px;color:var(--text3)}
+/* SOURCE BUTTON */
+.source-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.5rem;background:var(--cyan);color:#000;font-weight:600;font-size:0.9rem;border-radius:var(--radius-sm);transition:all var(--transition);border:none;cursor:pointer;margin-bottom:3rem}
+.source-btn:hover{background:#22d3ee;transform:translateY(-2px);box-shadow:0 8px 24px rgba(6,182,212,0.25)}
+.source-btn svg{width:18px;height:18px}
 
-        /* Footer */
-        .footer{border-top:1px solid var(--border);padding:24px 0}
-        .footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-        .footer-copy{font-size:11px;color:var(--text3)}
+/* SHARE */
+.share-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:3rem;padding:1rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.share-bar span{color:var(--text-muted);font-size:0.88rem;font-weight:500}
+.share-btn{width:38px;height:38px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all var(--transition)}
+.share-btn:hover{color:var(--cyan);border-color:var(--cyan);background:var(--cyan-dim)}
+.share-btn svg{width:16px;height:16px}
 
-        @media(max-width:768px){.art-share{display:none}}
-    </style>
+/* RELATED */
+.section-title{font-size:1.35rem;font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem}
+.section-title svg{width:20px;height:20px;color:var(--cyan)}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-bottom:3rem}
+.related-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;transition:all var(--transition);cursor:pointer;display:flex;flex-direction:column;gap:0.65rem}
+.related-card:hover{border-color:var(--cyan);transform:translateY(-3px);box-shadow:var(--shadow)}
+.related-card .category-badge{font-size:0.72rem;padding:0.2rem 0.65rem}
+.related-card h3{font-size:1rem;font-weight:600;color:var(--text);line-height:1.45}
+.related-card .meta{font-size:0.8rem;color:var(--text-muted)}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--border);padding:2.5rem 1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem}
+.footer a{color:var(--cyan)}
+
+/* BOOKMARK TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem 1.25rem;font-size:0.88rem;color:var(--text);box-shadow:var(--shadow);transform:translateY(100px);opacity:0;transition:all var(--transition);z-index:2000;display:flex;align-items:center;gap:0.5rem}
+.toast.show{transform:translateY(0);opacity:1}
+.toast svg{width:18px;height:18px;color:var(--emerald)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links,.nav-actions{display:none}
+  .hamburger{display:flex}
+  .article-title{font-size:1.6rem}
+  .article-container{padding:1.25rem 1rem 3rem}
+  .related-grid{grid-template-columns:1fr}
+  .article-meta{flex-direction:column;align-items:flex-start;gap:0.5rem}
+  .share-bar{flex-wrap:wrap}
+  .ai-card{padding:1rem}
+}
+</style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-inner">
-            <a href="/" class="logo">
-                <div class="logo-icon"><svg width="14" height="14" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                <span class="logo-txt">Crypto<em>sit</em>News</span>
-            </a>
-            <div style="display:flex;align-items:center;gap:4px">
-                <a href="/" class="nav-a">Home</a>
-                <a href="/news" class="nav-a">News</a>
-                <a href="/market" class="nav-a">Markets</a>
-            </div>
-            <div class="nav-right">
-                <button onclick="toggleTheme()" class="nav-btn" title="Theme"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></button>
-            </div>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Crypto<em>sit</em>News
+    </a>
+    <ul class="nav-links">
+      <li><a href="/news" class="active">News</a></li>
+      <li><a href="/market">Markets</a></li>
+      <li><a href="/telegram">Telegram</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="toggleSearch()" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="nav-btn" onclick="toggleBookmark(this)" aria-label="Bookmark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="nav-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="icon-sun"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+      <button class="nav-btn" onclick="toggleLang()" aria-label="Language">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </button>
+    </div>
+    <div class="hamburger" onclick="toggleMobile(this)">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/news">News</a>
+  <a href="/market">Markets</a>
+  <a href="/telegram">Telegram</a>
+  <a href="/about">About</a>
+</div>
+
+<!-- ARTICLE -->
+<main class="article-container">
+  {% if news %}
+  <article>
+    <div class="article-header">
+      {% if news.category %}
+      <span class="category-badge badge-{{ news.category | lower }}">{{ news.category }}</span>
+      {% endif %}
+      <h1 class="article-title">{{ news.title }}</h1>
+      <div class="article-meta">
+        {% if news.source %}
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          {{ news.source }}
+        </span>
+        {% endif %}
+        <span class="meta-divider"></span>
+        {% if news.published %}
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          {{ news.published }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if news.ai_summary %}
+    <div class="ai-card">
+      <div class="ai-card-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5 7.5V20h6v-2.5c2.9-1.2 5-4.1 5-7.5a8 8 0 0 0-8-8z"/><path d="M9 22h6"/><path d="M9 18v4M15 18v4"/></svg>
+        <span>AI Analysis</span>
+        {% if news.ai_sentiment %}
+        <span class="sentiment-badge sentiment-{{ news.ai_sentiment | lower }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px">
+            {% if news.ai_sentiment | lower == 'positive' %}
+            <path d="M12 20V10M18 20V4M6 20v-4"/>
+            {% elif news.ai_sentiment | lower == 'negative' %}
+            <path d="M12 4v10M18 20V10M6 4v16"/>
+            {% else %}
+            <path d="M12 8v8M18 20V12M6 20V12"/>
+            {% endif %}
+          </svg>
+          {{ news.ai_sentiment }}
+        </span>
+        {% endif %}
+      </div>
+      <p class="ai-summary">{{ news.ai_summary }}</p>
+      {% if news.ai_reason %}
+      <div class="ai-reason">
+        <strong>Reasoning: </strong>{{ news.ai_reason }}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if news.image_url %}
+    <div class="article-image">
+      <img src="{{ news.image_url }}" alt="{{ news.title }}" loading="lazy">
+    </div>
+    {% endif %}
+
+    {% if news.summary %}
+    <div class="article-body">
+      <p>{{ news.summary }}</p>
+    </div>
+    {% endif %}
+
+    {% if news.url %}
+    <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer" class="source-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Read Full Article
+    </a>
+    {% endif %}
+
+    <div class="share-bar">
+      <span>Share:</span>
+      <button class="share-btn" onclick="shareTwitter()" aria-label="Twitter">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </button>
+      <button class="share-btn" onclick="shareTelegram()" aria-label="Telegram">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </button>
+      <button class="share-btn" onclick="copyLink()" aria-label="Copy link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+    </div>
+  </article>
+
+  {% if related %}
+  <section>
+    <h2 class="section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Related Articles
+    </h2>
+    <div class="related-grid">
+      {% for item in related %}
+      <a href="/news/{{ item.id }}" class="related-card">
+        {% if item.category %}
+        <span class="category-badge badge-{{ item.category | lower }}">{{ item.category }}</span>
+        {% endif %}
+        <h3>{{ item.title }}</h3>
+        <div class="meta">
+          {% if item.source %}{{ item.source }}{% endif %}
+          {% if item.published %} &middot; {{ item.published }}{% endif %}
         </div>
-    </nav>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+</main>
 
-    <article class="article-wrap">
-        <div class="wrap">
-            <a href="/" class="art-back">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                Back to News
-            </a>
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2025 CryptositNews. Built with AI-powered crypto intelligence.</p>
+  <p style="margin-top:0.5rem"><a href="/about">About</a> &middot; <a href="/market">Markets</a> &middot; <a href="/telegram">Telegram</a></p>
+</footer>
 
-            <div class="art-meta">
-                <span class="art-badge {{ news.category or 'market' }}">{{ news.category or 'market' }}</span>
-                {% if news.is_important %}
-                <span class="art-badge important">⚡ Important</span>
-                {% endif %}
-                <span class="art-time">{{ news.time_ago or '' }}</span>
-            </div>
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastMsg">Bookmarked!</span>
+</div>
 
-            <h1 class="art-h1">{{ news.title or 'Untitled' }}</h1>
+<script>
+(function(){
+  // Theme
+  const savedTheme=localStorage.getItem('theme')||document.documentElement.dataset.theme||'dark';
+  document.documentElement.dataset.theme=savedTheme;
+  function toggleTheme(){
+    const t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=t;
+    localStorage.setItem('theme',t);
+  }
+  window.toggleTheme=toggleTheme;
 
-            <div class="art-source-bar">
-                <div class="art-source-dot"></div>
-                <span class="art-source-name">{{ news.source or 'Unknown' }}</span>
-                <div class="art-share">
-                    <button class="art-share-btn" onclick="shareTwitter()" title="Twitter">𝕏</button>
-                    <button class="art-share-btn" onclick="copyLink()" title="Copy">🔗</button>
-                    <a href="{{ news.url or '#' }}" target="_blank" class="art-share-btn" title="Open Source" style="text-decoration:none">↗</a>
-                </div>
-            </div>
+  // Language
+  function toggleLang(){
+    const l=location.pathname;
+    if(l.startsWith('/ar')){location.href=l.replace('/ar','');}
+    else{location.href='/ar'+l;}
+  }
+  window.toggleLang=toggleLang;
 
-            {% if news.ai_summary %}
-            <div class="ai-box">
-                <div class="ai-box-head">
-                    <svg width="14" height="14" fill="none" stroke="var(--green)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                    <h3>AI Summary</h3>
-                    <span class="ai-box-label">GPT</span>
-                </div>
-                <p>{{ news.ai_summary }}</p>
-                {% if news.ai_sentiment %}
-                <div class="ai-sentiment" style="background:{% if news.ai_sentiment in ['positive','bullish'] %}var(--green-glow);color:var(--green){% elif news.ai_sentiment in ['negative','bearish'] %}rgba(239,68,68,0.1);color:var(--red){% else %}var(--bg3);color:var(--text2){% endif %}">
-                    Sentiment: {{ news.ai_sentiment | title }}
-                </div>
-                {% endif %}
-                {% if news.ai_reason %}
-                <p style="font-size:12px;color:var(--text3);margin-top:8px">{{ news.ai_reason }}</p>
-                {% endif %}
-            </div>
-            {% endif %}
+  // Mobile menu
+  function toggleMobile(el){
+    el.classList.toggle('active');
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+  window.toggleMobile=toggleMobile;
 
-            <div class="art-content">
-                <p>{{ news.summary or news.summary_safe or '' }}</p>
-            </div>
+  // Search
+  function toggleSearch(){
+    const q=prompt('Search news:');
+    if(q)location.href='/news?q='+encodeURIComponent(q);
+  }
+  window.toggleSearch=toggleSearch;
 
-            {% if news.url %}
-            <a href="{{ news.url }}" target="_blank" rel="noopener" class="art-src-link">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                Read Full Article →
-            </a>
-            {% endif %}
+  // Bookmarks
+  function toggleBookmark(btn){
+    const id='{{ news.id if news else "" }}';
+    if(!id)return;
+    let bm=JSON.parse(localStorage.getItem('bookmarks')||'[]');
+    const idx=bm.indexOf(id);
+    if(idx>-1){bm.splice(idx,1);showToast('Bookmark removed');}
+    else{bm.push(id);showToast('Bookmarked!');}
+    localStorage.setItem('bookmarks',JSON.stringify(bm));
+    btn.style.color=idx>-1?'var(--text-muted)':'var(--warning)';
+  }
+  window.toggleBookmark=toggleBookmark;
 
-            {% if related %}
-            <div class="related">
-                <h2><span class="bar"></span> Related News</h2>
-                {% for r in related %}
-                <a href="/article/{{ r.id }}" class="rel-item">
-                    <h3>{{ r.title }}</h3>
-                    <span>{{ r.source or '' }} · {{ r.time_ago or '' }}</span>
-                </a>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-    </article>
+  function showToast(msg){
+    const t=document.getElementById('toast');
+    document.getElementById('toastMsg').textContent=msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  }
 
-    <footer class="footer"><div class="wrap"><div class="footer-inner"><span class="footer-copy">© 2025 CryptositNews</span><span class="footer-copy">Powered by AI</span></div></div></footer>
+  // Share
+  const url=location.href;
+  const title=document.querySelector('.article-title')?.textContent||'';
+  function shareTwitter(){window.open('https://twitter.com/intent/tweet?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(title),'_blank');}
+  function shareTelegram(){window.open('https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(title),'_blank');}
+  function copyLink(){navigator.clipboard.writeText(url).then(()=>showToast('Link copied!'));}
+  window.shareTwitter=shareTwitter;
+  window.shareTelegram=shareTelegram;
+  window.copyLink=copyLink;
 
-    <script>
-    function shareTwitter(){const t=encodeURIComponent(document.title);const u=encodeURIComponent(location.href);window.open(`https://twitter.com/intent/tweet?text=${t}&url=${u}`,'_blank')}
-    function copyLink(){navigator.clipboard.writeText(location.href).then(()=>{const b=document.createElement('div');b.style.cssText='position:fixed;top:16px;right:16px;padding:10px 18px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text);z-index:999';b.textContent='Link copied!';document.body.appendChild(b);setTimeout(()=>b.remove(),2000)})}
-    function toggleTheme(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;document.cookie=`theme=${t};path=/;max-age=31536000`;location.reload()}
-    </script>
+  // Check existing bookmark
+  const id='{{ news.id if news else "" }}';
+  if(id){
+    const bm=JSON.parse(localStorage.getItem('bookmarks')||'[]');
+    if(bm.includes(id)){
+      const btn=document.querySelector('.nav-btn[aria-label="Bookmark"]');
+      if(btn)btn.style.color='var(--warning)';
+    }
+  }
+})();
+</script>
 </body>
 </html>

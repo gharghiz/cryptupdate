@@ -1,10 +1,7 @@
 #!/bin/bash
-# CryptositNews - Start Script for Railway
 set -e
-
 PORT="${PORT:-8000}"
-echo "Starting CryptositNews on port $PORT..."
-
+echo "Starting CryptositNews v3.0 on port $PORT..."
 exec gunicorn wsgi:app \
     --workers 2 \
     --threads 4 \

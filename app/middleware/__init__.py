@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-CryptositNews - Middleware Package
+CryptositNews v3 - Middleware Package
 Authentication decorators and API rate limiting.
 """

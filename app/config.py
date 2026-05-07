@@ -1,43 +1,68 @@
 # -*- coding: utf-8 -*-
 """
-CryptositNews - Configuration
+CryptositNews v3.0 - Configuration
 All settings from environment variables with secure defaults.
 """
 
 import os
+import sys
 
 
 class Config:
-    """Flask configuration."""
+    """Flask configuration with mandatory production security."""
 
-    SECRET_KEY = os.environ.get("APP_SECRET", os.urandom(32).hex())
+    # ============================================================
+    # CORE SECURITY (mandatory in production)
+    # ============================================================
+    SECRET_KEY = os.environ.get("APP_SECRET", "")
+
+    # JWT - MANDATORY in production, no fallback to SECRET_KEY
+    JWT_SECRET = os.environ.get("JWT_SECRET", "")
+
+    @classmethod
+    def validate(cls):
+        """Validate critical configuration. Call at startup."""
+        is_prod = os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("FLASK_ENV") == "production"
+        errors = []
+
+        if is_prod:
+            if not cls.JWT_SECRET or len(cls.JWT_SECRET) < 32:
+                errors.append("JWT_SECRET must be set (min 32 chars) in production")
+            if not cls.SECRET_KEY or len(cls.SECRET_KEY) < 32:
+                errors.append("APP_SECRET must be set (min 32 chars) in production")
+
+        if errors:
+            for e in errors:
+                print(f"[CONFIG ERROR] {e}", file=sys.stderr)
+            if is_prod:
+                raise RuntimeError(f"Configuration errors: {'; '.join(errors)}")
+
+        return True
 
     # ============================================================
     # TELEGRAM
     # ============================================================
     BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
     CHANNEL_ID = os.environ.get("CHANNEL_ID", "")
-
-    # Admin uses SHA-256 hash of the actual key (set ADMIN_KEY_HASH in env)
-    # For backward compatibility: if ADMIN_KEY_HASH is not set, fall back to ADMIN_KEY
     ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
-    ADMIN_KEY_HASH = os.environ.get("ADMIN_KEY_HASH", "")  # SHA-256 of the admin key
-    ADMIN_RATE_LIMIT = int(os.environ.get("ADMIN_RATE_LIMIT", "30"))  # per minute
+    ADMIN_KEY_HASH = os.environ.get("ADMIN_KEY_HASH", "")
+    ADMIN_RATE_LIMIT = int(os.environ.get("ADMIN_RATE_LIMIT", "30"))
 
     # ============================================================
-    # JWT
+    # JWT TIMING
     # ============================================================
-    JWT_SECRET = os.environ.get("JWT_SECRET", "")
-    JWT_ACCESS_EXPIRES = int(os.environ.get("JWT_ACCESS_EXPIRES", "3600"))  # 1 hour
-    JWT_REFRESH_EXPIRES = int(os.environ.get("JWT_REFRESH_EXPIRES", "2592000"))  # 30 days
+    JWT_ACCESS_EXPIRES = int(os.environ.get("JWT_ACCESS_EXPIRES", "3600"))
+    JWT_REFRESH_EXPIRES = int(os.environ.get("JWT_REFRESH_EXPIRES", "2592000"))
     JWT_ISSUER = "cryptositnews"
 
     # ============================================================
     # DATABASE
     # ============================================================
     DATABASE_URL = os.environ.get("DATABASE_URL", "")
-    DB_POOL_SIZE = int(os.environ.get("DB_POOL_SIZE", "8"))
+    DB_POOL_SIZE = int(os.environ.get("DB_POOL_SIZE", "10"))
+    DB_MAX_OVERFLOW = int(os.environ.get("DB_MAX_OVERFLOW", "5"))
     DB_POOL_TIMEOUT = int(os.environ.get("DB_POOL_TIMEOUT", "30"))
+    DB_POOL_RECYCLE = int(os.environ.get("DB_POOL_RECYCLE", "300"))
 
     # ============================================================
     # REDIS CACHE
@@ -51,7 +76,8 @@ class Config:
     CACHE_GLOBAL_TTL = int(os.environ.get("CACHE_GLOBAL_TTL", "300"))
     CACHE_STATS_TTL = int(os.environ.get("CACHE_STATS_TTL", "600"))
     CACHE_TRENDING_TTL = int(os.environ.get("CACHE_TRENDING_TTL", "300"))
-    CACHE_AI_TTL = int(os.environ.get("CACHE_AI_TTL", "86400"))  # AI results: 24h
+    CACHE_AI_TTL = int(os.environ.get("CACHE_AI_TTL", "86400"))
+    CACHE_HOMEPAGE_TTL = int(os.environ.get("CACHE_HOMEPAGE_TTL", "60"))
 
     # ============================================================
     # API RATE LIMITING
@@ -65,6 +91,12 @@ class Config:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     AI_MODEL = os.environ.get("AI_MODEL", "gpt-4o-mini")
     AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "150"))
+    AI_BATCH_SIZE = int(os.environ.get("AI_BATCH_SIZE", "5"))
+
+    # ============================================================
+    # WORKER
+    # ============================================================
+    WORKER_PARALLEL_POSTS = int(os.environ.get("WORKER_PARALLEL_POSTS", "3"))
 
     # ============================================================
     # COINGECKO
@@ -89,9 +121,6 @@ class Config:
         "WIF": "dogwifcoin", "PEPE": "pepe", "SHIB": "shiba-inu",
     }
 
-    # ============================================================
-    # FEAR & GREED
-    # ============================================================
     FEAR_GREED_URL = "https://api.alternative.me/fng/"
 
     # ============================================================
@@ -109,7 +138,7 @@ class Config:
     # ============================================================
     IMPORTANT_KEYWORDS = [
         "crash", "hack", "ban", "SEC", "regulation", "bullish", "bearish",
-        "breakout", "resistance", "support", " ATH", " all-time high",
+        "breakout", "resistance", "support", "ATH", "all-time high",
         "adoption", "partnership", "launch", "upgrade", "ETF", "approval",
         "halving", "fork", "airdrop", "vulnerability", "exploit",
         "recall", "lawsuit", "investigation", "sanctions",
@@ -143,114 +172,30 @@ class Config:
         "drop", "fall", "dump", "rug pull",
     ]
 
-    # ============================================================
-    # CATEGORY RULES
-    # ============================================================
     CATEGORY_RULES = {
-        "regulation": {
-            "keywords": ["SEC", "regulation", "regulate", "compliance", "legal",
-                          "law", "lawsuit", "court", "judge", "ban", "sanction",
-                          "legislation", "policy", "government", "congress",
-                          "senate", "parliament", "EU", "MiCA", "enforcement"],
-            "weight": 2.0,
-        },
-        "defi": {
-            "keywords": ["DeFi", "yield", "liquidity", "AMM", "DEX", "Uniswap",
-                          "Aave", "Compound", "MakerDAO", "lending", "borrowing",
-                          "staking", "LP", "farming", "vault", "protocol"],
-            "weight": 1.5,
-        },
-        "nft": {
-            "keywords": ["NFT", "non-fungible", "mint", "minting", "collection",
-                          "OpenSea", "Blur", "floor price", "rare", "metadata",
-                          "ERC-721", "ERC-1155", "digital art", "PFP"],
-            "weight": 1.2,
-        },
-        "layer1": {
-            "keywords": ["Layer 1", "L1", "Ethereum", "Solana", "Cardano",
-                          "Polkadot", "Avalanche", "Cosmos", "NEAR", "Sui",
-                          "Aptos", "base chain", "blockchain", "consensus",
-                          "sharding", "rollup"],
-            "weight": 1.5,
-        },
-        "layer2": {
-            "keywords": ["Layer 2", "L2", "rollup", "Optimism", "Arbitrum",
-                          "zkSync", "StarkNet", "Polygon", "zkEVM", "scaling",
-                          "Optimistic", "ZK", "zero-knowledge", "validium"],
-            "weight": 1.3,
-        },
-        "meme": {
-            "keywords": ["meme", "doge", "shib", "pepe", "wif", "bonk",
-                          "floki", "troll", "wojak", "meme coin", "shitcoin",
-                          "pump.fun", " meme"],
-            "weight": 1.0,
-        },
-        "ai_crypto": {
-            "keywords": ["AI", "artificial intelligence", "machine learning",
-                          "GPT", "OpenAI", "deep learning", "neural",
-                          "SingularityNET", "Fetch.ai", "Render", "Worldcoin",
-                          "Bittensor", "TAO", "AI agent", "AI model"],
-            "weight": 1.8,
-        },
-        "mining": {
-            "keywords": ["mining", "miner", "hash rate", "hashrate", "ASIC",
-                          "Bitcoin mining", "pool", "difficulty", "reward",
-                          "halving", "energy", "power", "proof of work"],
-            "weight": 1.0,
-        },
-        "stablecoin": {
-            "keywords": ["stablecoin", "USDT", "USDC", "DAI", "BUSD",
-                          "Tether", "Circle", "peg", "depeg", "reserve",
-                          "stable", "fiat-backed", "crypto-backed"],
-            "weight": 1.5,
-        },
-        "gaming": {
-            "keywords": ["gaming", "GameFi", "play-to-earn", "P2E",
-                          "metaverse", "Web3 game", "blockchain game",
-                          "Axie", "Illuvium", "Gala", "Treasure", "game"],
-            "weight": 1.1,
-        },
-        "exchange": {
-            "keywords": ["Binance", "Coinbase", "Kraken", "OKX", "Bybit",
-                          "exchange", "trading", "listing", "delisting",
-                          "margin", "futures", "spot", "order book", "volume"],
-            "weight": 1.4,
-        },
-        "security": {
-            "keywords": ["hack", "exploit", "vulnerability", "breach", "attack",
-                          "malware", "phishing", "rug pull", "scam", "fraud",
-                          "theft", "stolen", "compromised", "security",
-                          "audit", "bug bounty"],
-            "weight": 2.0,
-        },
-        "adoption": {
-            "keywords": ["adoption", "institutional", "ETF", "approved",
-                          "payment", "merchant", "accept", "integration",
-                          "partnership", "enterprise", "bank", "traditional",
-                          "mainstream", "Massachusetts", "Wall Street"],
-            "weight": 1.6,
-        },
-        "market": {
-            "keywords": ["price", "market", "bull", "bear", "rally", "crash",
-                          "ATH", "all-time high", "cap", "volume", "surge",
-                          "plunge", "recovery", "correction", "resistance",
-                          "support", "breakout", "consolidation"],
-            "weight": 1.3,
-        },
+        "regulation": {"keywords": ["SEC", "regulation", "regulate", "compliance", "legal", "law", "lawsuit", "court", "judge", "ban", "sanction", "legislation", "policy", "government", "congress", "senate", "parliament", "EU", "MiCA", "enforcement"], "weight": 2.0},
+        "defi": {"keywords": ["DeFi", "yield", "liquidity", "AMM", "DEX", "Uniswap", "Aave", "Compound", "MakerDAO", "lending", "borrowing", "staking", "LP", "farming", "vault", "protocol"], "weight": 1.5},
+        "nft": {"keywords": ["NFT", "non-fungible", "mint", "minting", "collection", "OpenSea", "Blur", "floor price", "rare", "metadata", "ERC-721", "ERC-1155", "digital art", "PFP"], "weight": 1.2},
+        "layer1": {"keywords": ["Layer 1", "L1", "Ethereum", "Solana", "Cardano", "Polkadot", "Avalanche", "Cosmos", "NEAR", "Sui", "Aptos", "base chain", "blockchain", "consensus", "sharding", "rollup"], "weight": 1.5},
+        "layer2": {"keywords": ["Layer 2", "L2", "rollup", "Optimism", "Arbitrum", "zkSync", "StarkNet", "Polygon", "zkEVM", "scaling", "Optimistic", "ZK", "zero-knowledge", "validium"], "weight": 1.3},
+        "meme": {"keywords": ["meme", "doge", "shib", "pepe", "wif", "bonk", "floki", "troll", "wojak", "meme coin", "shitcoin", "pump.fun", " meme"], "weight": 1.0},
+        "ai_crypto": {"keywords": ["AI", "artificial intelligence", "machine learning", "GPT", "OpenAI", "deep learning", "neural", "SingularityNET", "Fetch.ai", "Render", "Worldcoin", "Bittensor", "TAO", "AI agent", "AI model"], "weight": 1.8},
+        "mining": {"keywords": ["mining", "miner", "hash rate", "hashrate", "ASIC", "Bitcoin mining", "pool", "difficulty", "reward", "halving", "energy", "power", "proof of work"], "weight": 1.0},
+        "stablecoin": {"keywords": ["stablecoin", "USDT", "USDC", "DAI", "BUSD", "Tether", "Circle", "peg", "depeg", "reserve", "stable", "fiat-backed", "crypto-backed"], "weight": 1.5},
+        "gaming": {"keywords": ["gaming", "GameFi", "play-to-earn", "P2E", "metaverse", "Web3 game", "blockchain game", "Axie", "Illuvium", "Gala", "Treasure", "game"], "weight": 1.1},
+        "exchange": {"keywords": ["Binance", "Coinbase", "Kraken", "OKX", "Bybit", "exchange", "trading", "listing", "delisting", "margin", "futures", "spot", "order book", "volume"], "weight": 1.4},
+        "security": {"keywords": ["hack", "exploit", "vulnerability", "breach", "attack", "malware", "phishing", "rug pull", "scam", "fraud", "theft", "stolen", "compromised", "security", "audit", "bug bounty"], "weight": 2.0},
+        "adoption": {"keywords": ["adoption", "institutional", "ETF", "approved", "payment", "merchant", "accept", "integration", "partnership", "enterprise", "bank", "traditional", "mainstream", "Wall Street"], "weight": 1.6},
+        "market": {"keywords": ["price", "market", "bull", "bear", "rally", "crash", "ATH", "all-time high", "cap", "volume", "surge", "plunge", "recovery", "correction", "resistance", "support", "breakout", "consolidation"], "weight": 1.3},
     }
 
-    # ============================================================
-    # RSS FEEDS (verified working)
-    # ============================================================
     RSS_FEEDS = [
-        # ── Major ─────────────────────────────────────────────────
         {"url": "https://cointelegraph.com/rss", "category": "major", "lang": "en"},
         {"url": "https://decrypt.co/feed", "category": "major", "lang": "en"},
         {"url": "https://cryptopotato.com/feed/", "category": "major", "lang": "en"},
         {"url": "https://blockworks.co/feed", "category": "major", "lang": "en"},
         {"url": "https://www.theblock.co/rss.xml", "category": "major", "lang": "en"},
         {"url": "https://bitcoinmagazine.com/.rss/full/", "category": "major", "lang": "en"},
-        # ── Crypto ────────────────────────────────────────────────
         {"url": "https://beincrypto.com/feed/", "category": "crypto", "lang": "en"},
         {"url": "https://ambcrypto.com/feed/", "category": "crypto", "lang": "en"},
         {"url": "https://www.newsbtc.com/feed/", "category": "crypto", "lang": "en"},
@@ -276,47 +221,30 @@ class Config:
         {"url": "https://thetokenist.io/feed/", "category": "crypto", "lang": "en"},
         {"url": "https://watcher.guru/news/rss", "category": "crypto", "lang": "en"},
         {"url": "https://coinbureau.com/feed/", "category": "crypto", "lang": "en"},
-        # ── DeFi ──────────────────────────────────────────────────
         {"url": "https://thedefiant.io/rss/", "category": "defi", "lang": "en"},
         {"url": "https://bankless.com/feed/", "category": "defi", "lang": "en"},
-        # ── Security ──────────────────────────────────────────────
         {"url": "https://rekt.news/feed/", "category": "security", "lang": "en"},
-        # ── Tech ──────────────────────────────────────────────────
         {"url": "https://techcrunch.com/category/crypto/", "category": "tech", "lang": "en"},
-        # ── Finance / Forex ───────────────────────────────────────
         {"url": "https://www.cnbc.com/id/100003114/device/rss/rss.html", "category": "finance", "lang": "en"},
         {"url": "https://www.fxempire.com/rss/category/crypto", "category": "forex", "lang": "en"},
         {"url": "https://www.investing.com/rss/news.rss", "category": "finance", "lang": "en"},
         {"url": "https://feeds.bloomberg.com/markets/tech.rss", "category": "finance", "lang": "en"},
         {"url": "https://feeds.a.ssl.wsj.com/rss/RSSMarketsMain.xml", "category": "finance", "lang": "en"},
         {"url": "https://www.forbes.com/real-time/feed/", "category": "finance", "lang": "en"},
-        # ── Arabic ────────────────────────────────────────────────
         {"url": "https://arabic.cointelegraph.com/rss", "category": "arabic", "lang": "ar"},
     ]
 
-    # ============================================================
-    # I18N
-    # ============================================================
     SUPPORTED_LANGUAGES = ["en", "ar"]
     DEFAULT_LANGUAGE = "en"
 
-    # ============================================================
-    # PWA
-    # ============================================================
     PWA_APP_NAME = "CryptositNews"
     PWA_SHORT_NAME = "CryptoNews"
     PWA_DESCRIPTION = "Real-time Crypto News & Market Intelligence"
-    PWA_THEME_COLOR = "#0f172a"
-    PWA_BACKGROUND_COLOR = "#0f172a"
+    PWA_THEME_COLOR = "#0a0e17"
+    PWA_BACKGROUND_COLOR = "#0a0e17"
 
-    # ============================================================
-    # CLEANUP
-    # ============================================================
     CLEANUP_DAYS = int(os.environ.get("CLEANUP_DAYS", "7"))
     CLEANUP_INTERVAL = int(os.environ.get("CLEANUP_INTERVAL", "3600"))
     TELEGRAM_LOG_DAYS = int(os.environ.get("TELEGRAM_LOG_DAYS", "3"))
 
-    # ============================================================
-    # LOGGING
-    # ============================================================
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")

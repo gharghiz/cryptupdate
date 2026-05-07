@@ -1,224 +1,204 @@
 # -*- coding: utf-8 -*-
 """
-CryptositNews - AI Analysis Service
-OpenAI GPT-4o-mini integration for news sentiment analysis with database caching.
+CryptositNews v3 - AI News Analysis Service
+OpenAI-powered sentiment analysis, summarization, and categorization.
 """
 
+import hashlib
+import time
+from functools import wraps
+
 from app.config import Config
-from app.utils.helpers import setup_logger, hash_text
-from app.models.db import get_ai_cached, save_ai_cache, cache
+from app.utils.helpers import setup_logger
 
 logger = setup_logger("ai_service")
 
-# Lazy-initialized OpenAI client
-_client = None
+# Simple in-memory cache for AI results
+_cache = {}
 
 
-def _get_client():
-    """Get or create the OpenAI client singleton."""
-    global _client
-    if _client is None and Config.OPENAI_API_KEY:
-        try:
-            from openai import OpenAI
-            _client = OpenAI(api_key=Config.OPENAI_API_KEY)
-            logger.info("[ai_service] OpenAI client initialized")
-        except Exception as e:
-            logger.error(f"[ai_service] Failed to initialize OpenAI: {e}")
-    return _client
+def get_cache():
+    """Get the global AI cache dict."""
+    return _cache
 
 
-def _build_analysis_prompt(title, summary=""):
-    """Build the analysis prompt for the AI model."""
-    prompt = f"""Analyze this cryptocurrency news article. Provide a brief response in this EXACT format:
-Summary: [one sentence summary of the key point, max 25 words]
-Sentiment: [positive/negative/neutral/bullish/bearish]
-Reason: [brief explanation, max 20 words]
-
-Title: {title}
-"""
-    if summary:
-        prompt += f"\nSummary: {summary[:500]}"
-    return prompt
+# Exported as `cache` for batch_analyze_news usage
+cache = _cache
 
 
-def _parse_ai_response(text):
-    """Parse the AI response into structured fields.
-
-    Returns:
-        tuple[str, str, str]: (ai_summary, ai_sentiment, ai_reason)
-    """
-    ai_summary = ""
-    ai_sentiment = "neutral"
-    ai_reason = ""
-
-    for line in text.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-        if line.lower().startswith("summary:"):
-            ai_summary = line[len("Summary:"):].strip()
-        elif line.lower().startswith("sentiment:"):
-            ai_sentiment = line[len("Sentiment:"):].strip().lower()
-        elif line.lower().startswith("reason:"):
-            ai_reason = line[len("Reason:"):].strip()
-
-    # Validate sentiment value
-    valid_sentiments = {"positive", "negative", "neutral", "bullish", "bearish"}
-    if ai_sentiment not in valid_sentiments:
-        ai_sentiment = "neutral"
-
-    return ai_summary, ai_sentiment, ai_reason
+def hash_text(text):
+    """Create a deterministic hash of text content for caching."""
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()[:32]
 
 
 def analyze_news(title, summary=""):
-    """Analyze a news item with AI for sentiment, summary, and reasoning.
-
-    Uses a three-layer caching strategy:
-    1. Database cache (persistent, keyed by content hash)
-    2. Redis/memory cache (fast, keyed by content hash)
-
-    Args:
-        title: News headline.
-        summary: News body or description.
+    """Analyze a single news article using OpenAI.
 
     Returns:
-        tuple[str|None, str|None, str|None]: (ai_summary, ai_sentiment, ai_reason)
-            All None if analysis fails or title is empty.
+        tuple: (ai_summary, ai_sentiment, ai_reason) or (None, None, None)
     """
-    if not title:
+    if not Config.OPENAI_API_KEY:
         return None, None, None
 
-    # Build content hash for cache key
-    content_hash = hash_text(f"{title}|{(summary or '')[:200]}")
+    content = f"{title}. {(summary or '')[:300]}"
+    content_hash = hash_text(content)
 
-    # Layer 1: Check database cache
+    # Check DB cache
+    from app.models.db import get_ai_cached
     cached = get_ai_cached(content_hash)
     if cached:
-        logger.debug(f"[ai_service] Cache hit for: {title[:50]}...")
         return (
             cached.get("ai_summary", ""),
             cached.get("ai_sentiment", ""),
             cached.get("ai_reason", ""),
         )
 
-    # Layer 2: Check Redis/memory cache
-    cache_key = f"ai:{content_hash}"
-    mem_cached = cache.get(cache_key)
-    if mem_cached:
-        logger.debug(f"[ai_service] Memory cache hit for: {title[:50]}...")
-        return (
-            mem_cached.get("ai_summary", ""),
-            mem_cached.get("ai_sentiment", ""),
-            mem_cached.get("ai_reason", ""),
-        )
+    # Check memory cache
+    mem_key = f"ai:{content_hash}"
+    if mem_key in _cache:
+        c = _cache[mem_key]
+        return c.get("ai_summary", ""), c.get("ai_sentiment", ""), c.get("ai_reason", "")
 
-    # No cache hit — call OpenAI
-    client = _get_client()
-    if not client:
-        return None, None, None
-
+    # Call OpenAI
     try:
-        prompt = _build_analysis_prompt(title, summary)
+        import openai
+        client = openai.OpenAI(api_key=Config.OPENAI_API_KEY)
+
+        prompt = (
+            "Analyze this crypto news headline (and summary if provided). "
+            "Respond in exactly this JSON format:\n"
+            '{"summary":"one-line summary","sentiment":"positive|negative|neutral",'
+            '"reason":"brief reason"}\n\n'
+            f"Title: {title}\n"
+        )
+        if summary:
+            prompt += f"Summary: {summary[:300]}\n"
 
         response = client.chat.completions.create(
             model=Config.AI_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a crypto news analyst. Be concise and accurate. "
-                               "Respond in the exact format requested.",
-                },
-                {"role": "user", "content": prompt},
-            ],
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=Config.AI_MAX_TOKENS,
             temperature=0.3,
         )
 
         text = response.choices[0].message.content.strip()
-        ai_summary, ai_sentiment, ai_reason = _parse_ai_response(text)
 
-        # Cache in database (persistent)
+        # Parse JSON from response
+        import json
+        # Handle markdown code blocks
+        if text.startswith("```"):
+            text = text.split("\n", 1)[-1]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+
+        result = json.loads(text)
+        ai_summary = result.get("summary", "")[:200]
+        ai_sentiment = result.get("sentiment", "neutral").lower()
+        ai_reason = result.get("reason", "")[:150]
+
+        # Validate sentiment
+        if ai_sentiment not in ("positive", "negative", "neutral"):
+            ai_sentiment = "neutral"
+
+        # Save to caches
+        cache_data = {
+            "content_hash": content_hash,
+            "ai_summary": ai_summary,
+            "ai_sentiment": ai_sentiment,
+            "ai_reason": ai_reason,
+        }
+        _cache[mem_key] = cache_data
+
+        # Save to DB cache
         try:
+            from app.models.db import save_ai_cache
             save_ai_cache(content_hash, ai_summary, ai_sentiment, ai_reason)
         except Exception as e:
-            logger.debug(f"[ai_service] DB cache save: {e}")
+            logger.warning(f"Failed to save AI cache to DB: {e}")
 
-        # Cache in Redis/memory (fast)
-        try:
-            cache.set(
-                cache_key,
-                {
-                    "ai_summary": ai_summary,
-                    "ai_sentiment": ai_sentiment,
-                    "ai_reason": ai_reason,
-                },
-                ttl=Config.CACHE_AI_TTL,
-            )
-        except Exception as e:
-            logger.debug(f"[ai_service] Memory cache save: {e}")
-
-        logger.info(f"[ai_service] Analyzed: {title[:50]}... [{ai_sentiment}]")
+        logger.debug(f"[ai_service] Analyzed: {title[:50]}... -> {ai_sentiment}")
         return ai_summary, ai_sentiment, ai_reason
 
     except Exception as e:
-        logger.error(f"[ai_service] Analysis failed: {e}")
+        logger.error(f"[ai_service] OpenAI error: {e}")
         return None, None, None
 
 
-def generate_market_intelligence(news_items):
-    """Generate an overall market intelligence summary from recent news.
+def batch_analyze_news(news_items, batch_size=None):
+    """Batch analyze multiple news items efficiently.
 
-    Sends the top 10 headlines to the AI model and returns a concise
-    market summary covering mood, trends, and notable events.
+    Groups items by content hash to avoid duplicate API calls.
+    Uses existing cache before making API calls.
 
     Args:
-        news_items: List of news dicts with 'title' and 'ai_sentiment' keys.
+        news_items: List of dicts with 'title', 'summary', 'id' keys.
+        batch_size: Max concurrent API calls (default from Config).
 
     Returns:
-        str: Market intelligence summary, or empty string on failure.
+        list[dict]: List of {id, ai_summary, ai_sentiment, ai_reason, cached} dicts.
     """
     if not news_items:
-        return ""
+        return []
 
-    client = _get_client()
-    if not client:
-        return ""
+    batch_size = batch_size or Config.AI_BATCH_SIZE
+    results = []
+    uncached = []
 
-    try:
-        # Collect top headlines with sentiment annotations
-        headlines = []
-        for item in news_items[:10]:
-            title = item.get("title", "")
-            sentiment = item.get("ai_sentiment", "")
-            if title:
-                headlines.append(f"- {title} [{sentiment}]")
+    # First pass: check cache for all items
+    for item in news_items:
+        title = item.get("title", "")
+        summary = item.get("summary", "")
+        content_hash = hash_text(f"{title}|{(summary or '')[:200]}")
 
-        if not headlines:
-            return ""
+        # Check cache
+        cached = get_ai_cached(content_hash)
+        cache_key = f"ai:{content_hash}"
+        mem_cached = cache.get(cache_key)
 
-        prompt = (
-            "Based on these latest crypto news headlines, provide a brief market "
-            "intelligence summary. Include: overall market mood, key trends, and any "
-            "notable events. Be concise (max 100 words).\n\n"
-            + "\n".join(headlines)
-        )
+        cache_data = cached or mem_cached
+        if cache_data:
+            results.append({
+                "id": item.get("id"),
+                "ai_summary": cache_data.get("ai_summary", ""),
+                "ai_sentiment": cache_data.get("ai_sentiment", ""),
+                "ai_reason": cache_data.get("ai_reason", ""),
+                "cached": True,
+            })
+        else:
+            uncached.append({
+                "id": item.get("id"),
+                "title": title,
+                "summary": summary,
+                "content_hash": content_hash,
+            })
 
-        response = client.chat.completions.create(
-            model=Config.AI_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a senior crypto market analyst. Provide concise, "
-                               "actionable market intelligence.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=200,
-            temperature=0.4,
-        )
+    if not uncached:
+        logger.info(f"[ai_service] Batch: all {len(news_items)} items cached")
+        return results
 
-        return response.choices[0].message.content.strip()
+    logger.info(f"[ai_service] Batch: {len(results)} cached, {len(uncached)} need analysis")
 
-    except Exception as e:
-        logger.error(f"[ai_service] Market intelligence generation failed: {e}")
-        return ""
+    # Analyze uncached items sequentially (API rate limits)
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _analyze_one(item):
+        ai_summary, ai_sentiment, ai_reason = analyze_news(item["title"], item["summary"])
+        return {
+            "id": item["id"],
+            "ai_summary": ai_summary or "",
+            "ai_sentiment": ai_sentiment or "",
+            "ai_reason": ai_reason or "",
+            "cached": False,
+        }
+
+    with ThreadPoolExecutor(max_workers=min(batch_size, len(uncached))) as executor:
+        futures = {executor.submit(_analyze_one, item): item for item in uncached}
+        for future in as_completed(futures, timeout=120):
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as e:
+                logger.error(f"[ai_service] Batch analysis error: {e}")
+
+    return results

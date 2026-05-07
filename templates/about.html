@@ -1,108 +1,377 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}" dir="{% if lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - CryptositNews</title>
-    <meta name="theme-color" content="#050508">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        html{scroll-behavior:smooth}
-        body{background:#050508;color:#c8cad0;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
-        a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:none;background:none}
-        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:3px}
-        :root{--bg:#050508;--bg2:#0a0a12;--bg3:#10101c;--border:#1a1a2e;--border2:#252540;--text:#e4e4ec;--text2:#8888a8;--text3:#4a4a6a;--blue:#2563eb;--blue2:#3b82f6;--green:#00dc82;--mono:'JetBrains Mono',monospace}
-        [data-theme="light"]{--bg:#f5f5f8;--bg2:#eeeef4;--bg3:#fff;--border:#dddde8;--border2:#ccccdd;--text:#0a0a1a;--text2:#555570;--text3:#9999aa;--blue:#1d4ed8;--blue2:#2563eb;--green:#059669}
-        .wrap{max-width:680px;margin:0 auto;padding:0 20px}
-        .nav{position:sticky;top:0;z-index:100;height:56px;background:rgba(5,5,8,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-        [data-theme="light"] .nav{background:rgba(245,245,248,0.85)}
-        .nav-inner{max-width:1240px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:center;justify-content:space-between}
-        .logo{display:flex;align-items:center;gap:8px}
-        .logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center}
-        .logo-txt{font-size:16px;font-weight:800;letter-spacing:-0.04em;color:var(--text)}
-        .logo-txt em{font-style:normal;color:var(--blue2)}
-        .nav-a{padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text2);transition:all .15s}
-        .nav-a:hover{color:var(--text);background:var(--bg3)}
-        .nav-btn{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s}
-        .nav-btn:hover{background:var(--bg3);color:var(--text)}
-        .nav-btn svg{width:17px;height:17px}
-        .page{padding:48px 0}
-        .page h1{font-size:32px;font-weight:900;letter-spacing:-0.03em;color:var(--text);margin-bottom:8px}
-        .page .sub{font-size:15px;color:var(--text2);margin-bottom:40px;line-height:1.7}
-        .section{padding:28px 0;border-top:1px solid var(--border)}
-        .section h2{font-size:16px;font-weight:800;color:var(--text);margin-bottom:12px}
-        .section p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px}
-        .section ul{list-style:none;padding:0}
-        .section li{font-size:13px;color:var(--text2);line-height:1.7;padding:6px 0;padding-left:16px;border-left:2px solid var(--border);margin-bottom:4px}
-        .tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-        @media(max-width:600px){.tech-grid{grid-template-columns:1fr}}
-        .tech-item{padding:16px;border-radius:10px;background:var(--bg2);border:1px solid var(--border)}
-        .tech-item h4{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
-        .tech-item span{font-size:11px;color:var(--text3);font-family:var(--mono)}
-        .footer{border-top:1px solid var(--border);padding:24px 0;margin-top:48px}
-        .footer-copy{font-size:11px;color:var(--text3);text-align:center}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About - CryptositNews</title>
+<meta name="description" content="Learn about CryptositNews - AI-powered crypto news aggregation from 50+ sources">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--surface:#111827;--surface2:#1a2332;--border:#1e293b;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#475569;
+  --cyan:#06b6d4;--cyan-dim:rgba(6,182,212,0.15);
+  --emerald:#10b981;--emerald-dim:rgba(16,185,129,0.15);
+  --danger:#ef4444;--danger-dim:rgba(239,68,68,0.15);
+  --warning:#f59e0b;--warning-dim:rgba(245,158,11,0.15);
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --radius:12px;--radius-sm:8px;--shadow:0 4px 24px rgba(0,0,0,0.3);
+  --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"]{
+  --bg:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;--border:#e2e8f0;
+  --text:#0f172a;--text-muted:#64748b;--text-dim:#94a3b8;
+  --cyan-dim:rgba(6,182,212,0.1);--emerald-dim:rgba(16,185,129,0.1);
+  --danger-dim:rgba(239,68,68,0.1);--warning-dim:rgba(245,158,11,0.1);
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+[dir="rtl"]{direction:rtl;text-align:right}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:var(--cyan);text-decoration:none;transition:color var(--transition)}
+a:hover{color:#22d3ee}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:1000;background:rgba(10,14,23,0.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;transition:background var(--transition)}
+[data-theme="light"] .nav{background:rgba(255,255,255,0.8)}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:1.4rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:0.5rem}
+.logo em{color:var(--cyan);font-style:normal}
+.logo svg{width:22px;height:22px;color:var(--cyan)}
+.nav-links{display:flex;align-items:center;gap:1.75rem;list-style:none}
+.nav-links a{color:var(--text-muted);font-size:0.9rem;font-weight:500;transition:color var(--transition);position:relative}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan)}
+.nav-links a.active::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--cyan);border-radius:1px}
+.nav-actions{display:flex;align-items:center;gap:0.75rem}
+.nav-btn{width:38px;height:38px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all var(--transition)}
+.nav-btn:hover{color:var(--cyan);border-color:var(--cyan);background:var(--cyan-dim)}
+.nav-btn svg{width:18px;height:18px}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:22px;height:2px;background:var(--text-muted);border-radius:2px;transition:var(--transition)}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;bottom:0;background:var(--bg);z-index:999;padding:1.5rem;flex-direction:column;gap:0.5rem}
+.mobile-menu.open{display:flex}
+.mobile-menu a{display:block;padding:1rem;color:var(--text-muted);font-size:1.1rem;border-bottom:1px solid var(--border);transition:color var(--transition)}
+.mobile-menu a:hover{color:var(--cyan)}
+
+/* HERO */
+.hero{max-width:1280px;margin:0 auto;padding:3rem 1.5rem 2rem;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 1rem;border-radius:20px;background:var(--cyan-dim);color:var(--cyan);font-size:0.82rem;font-weight:600;margin-bottom:1.25rem}
+.hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;background:linear-gradient(135deg,var(--text) 0%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:1.15rem;color:var(--text-muted);max-width:640px;margin:0 auto 2rem;line-height:1.75}
+.hero-glow{position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%);top:10%;left:50%;transform:translateX(-50%);pointer-events:none}
+
+/* STATS */
+.stats-bar{max-width:800px;margin:0 auto;padding:0 1.5rem 2.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.stat-item{text-align:center;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.stat-item .num{font-size:1.8rem;font-weight:800;color:var(--cyan);font-family:var(--mono)}
+.stat-item .lbl{font-size:0.78rem;color:var(--text-muted);margin-top:0.25rem;font-weight:500}
+
+/* FEATURES */
+.features-section{max-width:1280px;margin:0 auto;padding:0 1.5rem 3rem}
+.features-section h2{font-size:1.6rem;font-weight:700;text-align:center;margin-bottom:0.5rem}
+.features-section>p{text-align:center;color:var(--text-muted);margin-bottom:2rem;font-size:0.95rem}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.25rem}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;transition:all var(--transition);position:relative;overflow:hidden}
+.feature-card:hover{border-color:var(--cyan);transform:translateY(-3px);box-shadow:var(--shadow)}
+.feature-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:0 4px 4px 0}
+.feature-card:nth-child(1)::before{background:var(--cyan)}
+.feature-card:nth-child(2)::before{background:var(--emerald)}
+.feature-card:nth-child(3)::before{background:var(--warning)}
+.feature-card:nth-child(4)::before{background:#8b5cf6}
+.feature-card:nth-child(5)::before{background:#ec4899}
+.feature-card:nth-child(6)::before{background:#3b82f6}
+.feature-icon{width:48px;height:48px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.feature-icon svg{width:24px;height:24px}
+.feature-card:nth-child(1) .feature-icon{background:var(--cyan-dim);color:var(--cyan)}
+.feature-card:nth-child(2) .feature-icon{background:var(--emerald-dim);color:var(--emerald)}
+.feature-card:nth-child(3) .feature-icon{background:var(--warning-dim);color:var(--warning)}
+.feature-card:nth-child(4) .feature-icon{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.feature-card:nth-child(5) .feature-icon{background:rgba(236,72,153,0.15);color:#ec4899}
+.feature-card:nth-child(6) .feature-icon{background:rgba(59,130,246,0.15);color:#3b82f6}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:0.5rem;color:var(--text)}
+.feature-card p{font-size:0.88rem;color:var(--text-muted);line-height:1.65}
+
+/* MISSION */
+.mission-section{max-width:800px;margin:0 auto;padding:0 1.5rem 3rem;text-align:center}
+.mission-section h2{font-size:1.6rem;font-weight:700;margin-bottom:1rem}
+.mission-text{font-size:1rem;color:var(--text-muted);line-height:1.85;margin-bottom:2rem}
+.mission-values{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;text-align:{% if lang == 'ar' %}right{% else %}left{% endif %}}
+.value-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem}
+.value-item h4{font-size:0.92rem;font-weight:600;color:var(--cyan);margin-bottom:0.35rem}
+.value-item p{font-size:0.85rem;color:var(--text-muted);line-height:1.6}
+
+/* NEWSLETTER */
+.newsletter-section{max-width:600px;margin:0 auto;padding:0 1.5rem 3rem;text-align:center}
+.newsletter-card{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;position:relative;overflow:hidden}
+.newsletter-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--emerald))}
+.newsletter-card h2{font-size:1.4rem;font-weight:700;margin-bottom:0.5rem}
+.newsletter-card p{font-size:0.92rem;color:var(--text-muted);margin-bottom:1.5rem}
+.newsletter-form{display:flex;gap:0.75rem}
+.newsletter-form input{flex:1;padding:0.75rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:0.92rem;outline:none;transition:border-color var(--transition)}
+.newsletter-form input:focus{border-color:var(--cyan)}
+.newsletter-form input::placeholder{color:var(--text-dim)}
+.newsletter-form button{padding:0.75rem 1.75rem;background:var(--cyan);color:#000;font-family:var(--font);font-size:0.92rem;font-weight:600;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.newsletter-form button:hover{background:#22d3ee;transform:translateY(-1px)}
+.newsletter-msg{margin-top:0.75rem;font-size:0.85rem;min-height:1.5rem}
+.newsletter-msg.success{color:var(--emerald)}
+.newsletter-msg.error{color:var(--danger)}
+
+/* CONTACT */
+.contact-section{max-width:800px;margin:0 auto;padding:0 1.5rem 3rem;text-align:center}
+.contact-section h2{font-size:1.4rem;font-weight:700;margin-bottom:1rem}
+.contact-links{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.contact-link{display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.88rem;color:var(--text-muted);transition:all var(--transition)}
+.contact-link:hover{color:var(--cyan);border-color:var(--cyan)}
+.contact-link svg{width:18px;height:18px}
+.contact-note{font-size:0.85rem;color:var(--text-dim)}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--border);padding:2.5rem 1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem}
+.footer a{color:var(--cyan)}
+
+@media(max-width:768px){
+  .nav-links,.nav-actions{display:none}
+  .hamburger{display:flex}
+  .hero h1{font-size:2rem}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  .features-grid{grid-template-columns:1fr}
+  .mission-values{grid-template-columns:1fr}
+  .newsletter-form{flex-direction:column}
+  .contact-links{flex-direction:column;align-items:center}
+}
+</style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-inner">
-            <a href="/" class="logo"><div class="logo-icon"><svg width="14" height="14" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><span class="logo-txt">Crypto<em>sit</em>News</span></a>
-            <div style="display:flex;gap:2px"><a href="/" class="nav-a">Home</a><a href="/news" class="nav-a">News</a><a href="/market" class="nav-a">Markets</a></div>
-            <div class="nav-right"><button onclick="toggleTheme()" class="nav-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></button></div>
-        </div>
-    </nav>
 
-    <div class="wrap">
-        <div class="page">
-            <h1>About CryptositNews</h1>
-            <p class="sub">A real-time crypto intelligence platform that aggregates news from 50+ sources, powered by AI analysis and delivered via website and Telegram bot.</p>
-
-            <div class="section">
-                <h2>What We Do</h2>
-                <p>CryptositNews collects cryptocurrency, forex, and stock market news from over 50 reliable RSS sources — including CoinTelegraph, Decrypt, CoinDesk, Bloomberg, Forbes, and many more. Every article is processed through our AI pipeline for instant sentiment analysis and summarization.</p>
-                <p>Our mission is to provide traders and crypto enthusiasts with the fastest, most intelligent news feed available — combining automation, AI, and human-curated source selection.</p>
-            </div>
-
-            <div class="section">
-                <h2>Key Features</h2>
-                <ul>
-                    <li><strong style="color:var(--text)">50+ Sources</strong> — Curated RSS feeds from major crypto, forex, and finance publications</li>
-                    <li><strong style="color:var(--text)">AI Analysis</strong> — GPT-powered summaries, sentiment, and reasoning for every important article</li>
-                    <li><strong style="color:var(--text)">Telegram Bot</strong> — Instant breaking news with AI summaries delivered to your Telegram</li>
-                    <li><strong style="color:var(--text)">Market Data</strong> — Live prices, Fear & Greed Index, global market stats via CoinGecko</li>
-                    <li><strong style="color:var(--text)">Smart Filtering</strong> — Category-based filtering (DeFi, Security, AI, L1, L2, Regulation...)</li>
-                    <li><strong style="color:var(--text)">Price Alerts</strong> — Custom price alerts for any cryptocurrency</li>
-                    <li><strong style="color:var(--text)">SSE Live Updates</strong> — Real-time push updates without page refresh</li>
-                    <li><strong style="color:var(--text)">Multi-language</strong> — English and Arabic support</li>
-                    <li><strong style="color:var(--text)">PWA Enabled</strong> — Install as a native app on any device</li>
-                </ul>
-            </div>
-
-            <div class="section">
-                <h2>Technology Stack</h2>
-                <div class="tech-grid">
-                    <div class="tech-item"><h4>Backend</h4><span>Python / Flask / Gunicorn</span></div>
-                    <div class="tech-item"><h4>Database</h4><span>PostgreSQL / SQLite</span></div>
-                    <div class="tech-item"><h4>AI Engine</h4><span>OpenAI GPT-4o-mini</span></div>
-                    <div class="tech-item"><h4>Market Data</h4><span>CoinGecko API</span></div>
-                    <div class="tech-item"><h4>Bot</h4><span>Telegram Bot API</span></div>
-                    <div class="tech-item"><h4>Hosting</h4><span>Railway.com / Docker</span></div>
-                    <div class="tech-item"><h4>Auth</h4><span>JWT / bcrypt</span></div>
-                    <div class="tech-item"><h4>Cache</h4><span>Redis / In-memory</span></div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>Source Methodology</h2>
-                <p>We carefully select each RSS source based on reliability, speed, and content quality. Sources are categorized into major, crypto-specific, DeFi, security, finance, forex, and Arabic-language feeds. Each source is monitored for failure rates and automatically put on cooldown after repeated errors.</p>
-                <p>News importance is scored using a multi-layer keyword system that considers breaking alerts, regulatory impact, security incidents, and market-moving events. Only the most impactful news receives AI analysis to optimize API costs while maintaining quality.</p>
-            </div>
-        </div>
+<!-- NAVIGATION -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Crypto<em>sit</em>News
+    </a>
+    <ul class="nav-links">
+      <li><a href="/news">News</a></li>
+      <li><a href="/market">Markets</a></li>
+      <li><a href="/telegram">Telegram</a></li>
+      <li><a href="/about" class="active">About</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+      <button class="nav-btn" onclick="toggleLang()" aria-label="Language">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </button>
     </div>
+    <div class="hamburger" onclick="toggleMobile(this)">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/news">News</a>
+  <a href="/market">Markets</a>
+  <a href="/telegram">Telegram</a>
+  <a href="/about">About</a>
+</div>
 
-    <footer class="footer"><div class="wrap"><span class="footer-copy">© 2025 CryptositNews</span></div></footer>
-    <script>function toggleTheme(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;document.cookie=`theme=${t};path=/;max-age=31536000`;location.reload()}</script>
+<!-- HERO -->
+<section class="hero" style="position:relative">
+  <div class="hero-glow"></div>
+  <span class="hero-badge">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    AI-Powered Crypto Intelligence
+  </span>
+  <h1>About CryptositNews</h1>
+  <p>We aggregate news from 50+ crypto sources, analyze it with AI, and deliver the most important updates to you in real-time. No noise, just signal.</p>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="num">50+</div>
+    <div class="lbl">News Sources</div>
+  </div>
+  <div class="stat-item">
+    <div class="num">24/7</div>
+    <div class="lbl">Real-time Updates</div>
+  </div>
+  <div class="stat-item">
+    <div class="num">AI</div>
+    <div class="lbl">Sentiment Analysis</div>
+  </div>
+  <div class="stat-item">
+    <div class="num">2</div>
+    <div class="lbl">Languages</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features-section">
+  <h2>What We Offer</h2>
+  <p>Everything you need to stay ahead in the crypto market</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+      </div>
+      <h3>50+ News Sources</h3>
+      <p>We aggregate from CoinDesk, CoinTelegraph, The Block, Decrypt, and dozens more to give you comprehensive coverage of the crypto space.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5 7.5V20h6v-2.5c2.9-1.2 5-4.1 5-7.5a8 8 0 0 0-8-8z"/><path d="M9 22h6"/><path d="M9 18v4M15 18v4"/></svg>
+      </div>
+      <h3>AI Analysis</h3>
+      <p>Every article is analyzed by AI to determine sentiment, generate summaries, and highlight key insights so you can quickly assess market impact.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <h3>Real-time Alerts</h3>
+      <p>Get instant notifications for important news, breaking stories, and market-moving events via our Telegram bot or website notifications.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h3>Telegram Bot</h3>
+      <p>Subscribe to our Telegram channel for instant AI-summarized news alerts, price tracking, and curated daily digests delivered straight to your chat.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Price Tracking</h3>
+      <p>Live cryptocurrency prices, market cap data, Fear &amp; Greed index, and trending coins - all in one dashboard with real-time updates.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <h3>Multi-language</h3>
+      <p>Full Arabic and English support with RTL layout, making crypto news accessible to a wider audience across different regions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION -->
+<section class="mission-section">
+  <h2>Our Mission</h2>
+  <p class="mission-text">In a world of information overload, our mission is to be the most trusted and efficient crypto news aggregator. We cut through the noise to deliver what matters, powered by AI analysis and a commitment to accuracy.</p>
+  <div class="mission-values">
+    <div class="value-item">
+      <h4>Accuracy First</h4>
+      <p>We verify sources and cross-reference news to ensure the information you receive is reliable and trustworthy.</p>
+    </div>
+    <div class="value-item">
+      <h4>Speed Matters</h4>
+      <p>Our automated systems scrape and process news in real-time, ensuring you get breaking updates within minutes of publication.</p>
+    </div>
+    <div class="value-item">
+      <h4>AI-Powered</h4>
+      <p>Leveraging advanced AI to summarize, categorize, and analyze sentiment so you can make faster, more informed decisions.</p>
+    </div>
+    <div class="value-item">
+      <h4>Open & Free</h4>
+      <p>We believe crypto information should be accessible to everyone. Our core news aggregation and analysis features are free to use.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section">
+  <div class="newsletter-card">
+    <h2>Stay in the Loop</h2>
+    <p>Subscribe to our newsletter for the top crypto stories and AI insights delivered to your inbox daily.</p>
+    <form class="newsletter-form" id="newsletterForm" onsubmit="handleSubscribe(event)">
+      <input type="email" id="emailInput" placeholder="Enter your email address" required>
+      <button type="submit" id="subBtn">Subscribe</button>
+    </form>
+    <div class="newsletter-msg" id="nlMsg"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section">
+  <h2>Get in Touch</h2>
+  <p style="color:var(--text-muted);margin-bottom:1.5rem;font-size:0.95rem">Have questions, feedback, or want to contribute? Reach out to us.</p>
+  <div class="contact-links">
+    <a href="https://t.me/cryptositnews" target="_blank" rel="noopener noreferrer" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      Telegram
+    </a>
+    <a href="mailto:contact@cryptositnews.com" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      Email
+    </a>
+    <a href="https://x.com/cryptositnews" target="_blank" rel="noopener noreferrer" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X / Twitter
+    </a>
+  </div>
+  <p class="contact-note">We typically respond within 24 hours.</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2025 CryptositNews. Built with AI-powered crypto intelligence.</p>
+  <p style="margin-top:0.5rem"><a href="/news">News</a> &middot; <a href="/market">Markets</a> &middot; <a href="/telegram">Telegram</a></p>
+</footer>
+
+<script>
+(function(){
+  const savedTheme=localStorage.getItem('theme')||document.documentElement.dataset.theme||'dark';
+  document.documentElement.dataset.theme=savedTheme;
+  window.toggleTheme=function(){
+    const t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);
+  };
+  window.toggleLang=function(){
+    const l=location.pathname;
+    if(l.startsWith('/ar'))location.href=l.replace('/ar','');
+    else location.href='/ar'+l;
+  };
+  window.toggleMobile=function(el){el.classList.toggle('active');document.getElementById('mobileMenu').classList.toggle('open');};
+
+  // Newsletter
+  window.handleSubscribe=function(e){
+    e.preventDefault();
+    const email=document.getElementById('emailInput').value;
+    const btn=document.getElementById('subBtn');
+    const msg=document.getElementById('nlMsg');
+    btn.disabled=true;btn.textContent='Subscribing...';
+    msg.textContent='';msg.className='newsletter-msg';
+
+    fetch('/api/newsletter/subscribe',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email})
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.success){
+        msg.textContent='Successfully subscribed! Check your inbox.';
+        msg.className='newsletter-msg success';
+        document.getElementById('emailInput').value='';
+      }else{
+        msg.textContent=d.error||'Subscription failed. Please try again.';
+        msg.className='newsletter-msg error';
+      }
+    })
+    .catch(function(){
+      msg.textContent='Network error. Please try again.';
+      msg.className='newsletter-msg error';
+    })
+    .finally(function(){btn.disabled=false;btn.textContent='Subscribe';});
+  };
+})();
+</script>
 </body>
 </html>

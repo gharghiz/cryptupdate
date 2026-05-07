@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-CryptositNews - Rate Limiting Middleware
-In-memory sliding-window rate limiter for API endpoints.
+CryptositNews v3 - Redis-based Rate Limiting
+Uses Redis for multi-instance safety, falls back to in-memory for dev.
 """
 
 import time
@@ -15,98 +15,130 @@ from app.utils.helpers import setup_logger, generate_request_id
 
 logger = setup_logger("rate_limit")
 
-# In-memory rate-limit store: {ip: [timestamp, ...]}
-_rate_store = {}
-_rate_lock = threading.Lock()
+# In-memory fallback: {ip: [timestamp, ...]}
+_memory_store = {}
+_memory_lock = threading.Lock()
+
+
+def _get_redis_rate_limit():
+    """Get Redis client for rate limiting. Returns None if unavailable."""
+    try:
+        from app.models.db import _get_redis
+        return _get_redis()
+    except Exception:
+        return None
 
 
 def _get_client_ip():
-    """Extract the client IP, respecting X-Forwarded-For for proxied requests."""
     forwarded = request.headers.get("X-Forwarded-For", "")
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.remote_addr or "unknown"
 
 
-def _prune_old_entries(ip, timestamps, window):
-    """Remove timestamps outside the current window."""
-    cutoff = time.time() - window
-    return [t for t in timestamps if t > cutoff]
-
-
 def check_rate_limit(max_requests=None, window=None):
-    """Check if the current request is within rate limits.
+    """Redis-based sliding-window rate limiter with in-memory fallback.
 
-    Uses a sliding-window algorithm with in-memory storage.
-
-    Args:
-        max_requests: Max requests allowed in the window (default from Config).
-        window: Time window in seconds (default from Config).
-
-    Returns:
-        tuple[bool, dict]: (allowed, info_dict) where info_dict contains
-            remaining requests, reset time, and limit.
+    In production with Redis: uses Redis INCR + EXPIRE for atomic counting.
+    Falls back to in-memory sliding window for development.
     """
     max_requests = max_requests or Config.RATE_LIMIT_REQUESTS
     window = window or Config.RATE_LIMIT_WINDOW
-
     ip = _get_client_ip()
+
+    redis_client = _get_redis_rate_limit()
+
+    if redis_client:
+        return _redis_check(redis_client, ip, max_requests, window)
+    else:
+        return _memory_check(ip, max_requests, window)
+
+
+def _redis_check(redis_client, ip, max_requests, window):
+    """Redis-based rate limiting - atomic, multi-instance safe."""
+    key = f"cn:rl:{ip}"
+    now = time.time()
+
+    try:
+        pipe = redis_client.pipeline()
+        # Remove old entries
+        pipe.zremrangebyscore(key, 0, now - window)
+        # Count current entries
+        pipe.zcard(key)
+        # Add current request
+        pipe.zadd(key, {str(now): now})
+        # Set expiry
+        pipe.expire(key, window + 1)
+        results = pipe.execute()
+
+        current_count = results[1]
+
+        if current_count >= max_requests:
+            # Find oldest entry to calculate reset time
+            oldest = redis_client.zrange(key, 0, 0, withscores=True)
+            if oldest:
+                reset_time = int(oldest[0][1] + window - now) + 1
+            else:
+                reset_time = window
+
+            # Remove the entry we just added (over limit)
+            redis_client.zrem(key, str(now))
+
+            return False, {
+                "limit": max_requests, "remaining": 0,
+                "reset": reset_time, "window": window,
+            }
+
+        remaining = max_requests - current_count
+        return True, {
+            "limit": max_requests,
+            "remaining": max(0, remaining),
+            "reset": window, "window": window,
+        }
+    except Exception as e:
+        logger.warning(f"Redis rate limit error, falling back to memory: {e}")
+        return _memory_check(ip, max_requests, window)
+
+
+def _memory_check(ip, max_requests, window):
+    """In-memory sliding-window rate limiting (dev fallback)."""
     now = time.time()
     cutoff = now - window
 
-    with _rate_lock:
-        if ip not in _rate_store:
-            _rate_store[ip] = []
+    with _memory_lock:
+        if ip not in _memory_store:
+            _memory_store[ip] = []
 
-        # Prune old entries
-        _rate_store[ip] = _prune_old_entries(ip, _rate_store[ip], window)
+        _memory_store[ip] = [t for t in _memory_store[ip] if t > cutoff]
 
-        timestamps = _rate_store[ip]
-
-        if len(timestamps) >= max_requests:
-            reset_time = int(timestamps[0] + window - now) + 1
+        if len(_memory_store[ip]) >= max_requests:
+            reset_time = int(_memory_store[ip][0] + window - now) + 1
             return False, {
-                "limit": max_requests,
-                "remaining": 0,
-                "reset": reset_time,
-                "window": window,
+                "limit": max_requests, "remaining": 0,
+                "reset": reset_time, "window": window,
             }
 
-        # Record this request
-        timestamps.append(now)
-        _rate_store[ip] = timestamps
+        _memory_store[ip].append(now)
+        remaining = max_requests - len(_memory_store[ip])
 
-    remaining = max_requests - len(_rate_store.get(ip, []))
     return True, {
-        "limit": max_requests,
-        "remaining": max(0, remaining),
-        "reset": window,
-        "window": window,
+        "limit": max_requests, "remaining": max(0, remaining),
+        "reset": window, "window": window,
     }
 
 
 def rate_limit(f):
-    """Decorator: apply standard API rate limiting.
-
-    Uses Config.RATE_LIMIT_REQUESTS and Config.RATE_LIMIT_WINDOW.
-    Adds standard rate-limit headers to the response.
-
-    Returns 429 with Retry-After header when limit exceeded.
-    """
+    """Decorator: apply standard API rate limiting."""
     @wraps(f)
     def decorated(*args, **kwargs):
         allowed, info = check_rate_limit()
-
-        # Add rate-limit headers to all responses
         response = f(*args, **kwargs)
 
-        # Support both direct response and tuple (response, status_code)
         if isinstance(response, tuple):
             resp_obj, status_code = response[0], response[1]
         else:
             resp_obj, status_code = response, 200
 
-        # Add headers if response supports them
         if hasattr(resp_obj, "headers"):
             resp_obj.headers["X-RateLimit-Limit"] = str(info["limit"])
             resp_obj.headers["X-RateLimit-Remaining"] = str(info["remaining"])
@@ -115,10 +147,8 @@ def rate_limit(f):
         if not allowed:
             req_id = getattr(request, "request_id", "unknown")
             logger.debug(f"[rate_limit] Blocked {request.remote_addr} (request_id: {req_id})")
-
             resp = jsonify({
-                "error": "Too Many Requests",
-                "code": 429,
+                "error": "Too Many Requests", "code": 429,
                 "message": f"Rate limit exceeded. Try again in {info['reset']}s.",
                 "request_id": req_id,
             })
@@ -133,30 +163,17 @@ def rate_limit(f):
 
 
 def admin_rate_limit(f):
-    """Decorator: apply stricter rate limiting for admin endpoints.
-
-    Uses Config.ADMIN_RATE_LIMIT requests per 60-second window.
-    Adds standard rate-limit headers to the response.
-
-    Returns 429 with Retry-After header when limit exceeded.
-    """
+    """Decorator: stricter rate limiting for admin endpoints."""
     @wraps(f)
     def decorated(*args, **kwargs):
         allowed, info = check_rate_limit(
-            max_requests=Config.ADMIN_RATE_LIMIT,
-            window=60,
+            max_requests=Config.ADMIN_RATE_LIMIT, window=60,
         )
-
         if not allowed:
             req_id = getattr(request, "request_id", "unknown")
-            logger.warning(
-                f"[rate_limit] Admin rate limit hit for {request.remote_addr} "
-                f"(request_id: {req_id})"
-            )
-
+            logger.warning(f"[rate_limit] Admin rate limit hit for {request.remote_addr}")
             resp = jsonify({
-                "error": "Too Many Requests",
-                "code": 429,
+                "error": "Too Many Requests", "code": 429,
                 "message": f"Admin rate limit exceeded. Try again in {info['reset']}s.",
                 "request_id": req_id,
             })
@@ -166,16 +183,12 @@ def admin_rate_limit(f):
             return resp, 429
 
         response = f(*args, **kwargs)
-
-        # Add rate-limit info headers
         if isinstance(response, tuple):
             resp_obj = response[0]
         else:
             resp_obj = response
-
         if hasattr(resp_obj, "headers"):
             resp_obj.headers["X-RateLimit-Limit"] = str(info["limit"])
             resp_obj.headers["X-RateLimit-Remaining"] = str(info["remaining"])
-
         return response
     return decorated
