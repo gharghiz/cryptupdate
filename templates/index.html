@@ -37,7 +37,7 @@
 }
 :root {
   --accent:#00e5ff; --green:#00c97a; --red:#ff3366;
-  --purple:#7c4dff; --gold:#ffd700; --orange:#ff8c00;
+  --purple:#00e5ff; --gold:#00e5ff; --orange:#00e5ff;
   --mono:'DM Mono',monospace; --display:'Cabinet Grotesk',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -126,7 +126,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .news-grid.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
 
 /* NEWS CARD */
-.news-card{background:var(--card);border:1px solid rgba(255,255,255,.03);border-radius:10px;padding:.9rem 1rem;cursor:pointer;position:relative;overflow:hidden;animation:fadeUp .3s ease both;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s;will-change:transform;}
+.news-card{background:color-mix(in srgb,var(--card) 96%, #fff 4%);border:1px solid transparent;border-radius:10px;padding:1.05rem 1.1rem;cursor:pointer;position:relative;overflow:hidden;animation:fadeUp .3s ease both;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s;will-change:transform;}
 .news-card.important{padding:1.05rem 1.1rem;border-color:rgba(0,229,255,.22);box-shadow:0 0 0 1px rgba(0,229,255,.1);}
 .news-card.breaking{padding:1.15rem;border-color:rgba(255,51,102,.55);box-shadow:0 0 0 1px rgba(255,51,102,.2);}
 .news-card.moving{padding:1rem;border-color:rgba(0,229,255,.35);}
@@ -138,11 +138,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .mini-bear{color:var(--red);border-color:rgba(255,51,102,.35);}
 .mini-neu{color:var(--gold);border-color:rgba(255,215,0,.35);}
 .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;transition:background .15s;}
-.news-card:hover{transform:translateY(-3px) scale(1.005);border-color:var(--border-h);box-shadow:0 12px 40px rgba(0,0,0,.4);}
-.nc-bitcoin:hover{box-shadow:0 0 25px rgba(247,147,26,.15);}
-.nc-ethereum:hover{box-shadow:0 0 25px rgba(98,126,234,.15);}
-.nc-breaking:hover{box-shadow:0 0 25px rgba(255,51,102,.25);border-color:var(--red);}
-.nc-defi:hover{box-shadow:0 0 25px rgba(0,201,122,.15);}
+.news-card:hover{transform:translateY(-2px);border-color:rgba(0,229,255,.25);box-shadow:0 8px 20px rgba(0,0,0,.22);}
 .nc-bitcoin::before{background:#f7931a;} .nc-ethereum::before{background:#627eea;}
 .nc-defi::before{background:var(--green);} .nc-nft::before{background:#ff6b6b;}
 .nc-regulation::before{background:var(--gold);} .nc-market::before{background:var(--accent);}
@@ -155,7 +151,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 
 .card-top{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.4rem;}
 .card-content{flex:1;}
-.card-title{font-size:.88rem;font-weight:750;line-height:1.45;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;}
+.card-title{font-size:.82rem;font-weight:720;line-height:1.5;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;margin-bottom:.25rem;}
 .card-title.translated{direction:rtl;text-align:right;font-size:.8rem;}
 .sentiment{font-size:.9rem;flex-shrink:0;}
 
@@ -164,8 +160,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 
 .card-meta{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;}
 .source-tag{font-family:var(--mono);font-size:.56rem;color:var(--purple);border:1px solid rgba(124,77,255,.2);padding:.14rem .36rem;border-radius:999px;text-transform:uppercase;}
-.time-tag{font-family:var(--mono);font-size:.56rem;color:var(--muted);}
-.read-time{font-family:var(--mono);font-size:.56rem;color:var(--muted);}
+.time-tag{font-family:var(--mono);font-size:.52rem;color:var(--muted);}
+.read-time{font-family:var(--mono);font-size:.52rem;color:var(--muted);}
 .breaking-tag{font-family:var(--mono);font-size:.56rem;background:var(--red);color:#fff;padding:.1rem .3rem;border-radius:3px;font-weight:500;animation:blink 1s step-end infinite;}
 
 /* SHARE BUTTONS */
@@ -322,8 +318,8 @@ footer a{color:var(--purple);text-decoration:none;}
   🧠 <b>Decision Snapshot:</b> Market: <b>{{ intel.decision_snapshot.market }}</b> | Confidence: <b>{{ intel.decision_snapshot.confidence }}%</b> | Best: <b>{{ intel.decision_snapshot.best_opportunity }}</b> | Risk: <b>{{ intel.decision_snapshot.risk_level }}</b> | TF: <b>{{ intel.decision_snapshot.timeframe }}</b> | <span id="lastUpdatedAgo" data-ts="{{ intel.last_update }}">updated 0s ago</span>
 </section>
 <section style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,14,30,.55);">
-  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;">
-    <div class="widget" style="margin-bottom:0;{% if intel.ai_signal.signal == 'Bullish' %}box-shadow:0 0 24px rgba(0,201,122,.2);{% else %}box-shadow:0 0 24px rgba(255,51,102,.2);{% endif %}animation:fadeUp .5s ease;">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.5fr .7fr;gap:1.4rem;">
+    <div class="widget" style="margin-bottom:0;padding:1.35rem;animation:fadeUp .5s ease;">
       <div class="widget-title">🧠 Market Brain</div>
       <div class="ai-preview"><b>{{ '↑' if intel.ai_signal.signal == 'Bullish' else '↓' }} {{ intel.ai_signal.coin }} / {{ intel.ai_signal.secondary_coin }} → {{ intel.ai_signal.signal }}</b> · Confidence {{ intel.ai_signal.confidence }}%</div>
       <div class="price-row"><span class="coin-sym">Trend</span><span class="up">{{ intel.trend.direction }}</span></div>
@@ -338,10 +334,10 @@ footer a{color:var(--purple);text-decoration:none;}
       <div class="fg-sub">Trigger: {{ intel.ai_signal.trigger }}</div>
       <div class="fg-sub"><b>What to watch next:</b> {{ intel.ai_signal.watch }}</div>
     </div>
-    <div class="widget" style="margin-bottom:0;">
+    <div class="widget" style="margin-bottom:0;padding:1rem 1.05rem;">
       <div class="widget-title">🔥 Top Story</div>
       {% if top_story %}
-      <div class="card-title" style="font-size:1.08rem;line-height:1.35;">{{ top_story.title }}</div>
+      <div class="card-title" style="font-size:.94rem;line-height:1.4;">{{ top_story.title }}</div>
       <div class="ai-preview" style="margin-top:.6rem;"><b>AI:</b> {{ top_story.summary or intel.ai_signal.reason }}</div>
       <div class="fg-sub" style="margin-top:.6rem;"><b>Why it matters:</b> {{ top_story.reason or "Market-moving sentiment and liquidity impact." }}</div>
       <div class="fg-sub"><b>Market Impact:</b> {% if top_story.is_breaking %}High{% elif top_story.is_market_moving %}Medium{% else %}Low{% endif %}</div>
@@ -497,16 +493,6 @@ footer a{color:var(--purple);text-decoration:none;}
       </div>
 
       <div class="widget">
-        <div class="widget-title">📩 Retention Hub</div>
-        <p style="font-family:var(--mono);font-size:.62rem;color:var(--muted);margin-bottom:.6rem;">Get daily signal digest + browser alerts.</p>
-        <form onsubmit="subscribeEmail(event)">
-          <input id="emailInput" type="email" required placeholder="you@example.com" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.5rem .6rem;border-radius:6px;">
-          <button class="load-more-btn" type="submit" style="margin-top:.55rem;width:100%;">Subscribe</button>
-        </form>
-        <button class="load-more-btn" onclick="enableNotifications()" style="margin-top:.5rem;width:100%;">Enable Notifications</button>
-      </div>
-
-      <div class="widget">
         <div class="widget-title">🤖 AI Market Signal</div>
         <div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-bottom:.45rem;">Your daily edge: decision-ready sentiment signal.</div>
         <div id="aiSignalWrap">
@@ -523,42 +509,7 @@ footer a{color:var(--purple);text-decoration:none;}
           <span style="color:var(--muted)">{{ intel.opportunity.reason }}</span>
         </div>
       </div>
-      <div class="widget">
-        <div class="widget-title">🧠 Today’s Insight</div>
-        <div style="font-family:var(--mono);font-size:.73rem;line-height:1.7;font-weight:700;">
-          {{ intel.ai_signal.coin }} dominates sentiment today after {{ intel.ai_signal.trigger|lower }}{% if intel.whale_activity %} and whale flows ({{ intel.whale_activity[0] }}){% endif %}.
-        </div>
-      </div>
-      <div class="widget">
-        <div class="widget-title">📊 Live Sentiment Gauge</div>
-        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.6rem;margin-bottom:.35rem;"><span class="dn">{{ intel.sentiment.bearish }}%</span><span>Market Sentiment</span><span class="up">{{ intel.sentiment.bullish }}%</span></div>
-        <div style="height:10px;border-radius:999px;overflow:hidden;display:flex;background:var(--border);animation:fadeUp .5s ease;">
-          <div style="width:{{ intel.sentiment.bearish }}%;background:linear-gradient(90deg,#ff3366,#ff8aa7);"></div>
-          <div style="width:{{ intel.sentiment.bullish }}%;background:linear-gradient(90deg,#3ef0a1,#00c97a);"></div>
-        </div>
-      </div>
-      <div class="widget">
-        <div class="widget-title">🐋 Whale Tracker PRO</div>
-        {% for w in intel.whale_tracker %}
-          <div class="fg-sub" style="color:{% if w.mood == 'Bearish' %}var(--red){% else %}var(--green){% endif %};">• {{ w.text }} → {{ w.direction }} ({{ w.mood }})</div>
-        {% endfor %}
-      </div>
-      <div class="widget">
-        <div class="widget-title">🧭 News Impact Heatmap</div>
-        {% for coin,val in intel.news_heatmap.items() %}
-        <div class="price-row" title="Top impact headlines for {{ coin }}">
-          <span class="coin-sym">{{ coin }}</span>
-          <div style="flex:1;height:6px;background:var(--border);margin:0 .5rem;border-radius:6px;overflow:hidden;"><div style="height:100%;width:{{ (val*10) if (val*10)<=100 else 100 }}%;background:{% if val >= 6 %}var(--red){% else %}var(--green){% endif %};"></div></div>
-          <span class="time-tag">{{ val }}</span>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="widget">
-        <div class="widget-title">🎯 Opportunity Radar</div>
-        {% for r in intel.opportunity_radar %}
-        <div class="price-row"><span class="coin-sym">{{ loop.index }}. {{ r.coin }}</span><span class="{% if r.stance == 'Bullish' %}up{% elif r.stance == 'Risky' %}dn{% endif %}">{{ r.score }}% · {{ r.stance }}</span></div>
-        {% endfor %}
-      </div>
+
 
       
 
