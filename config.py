@@ -224,63 +224,83 @@ CATEGORY_RULES = {
 # RSS FEEDS (50+ sources)
 # ============================================================
 RSS_FEEDS = [
-    # Major Crypto News
+    # ═══════════════════════════════════════════════════
+    # MAJOR CRYPTO NEWS (verified working RSS feeds)
+    # ═══════════════════════════════════════════════════
     {"url": "https://cointelegraph.com/rss", "category": "major", "lang": "en"},
-    {"url": "https://www.coindesk.com/arc/outboundfeeds/rss/", "category": "major", "lang": "en"},
     {"url": "https://decrypt.co/feed", "category": "major", "lang": "en"},
     {"url": "https://cryptopotato.com/feed/", "category": "major", "lang": "en"},
-    {"url": "https://www.theblock.co/rss.xml", "category": "major", "lang": "en"},
     {"url": "https://blockworks.co/feed", "category": "major", "lang": "en"},
-    # Specialized
-    {"url": "https://www.coingecko.com/en/rss", "category": "prices", "lang": "en"},
-    {"url": "https://defipulse.com/blog/feed", "category": "defi", "lang": "en"},
-    {"url": "https://nftnow.com/feed/", "category": "nft", "lang": "en"},
-    # Traditional Finance
-    {"url": "https://www.reuters.com/technology/fintech-cryptocurrency/", "category": "finance", "lang": "en"},
-    {"url": "https://feeds.bloomberg.com/markets/news.rss", "category": "finance", "lang": "en"},
-    {"url": "https://www.cnbc.com/id/100003114/device/rss/rss.html", "category": "finance", "lang": "en"},
-    {"url": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=cryptocurrency&region=US&lang=en-US", "category": "finance", "lang": "en"},
-    {"url": "https://www.ft.com/rss/home", "category": "finance", "lang": "en"},
-    # Tech
-    {"url": "https://techcrunch.com/category/crypto/", "category": "tech", "lang": "en"},
-    {"url": "https://www.wired.com/tag/blockchain/rss", "category": "tech", "lang": "en"},
-    {"url": "https://arstechnica.com/tag/cryptocurrency/", "category": "tech", "lang": "en"},
-    {"url": "https://www.technologyreview.com/topic/blockchain/feed/", "category": "tech", "lang": "en"},
-    # Additional Crypto
+
+    # ═══════════════════════════════════════════════════
+    # CRYPTO NEWS (verified working)
+    # ═══════════════════════════════════════════════════
     {"url": "https://beincrypto.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://ambcrypto.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://www.newsbtc.com/feed/", "category": "crypto", "lang": "en"},
-    {"url": "https://www.livebitcoinnews.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://zycrypto.com/feed/", "category": "crypto", "lang": "en"},
-    {"url": "https://cryptoslate.com/feed", "category": "crypto", "lang": "en"},
+    {"url": "https://cryptoslate.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://dailyhodl.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://ethereumworldnews.com/feed/", "category": "crypto", "lang": "en"},
-    {"url": "https://smartphonebaba.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://www.crypto-news-flash.com/feed", "category": "crypto", "lang": "en"},
     {"url": "https://www.coinpedia.org/feed", "category": "crypto", "lang": "en"},
     {"url": "https://www.cryptopolitan.com/feed", "category": "crypto", "lang": "en"},
     {"url": "https://insidebitcoins.com/feed/", "category": "crypto", "lang": "en"},
-    # Arabic Sources
-    {"url": "https://crypto-ar.com/feed/", "category": "arabic", "lang": "ar"},
-    {"url": "https://arabic.cointelegraph.com/rss", "category": "arabic", "lang": "ar"},
-    # More English
     {"url": "https://www.bitcoinist.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://www.bitcoininsider.org/rss", "category": "crypto", "lang": "en"},
-    {"url": "https://www.crypto Briefing.com/feed", "category": "crypto", "lang": "en"},
     {"url": "https://thecryptobasic.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://www.publish0x.com/feed", "category": "crypto", "lang": "en"},
     {"url": "https://coinjournal.net/feed/", "category": "crypto", "lang": "en"},
-    {"url": "https://www.crypto-discover.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://crypto-economy.com/en/feed/", "category": "crypto", "lang": "en"},
-    {"url": "https://coinmarketcap.com/rss/", "category": "prices", "lang": "en"},
-    {"url": "https://www.deFiLlama.com/feed", "category": "defi", "lang": "en"},
-    {"url": "https://dune.com/feed", "category": "defi", "lang": "en"},
-    {"url": "https://www.theblockcrypto.com/rss.xml", "category": "major", "lang": "en"},
-    {"url": "https://panceranews.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://protos.com/feed/", "category": "crypto", "lang": "en"},
     {"url": "https://blockbeat.io/feed", "category": "crypto", "lang": "en"},
+
+    # ═══════════════════════════════════════════════════
+    # DeFi & SECURITY (verified working)
+    # ═══════════════════════════════════════════════════
     {"url": "https://thedefiant.io/rss/", "category": "defi", "lang": "en"},
     {"url": "https://rekt.news/feed/", "category": "security", "lang": "en"},
+
+    # ═══════════════════════════════════════════════════
+    # Tech (Crypto sections)
+    # ═══════════════════════════════════════════════════
+    {"url": "https://techcrunch.com/category/crypto/", "category": "tech", "lang": "en"},
+
+    # ═══════════════════════════════════════════════════
+    # TRADITIONAL FINANCE (crypto sections)
+    # ═══════════════════════════════════════════════════
+    {"url": "https://www.cnbc.com/id/100003114/device/rss/rss.html", "category": "finance", "lang": "en"},
+
+    # ═══════════════════════════════════════════════════
+    # Arabic Sources
+    # ═══════════════════════════════════════════════════
+    {"url": "https://arabic.cointelegraph.com/rss", "category": "arabic", "lang": "ar"},
+
+    # ═══════════════════════════════════════════════════
+    # REMOVED (broken/invalid feeds):
+    # - coindesk.com/arc/outboundfeeds/rss/ (403 forbidden)
+    # - theblock.co/rss.xml (requires auth)
+    # - coingecko.com/en/rss (removed)
+    # - defipulse.com/blog/feed (dead)
+    # - nftnow.com/feed/ (dead)
+    # - reuters.com/technology/fintech (no RSS)
+    # - feeds.bloomberg.com (paywall)
+    # - feeds.finance.yahoo.com (dead)
+    # - ft.com/rss/home (paywall)
+    # - wired.com/tag/blockchain/rss (dead)
+    # - arstechnica.com/tag/cryptocurrency (dead)
+    # - technologyreview.com/topic/blockchain (dead)
+    # - livebitcoinnews.com/feed/ (dead)
+    # - smartphonebaba.com/feed/ (spam)
+    # - crypto-discover.com/feed/ (dead)
+    # - coinmarketcap.com/rss/ (removed)
+    # - defiLlama.com/feed (dead)
+    # - dune.com/feed (dead)
+    # - theblockcrypto.com/rss.xml (requires auth)
+    # - pancera news.com/feed/ (dead)
+    # - crypto Briefing.com/feed (SPACE in URL!)
+    # - crypto-ar.com/feed/ (dead)
+    # ═══════════════════════════════════════════════════
 ]
 
 # ============================================================

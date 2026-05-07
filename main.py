@@ -12,7 +12,7 @@ from utils import setup_logger, now_utc
 from database import (
     get_news, get_active_alerts, mark_alert_triggered,
     is_telegram_posted, mark_telegram_posted,
-    cleanup_telegram_log, cache,
+    cleanup_telegram_log, cache, log_scrape_result,
 )
 from scraper import scrape_all
 from processor import is_important, prioritize, format_message, extract_coins
@@ -50,81 +50,112 @@ def process_news():
     """Fetch, analyze, and process news articles."""
     logger.info("Starting news processing cycle...")
 
-    # Scrape RSS feeds
+    # Step 1: Scrape RSS feeds
     scrape_result = scrape_all()
 
-    # Get recent unprocessed news
+    if scrape_result["saved"] == 0 and scrape_result["errors"] > 5:
+        logger.warning(
+            f"Scrape issues: {scrape_result['errors']} errors out of "
+            f"{scrape_result['feeds']} feeds. Many sources may be down."
+        )
+
+    # Step 2: Get recent unprocessed news (from ALL categories)
     news_list = get_news(limit=50, important_only=False)
     if not news_list:
-        logger.info("No news to process")
+        logger.info("No news found in database")
         return
+
+    logger.info(f"Found {len(news_list)} articles in database, processing...")
 
     # Update seen titles
     with _seen_lock:
         _seen_titles.extend([n["title"] for n in news_list])
-        # Keep only last 500 titles
         _seen_titles = _seen_titles[-500:]
 
-    # Process each news item
-    posted = 0
+    # Step 3: Process each news item
+    posted_to_telegram = 0
+    ai_analyzed = 0
+    skipped = 0
+
     for news in news_list:
         try:
             title = news["title"]
             news_id = news["id"]
 
-            # Skip already posted
-            if news.get("telegram_posted") or is_telegram_posted(title):
+            # Skip already posted to Telegram
+            if news.get("telegram_posted"):
+                skipped += 1
                 continue
 
-            # Check if important
-            important = is_important(title, news.get("summary", ""))
-            priority = prioritize(title, news.get("summary", ""))
+            # Double-check via telegram_log
+            if is_telegram_posted(title):
+                skipped += 1
+                continue
 
-            # Analyze with AI if important
+            summary = news.get("summary", "")
+            important = is_important(title, summary)
+            priority = prioritize(title, summary)
+
+            # AI analysis for important or high-priority news
             ai_summary = news.get("ai_summary", "")
             ai_sentiment = news.get("ai_sentiment", "")
             ai_reason = news.get("ai_reason", "")
 
-            if important or priority >= 50:
-                if not ai_summary:
-                    ai_summary, ai_sentiment, ai_reason = analyze_news(
-                        title, news.get("summary", "")
-                    )
-                    if ai_summary:
-                        # Update news with AI analysis
-                        from database import get_db
-                        with get_db() as conn:
+            if (important or priority >= 50) and not ai_summary:
+                ai_summary, ai_sentiment, ai_reason = analyze_news(title, summary)
+                if ai_summary:
+                    ai_analyzed += 1
+                    try:
+                        from database import _is_pg, _param
+                        with __import__("database").get_db() as conn:
                             cursor = conn.cursor()
-                            cursor.execute("""
-                                UPDATE news SET
-                                    ai_summary = ?, ai_sentiment = ?,
-                                    ai_reason = ?, is_important = 1
-                                WHERE id = ?
-                            """, (ai_summary, ai_sentiment, ai_reason, news_id))
+                            if _is_pg():
+                                cursor.execute("""
+                                    UPDATE news SET
+                                        ai_summary = %s, ai_sentiment = %s,
+                                        ai_reason = %s, is_important = TRUE
+                                    WHERE id = %s
+                                """, (ai_summary, ai_sentiment, ai_reason, news_id))
+                            else:
+                                cursor.execute("""
+                                    UPDATE news SET
+                                        ai_summary = ?, ai_sentiment = ?,
+                                        ai_reason = ?, is_important = 1
+                                    WHERE id = ?
+                                """, (ai_summary, ai_sentiment, ai_reason, news_id))
                             conn.commit()
+                    except Exception as e:
+                        logger.error(f"Error updating AI analysis: {e}")
 
-                # Send to Telegram
-                success, error = send_important_news(
-                    title=title,
-                    summary=news.get("summary", ""),
-                    url=news.get("url", ""),
-                    sentiment=ai_sentiment,
-                    ai_summary=ai_summary,
-                )
+            # Send to Telegram - IMPORTANT: Send ALL news, not just important ones
+            # Important news gets AI analysis, regular news gets basic format
+            success, error = send_important_news(
+                title=title,
+                summary=summary,
+                url=news.get("url", ""),
+                sentiment=ai_sentiment,
+                ai_summary=ai_summary,
+            )
 
-                mark_telegram_posted(news_id, title, success, error or "")
-                if success:
-                    posted += 1
+            mark_telegram_posted(news_id, title, success, error or "")
+            if success:
+                posted_to_telegram += 1
+                logger.info(f"Posted to Telegram: {title[:60]}...")
+            else:
+                logger.warning(f"Failed to post to Telegram: {title[:60]}... Error: {error}")
 
-            # Rate limiting between messages
-            if posted > 0:
-                time.sleep(2)
+            # Rate limiting between messages (Telegram: max 30 msg/sec for bots)
+            time.sleep(2)
 
         except Exception as e:
-            logger.error(f"Error processing news: {e}")
+            logger.error(f"Error processing news {news.get('id', '?')}: {e}")
             continue
 
-    logger.info(f"News cycle complete: {posted} posted, {scrape_result['saved']} new articles")
+    logger.info(
+        f"News cycle complete: {posted_to_telegram} posted to Telegram, "
+        f"{ai_analyzed} AI analyzed, {skipped} skipped, "
+        f"{scrape_result['saved']} new articles scraped"
+    )
 
 
 def check_price_alerts():
@@ -165,7 +196,7 @@ def check_price_alerts():
                 mark_alert_triggered(alert["id"])
                 logger.info(f"Alert triggered: {symbol} {condition} {target}")
 
-            time.sleep(3)  # Rate limiting
+            time.sleep(3)
 
         except Exception as e:
             logger.error(f"Error checking alert: {e}")
@@ -183,10 +214,19 @@ def cleanup():
 
 def worker_loop():
     """Main worker loop."""
+    logger.info("=" * 60)
     logger.info("CryptositNews Worker starting...")
+    logger.info(f"RSS feeds configured: {len(config.RSS_FEEDS)}")
+    logger.info(f"Scrape interval: {config.SCRAPER_INTERVAL}s")
+    logger.info(f"BOT_TOKEN configured: {'Yes' if config.BOT_TOKEN else 'NO - Telegram disabled!'}")
+    logger.info(f"CHANNEL_ID configured: {'Yes' if config.CHANNEL_ID else 'NO - Telegram disabled!'}")
+    logger.info(f"OPENAI_API_KEY configured: {'Yes' if config.OPENAI_API_KEY else 'NO - AI analysis disabled!'}")
+    logger.info(f"DATABASE_URL: {'PostgreSQL' if config.DATABASE_URL else 'SQLite'}")
+    logger.info("=" * 60)
 
     # Initial scrape on startup
     try:
+        logger.info("Running initial scrape on startup...")
         process_news()
     except Exception as e:
         logger.error(f"Initial scrape error: {e}")
@@ -195,7 +235,7 @@ def worker_loop():
     while True:
         try:
             cycle_count += 1
-            logger.info(f"Worker cycle #{cycle_count}")
+            logger.info(f"--- Worker cycle #{cycle_count} ---")
 
             # News processing
             process_news()

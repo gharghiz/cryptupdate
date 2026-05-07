@@ -28,7 +28,7 @@ from database import (
     get_stats, get_health_info, get_active_alerts, add_price_alert,
     newsletter_subscribe, newsletter_unsubscribe, get_newsletter_stats,
     get_newsletter_subscribers, get_db, _coingecko_wait, cache_stats,
-    init_db,
+    init_db, get_scrape_logs,
 )
 from ai import generate_market_intelligence
 
@@ -551,6 +551,11 @@ def health():
     health_info = get_health_info()
     health_info["request_id"] = request.request_id
     health_info["cache_stats"] = cache_stats.to_dict()
+    health_info["telegram_configured"] = bool(config.BOT_TOKEN and config.CHANNEL_ID)
+    health_info["openai_configured"] = bool(config.OPENAI_API_KEY)
+    health_info["database_type"] = "postgresql" if config.DATABASE_URL else "sqlite"
+    health_info["rss_feeds_count"] = len(config.RSS_FEEDS)
+    health_info["uptime_seconds"] = int(time.time() - health_info.get("uptime", time.time()))
     status = 200 if health_info["status"] == "healthy" else 503
     return jsonify(health_info), status
 
@@ -727,6 +732,26 @@ def admin_cache_stats():
     return jsonify({"cache_stats": stats})
 
 
+@app.route("/api/admin/scrape-logs")
+@admin_auth_required
+def admin_scrape_logs():
+    """Get recent scrape logs for diagnostics."""
+    logs = get_scrape_logs(limit=100)
+    return jsonify({"scrape_logs": logs, "count": len(logs)})
+
+
+@app.route("/api/admin/trigger-scrape", methods=["POST"])
+@admin_auth_required
+def admin_trigger_scrape():
+    """Manually trigger a scrape cycle."""
+    try:
+        from scraper import scrape_all
+        result = scrape_all()
+        return jsonify({"success": True, "result": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/admin/newsletter/subscribers")
 @admin_auth_required
 def admin_newsletter_subscribers():
@@ -805,4 +830,12 @@ def server_error(e):
 # INITIALIZATION
 # ============================================================
 init_db()
+logger.info("=" * 60)
 logger.info("CryptositNews Web Server ready")
+logger.info(f"Database: {'PostgreSQL' if config.DATABASE_URL else 'SQLite'}")
+logger.info(f"RSS Feeds: {len(config.RSS_FEEDS)}")
+logger.info(f"Telegram Bot: {'Configured' if config.BOT_TOKEN else 'NOT CONFIGURED'}")
+logger.info(f"Telegram Channel: {'Configured' if config.CHANNEL_ID else 'NOT CONFIGURED'}")
+logger.info(f"OpenAI API: {'Configured' if config.OPENAI_API_KEY else 'NOT CONFIGURED'}")
+logger.info(f"Redis: {config.REDIS_URL or 'Not configured (in-memory cache)'}")
+logger.info("=" * 60)

@@ -133,7 +133,19 @@ def is_valid_title(title):
     if not title:
         return False
     title = title.strip()
-    return len(title) >= 15 and not title.isspace()
+    # Minimum 10 chars to catch valid short headlines
+    # Filter out garbage like "Untitled", "No title", etc.
+    if len(title) < 10:
+        return False
+    if title.isspace():
+        return False
+    # Filter out common junk titles
+    junk = ["untitled", "no title", "page not found", "404", "access denied",
+            "loading...", "subscribe", "sign in", "log in", "register",
+            "advertisement", "sponsored", "promo"]
+    if title.lower() in junk:
+        return False
+    return True
 
 
 def generate_request_id():

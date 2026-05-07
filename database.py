@@ -19,6 +19,26 @@ from utils import setup_logger, hash_text, hours_ago, now_utc, time_ago
 logger = setup_logger("database")
 
 # ============================================================
+# DATABASE DIALECT DETECTION
+# ============================================================
+_is_postgres = False
+
+def _is_pg():
+    """Check if we're using PostgreSQL."""
+    global _is_postgres
+    return _is_postgres
+
+def _param(n):
+    """Return correct parameter placeholder: %s for PostgreSQL, ? for SQLite."""
+    return "%s" if _is_pg() else "?"
+
+def _params(n):
+    """Return n parameter placeholders separated by commas."""
+    p = "%s" if _is_pg() else "?"
+    return ", ".join([p] * n)
+
+
+# ============================================================
 # CONNECTION POOL (SQLite / PostgreSQL)
 # ============================================================
 _local = threading.local()
@@ -45,9 +65,7 @@ class ConnectionPool:
                 conn.execute("PRAGMA journal_mode=WAL")
                 conn.execute("PRAGMA busy_timeout=5000")
                 return conn
-            # Wait for a connection to be returned
             pass
-        # Fallback: create a temporary connection
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         conn.row_factory = sqlite3.Row
         return conn
@@ -81,16 +99,16 @@ _db_path = "cryptositnews.db"
 
 
 def get_pool():
-    global _pool, _db_path
+    global _pool, _db_path, _is_postgres
     if _pool is None:
         database_url = config.DATABASE_URL
         if database_url and database_url.startswith("postgres"):
             _db_path = database_url
-        else:
-            _db_path = database_url or "cryptositnews.db"
-        if _db_path.startswith("postgres"):
+            _is_postgres = True
             _pool = None  # Use psycopg2 directly
         else:
+            _db_path = database_url or "cryptositnews.db"
+            _is_postgres = False
             _pool = ConnectionPool(_db_path, config.DB_POOL_SIZE)
     return _pool
 
@@ -104,7 +122,6 @@ _memory_cache_lock = threading.Lock()
 
 
 class CacheStats:
-    """Track cache hit/miss statistics."""
 
     def __init__(self):
         self.hits = 0
@@ -145,7 +162,6 @@ cache_stats = CacheStats()
 
 
 def get_redis():
-    """Get Redis client or None if unavailable."""
     global _redis_client
     if _redis_client is not None:
         return _redis_client
@@ -164,10 +180,8 @@ def get_redis():
 
 
 class UnifiedCache:
-    """Unified cache with Redis primary and in-memory fallback."""
 
     def get(self, key):
-        # Try Redis first
         r = get_redis()
         if r:
             try:
@@ -177,7 +191,6 @@ class UnifiedCache:
                     return json.loads(val)
             except Exception:
                 pass
-        # Fallback to memory
         with _memory_cache_lock:
             item = _memory_cache.get(key)
             if item and item["exp"] > time.time():
@@ -192,17 +205,14 @@ class UnifiedCache:
     def set(self, key, value, ttl=None):
         ttl = ttl or config.CACHE_DEFAULT_TTL
         cache_stats.record_set()
-        # Try Redis
         r = get_redis()
         if r:
             try:
                 r.setex(f"cn:{key}", ttl, json.dumps(value, default=str))
             except Exception:
                 pass
-        # Also store in memory as fallback
         with _memory_cache_lock:
             _memory_cache[key] = {"val": value, "exp": time.time() + ttl}
-            # Evict old entries if cache is too large
             if len(_memory_cache) > 500:
                 self._evict_old()
 
@@ -229,13 +239,11 @@ class UnifiedCache:
         logger.info("Cache cleared")
 
     def _evict_old(self):
-        """Evict expired entries from memory cache."""
         now = time.time()
         expired = [k for k, v in _memory_cache.items() if v["exp"] <= now]
         for k in expired:
             del _memory_cache[k]
         if len(_memory_cache) > 500:
-            # Remove oldest 100
             sorted_keys = sorted(_memory_cache.keys(),
                                  key=lambda k: _memory_cache[k]["exp"])
             for k in sorted_keys[:100]:
@@ -243,7 +251,6 @@ class UnifiedCache:
                 cache_stats.record_eviction()
 
     def get_stats(self):
-        """Get cache statistics."""
         stats = cache_stats.to_dict()
         stats["backend"] = "redis" if get_redis() else "memory"
         stats["memory_entries"] = len(_memory_cache)
@@ -261,7 +268,6 @@ _cg_timestamps = []
 
 
 def _coingecko_wait():
-    """Wait before making CoinGecko API call to respect rate limits."""
     global _cg_timestamps
     with _cg_lock:
         now = time.time()
@@ -278,7 +284,6 @@ def _coingecko_wait():
 # CATEGORIZATION
 # ============================================================
 def categorize_title_with_confidence(title):
-    """Categorize title into one of 14 categories with confidence scoring."""
     if not title:
         return "market", 0.0
 
@@ -291,7 +296,6 @@ def categorize_title_with_confidence(title):
         for kw in rules["keywords"]:
             kw_lower = kw.lower()
             if kw_lower in title_lower:
-                # Title match is strongest signal
                 score += rules["weight"] * 2
                 matched += 1
         if matched > 0:
@@ -303,7 +307,6 @@ def categorize_title_with_confidence(title):
     best_category = max(scores, key=scores.get)
     best_score = scores[best_category]
 
-    # Normalize confidence to 0-1
     max_possible = max(r["weight"] * 2 * 5 for r in config.CATEGORY_RULES.values())
     confidence = min(best_score / (max_possible * 0.3), 1.0)
 
@@ -319,7 +322,7 @@ def get_db():
     pool = get_pool()
     conn = None
     try:
-        if pool is None and _db_path.startswith("postgres"):
+        if _is_pg():
             import psycopg2
             import psycopg2.extras
             conn = psycopg2.connect(_db_path)
@@ -349,10 +352,10 @@ def init_db():
     """Initialize database tables."""
     with get_db() as conn:
         cursor = conn.cursor()
-        is_postgres = _db_path.startswith("postgres")
+        is_pg = _is_pg()
 
         # News table
-        if is_postgres:
+        if is_pg:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS news (
                     id SERIAL PRIMARY KEY,
@@ -394,7 +397,7 @@ def init_db():
             """)
 
         # Telegram log
-        if is_postgres:
+        if is_pg:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS telegram_log (
                     id SERIAL PRIMARY KEY,
@@ -418,7 +421,7 @@ def init_db():
             """)
 
         # Price alerts
-        if is_postgres:
+        if is_pg:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS price_alerts (
                     id SERIAL PRIMARY KEY,
@@ -448,7 +451,7 @@ def init_db():
             """)
 
         # Newsletter subscribers
-        if is_postgres:
+        if is_pg:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS newsletter (
                     id SERIAL PRIMARY KEY,
@@ -467,22 +470,55 @@ def init_db():
                 )
             """)
 
+        # Scrape log (for diagnostics)
+        if is_pg:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS scrape_log (
+                    id SERIAL PRIMARY KEY,
+                    feed_url TEXT,
+                    source TEXT DEFAULT '',
+                    entries_found INTEGER DEFAULT 0,
+                    entries_saved INTEGER DEFAULT 0,
+                    error TEXT DEFAULT '',
+                    duration_ms INTEGER DEFAULT 0,
+                    scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS scrape_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    feed_url TEXT,
+                    source TEXT DEFAULT '',
+                    entries_found INTEGER DEFAULT 0,
+                    entries_saved INTEGER DEFAULT 0,
+                    error TEXT DEFAULT '',
+                    duration_ms INTEGER DEFAULT 0,
+                    scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
         # Create indexes
         try:
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_published ON news(published DESC)")
+            if is_pg:
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_published ON news(published DESC NULLS LAST)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_created ON news(created_at DESC)")
+            else:
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_published ON news(coalesce(published, created_at) DESC)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_created ON news(created_at DESC)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_category ON news(category)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_important ON news(is_important)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_telegram ON news(telegram_posted)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_title ON news(title)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_news_created ON news(created_at DESC)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_telegram_log_posted ON telegram_log(posted_at)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_active ON price_alerts(active)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter(email)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_scrape_log_date ON scrape_log(scraped_at DESC)")
         except Exception as e:
             logger.warning(f"Index creation warning: {e}")
 
         conn.commit()
-        logger.info("Database initialized successfully")
+        logger.info(f"Database initialized successfully (PostgreSQL: {is_pg})")
 
 
 # ============================================================
@@ -496,23 +532,36 @@ def save_news(title, summary="", url="", source="", published=None,
         return None
 
     category, confidence = categorize_title_with_confidence(title)
+    is_pg = _is_pg()
+    p = _param(0)
 
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                INSERT INTO news (title, summary, url, source, published,
-                    category, category_confidence, ai_sentiment, ai_reason,
-                    ai_summary, is_important, image_url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (title, summary, url, source, published,
-                  category, confidence, ai_sentiment, ai_reason,
-                  ai_summary, is_important, image_url))
-            conn.commit()
-            news_id = cursor.lastrowid
+            if is_pg:
+                cursor.execute("""
+                    INSERT INTO news (title, summary, url, source, published,
+                        category, category_confidence, ai_sentiment, ai_reason,
+                        ai_summary, is_important, image_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (title, summary, url, source, published,
+                      category, confidence, ai_sentiment, ai_reason,
+                      ai_summary, is_important, image_url))
+                news_id = cursor.fetchone()[0]
+            else:
+                cursor.execute("""
+                    INSERT INTO news (title, summary, url, source, published,
+                        category, category_confidence, ai_sentiment, ai_reason,
+                        ai_summary, is_important, image_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (title, summary, url, source, published,
+                      category, confidence, ai_sentiment, ai_reason,
+                      ai_summary, is_important, image_url))
+                news_id = cursor.lastrowid
+
             logger.info(f"Saved news [{category}]: {title[:60]}... (ID: {news_id})")
 
-            # Clear news cache
             cache.delete("news:latest")
             cache.delete("news:all")
 
@@ -532,22 +581,34 @@ def get_news(limit=50, offset=0, category=None, important_only=False):
     if result:
         return result
 
+    is_pg = _is_pg()
+    p = _param(0)
+
     with get_db() as conn:
         cursor = conn.cursor()
-        query = "SELECT * FROM news"
         conditions = []
         params = []
 
         if category and category != "all":
-            conditions.append("category = ?")
+            conditions.append(f"category = {p}")
             params.append(category)
         if important_only:
-            conditions.append("is_important = 1")
+            if is_pg:
+                conditions.append("is_important = TRUE")
+            else:
+                conditions.append("is_important = 1")
 
+        query = "SELECT * FROM news"
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        query += " ORDER BY published DESC NULLS LAST, created_at DESC LIMIT ? OFFSET ?"
+        # SQLite doesn't support NULLS LAST
+        if is_pg:
+            query += " ORDER BY published DESC NULLS LAST, created_at DESC"
+        else:
+            query += " ORDER BY coalesce(published, created_at) DESC"
+
+        query += f" LIMIT {p} OFFSET {p}"
         params.extend([limit, offset])
 
         try:
@@ -556,7 +617,6 @@ def get_news(limit=50, offset=0, category=None, important_only=False):
             news_list = []
             for row in rows:
                 item = dict(row)
-                # Convert datetime to string
                 for key in ("published", "created_at"):
                     if item.get(key) and hasattr(item[key], "isoformat"):
                         item[key] = item[key].isoformat()
@@ -576,10 +636,12 @@ def get_news_by_id(news_id):
     if result:
         return result
 
+    p = _param(0)
+
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT * FROM news WHERE id = ?", (news_id,))
+            cursor.execute(f"SELECT * FROM news WHERE id = {p}", (news_id,))
             row = cursor.fetchone()
             if row:
                 item = dict(row)
@@ -601,16 +663,25 @@ def search_news(query, limit=20):
     from utils import sanitize_search
     query = sanitize_search(query)
     search_term = f"%{query}%"
+    p = _param(0)
 
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                SELECT * FROM news
-                WHERE title LIKE ? OR summary LIKE ? OR source LIKE ?
-                ORDER BY published DESC NULLS LAST, created_at DESC
-                LIMIT ?
-            """, (search_term, search_term, search_term, limit))
+            if _is_pg():
+                cursor.execute("""
+                    SELECT * FROM news
+                    WHERE title ILIKE %s OR summary ILIKE %s OR source ILIKE %s
+                    ORDER BY coalesce(published, created_at) DESC
+                    LIMIT %s
+                """, (search_term, search_term, search_term, limit))
+            else:
+                cursor.execute("""
+                    SELECT * FROM news
+                    WHERE title LIKE ? OR summary LIKE ? OR source LIKE ?
+                    ORDER BY coalesce(published, created_at) DESC
+                    LIMIT ?
+                """, (search_term, search_term, search_term, limit))
             rows = cursor.fetchall()
             results = []
             for row in rows:
@@ -632,16 +703,25 @@ def get_related_news(news_id, limit=5):
         return []
 
     category = article.get("category", "market")
+    p = _param(0)
 
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                SELECT * FROM news
-                WHERE category = ? AND id != ?
-                ORDER BY published DESC NULLS LAST, created_at DESC
-                LIMIT ?
-            """, (category, news_id, limit))
+            if _is_pg():
+                cursor.execute(f"""
+                    SELECT * FROM news
+                    WHERE category = {p} AND id != {p}
+                    ORDER BY published DESC NULLS LAST, created_at DESC
+                    LIMIT {p}
+                """, (category, news_id, limit))
+            else:
+                cursor.execute("""
+                    SELECT * FROM news
+                    WHERE category = ? AND id != ?
+                    ORDER BY coalesce(published, created_at) DESC
+                    LIMIT ?
+                """, (category, news_id, limit))
             rows = cursor.fetchall()
             results = []
             for row in rows:
@@ -666,49 +746,73 @@ def get_stats():
     if result:
         return result
 
+    is_pg = _is_pg()
+    p = _param(0)
+
     with get_db() as conn:
         cursor = conn.cursor()
         try:
             cursor.execute("SELECT COUNT(*) as total FROM news")
-            total = cursor.fetchone()["total"]
+            row = cursor.fetchone()
+            total = row["total"] if hasattr(row, "keys") else row[0]
 
-            cursor.execute("""
-                SELECT COUNT(*) as cnt FROM news
-                WHERE published >= ? OR (published IS NULL AND created_at >= ?)
-            """, (hours_ago(24), hours_ago(24)))
-            today = cursor.fetchone()["cnt"]
+            if is_pg:
+                cursor.execute("""
+                    SELECT COUNT(*) as cnt FROM news
+                    WHERE published >= %s OR (published IS NULL AND created_at >= %s)
+                """, (hours_ago(24), hours_ago(24)))
+            else:
+                cursor.execute("""
+                    SELECT COUNT(*) as cnt FROM news
+                    WHERE published >= ? OR (published IS NULL AND created_at >= ?)
+                """, (hours_ago(24), hours_ago(24)))
+            row = cursor.fetchone()
+            today = row["cnt"] if hasattr(row, "keys") else row[0]
 
-            cursor.execute("""
-                SELECT COUNT(*) as cnt FROM news WHERE is_important = 1
-            """)
-            important = cursor.fetchone()["cnt"]
+            if is_pg:
+                cursor.execute("SELECT COUNT(*) as cnt FROM news WHERE is_important = TRUE")
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM news WHERE is_important = 1")
+            row = cursor.fetchone()
+            important = row["cnt"] if hasattr(row, "keys") else row[0]
 
-            cursor.execute("""
-                SELECT COUNT(*) as cnt FROM news WHERE telegram_posted = 1
-            """)
-            posted = cursor.fetchone()["cnt"]
+            if is_pg:
+                cursor.execute("SELECT COUNT(*) as cnt FROM news WHERE telegram_posted = TRUE")
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM news WHERE telegram_posted = 1")
+            row = cursor.fetchone()
+            posted = row["cnt"] if hasattr(row, "keys") else row[0]
 
             cursor.execute("""
                 SELECT category, COUNT(*) as cnt FROM news
                 GROUP BY category ORDER BY cnt DESC LIMIT 14
             """)
-            categories = {row["category"]: row["cnt"] for row in cursor.fetchall()}
+            categories = {}
+            for row in cursor.fetchall():
+                cat = row["category"] if hasattr(row, "keys") else row[0]
+                cnt = row["cnt"] if hasattr(row, "keys") else row[1]
+                categories[cat] = cnt
 
-            cursor.execute("""
-                SELECT COUNT(*) as cnt FROM news WHERE ai_sentiment != ''
-            """)
-            analyzed = cursor.fetchone()["cnt"]
+            if is_pg:
+                cursor.execute("SELECT COUNT(*) as cnt FROM news WHERE ai_sentiment != ''")
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM news WHERE ai_sentiment != ''")
+            row = cursor.fetchone()
+            analyzed = row["cnt"] if hasattr(row, "keys") else row[0]
 
-            cursor.execute("""
-                SELECT COUNT(DISTINCT source) as cnt FROM news WHERE source != ''
-            """)
-            sources = cursor.fetchone()["cnt"]
+            if is_pg:
+                cursor.execute("SELECT COUNT(DISTINCT source) as cnt FROM news WHERE source != ''")
+            else:
+                cursor.execute("SELECT COUNT(DISTINCT source) as cnt FROM news WHERE source != ''")
+            row = cursor.fetchone()
+            sources = row["cnt"] if hasattr(row, "keys") else row[0]
 
-            cursor.execute("""
-                SELECT COUNT(*) as cnt FROM telegram_log
-                WHERE posted_at >= ?
-            """, (hours_ago(24),))
-            telegram_today = cursor.fetchone()["cnt"]
+            if is_pg:
+                cursor.execute("SELECT COUNT(*) as cnt FROM telegram_log WHERE posted_at >= %s", (hours_ago(24),))
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM telegram_log WHERE posted_at >= ?", (hours_ago(24),))
+            row = cursor.fetchone()
+            telegram_today = row["cnt"] if hasattr(row, "keys") else row[0]
 
             stats = {
                 "total_news": total,
@@ -733,16 +837,77 @@ def get_stats():
 
 
 # ============================================================
+# SCRAPE LOG (diagnostics)
+# ============================================================
+def log_scrape_result(feed_url, source, entries_found, entries_saved, error="", duration_ms=0):
+    """Log a scrape result for diagnostics."""
+    p = _param(0)
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            if _is_pg():
+                cursor.execute(f"""
+                    INSERT INTO scrape_log (feed_url, source, entries_found, entries_saved, error, duration_ms)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (feed_url, source, entries_found, entries_saved, error, duration_ms))
+            else:
+                cursor.execute("""
+                    INSERT INTO scrape_log (feed_url, source, entries_found, entries_saved, error, duration_ms)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (feed_url, source, entries_found, entries_saved, error, duration_ms))
+            conn.commit()
+    except Exception as e:
+        logger.error(f"Error logging scrape: {e}")
+
+
+def get_scrape_logs(limit=50):
+    """Get recent scrape logs for diagnostics."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            if _is_pg():
+                cursor.execute("""
+                    SELECT * FROM scrape_log
+                    ORDER BY scraped_at DESC NULLS LAST
+                    LIMIT %s
+                """, (limit,))
+            else:
+                cursor.execute("""
+                    SELECT * FROM scrape_log
+                    ORDER BY scraped_at DESC
+                    LIMIT ?
+                """, (limit,))
+            rows = cursor.fetchall()
+            results = []
+            for row in rows:
+                item = dict(row)
+                for key in ("scraped_at",):
+                    if item.get(key) and hasattr(item[key], "isoformat"):
+                        item[key] = item[key].isoformat()
+                results.append(item)
+            return results
+        except Exception as e:
+            logger.error(f"Error getting scrape logs: {e}")
+            return []
+
+
+# ============================================================
 # TELEGRAM LOG
 # ============================================================
 def is_telegram_posted(title):
     """Check if news was already posted to Telegram."""
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                SELECT 1 FROM telegram_log WHERE title = ? AND success = 1
-            """, (title,))
+            if _is_pg():
+                cursor.execute(f"""
+                    SELECT 1 FROM telegram_log WHERE title = {p} AND success = TRUE
+                """, (title,))
+            else:
+                cursor.execute("""
+                    SELECT 1 FROM telegram_log WHERE title = ? AND success = 1
+                """, (title,))
             return cursor.fetchone() is not None
         except Exception:
             return False
@@ -750,17 +915,28 @@ def is_telegram_posted(title):
 
 def mark_telegram_posted(news_id, title, success=True, error=""):
     """Mark news as posted to Telegram."""
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                INSERT INTO telegram_log (news_id, title, success, error)
-                VALUES (?, ?, ?, ?)
-            """, (news_id, title, success, error))
-            if success and news_id:
+            if _is_pg():
+                cursor.execute(f"""
+                    INSERT INTO telegram_log (news_id, title, success, error)
+                    VALUES (%s, %s, %s, %s)
+                """, (news_id, title, success, error))
+                if success and news_id:
+                    cursor.execute(f"""
+                        UPDATE news SET telegram_posted = TRUE WHERE id = %s
+                    """, (news_id,))
+            else:
                 cursor.execute("""
-                    UPDATE news SET telegram_posted = 1 WHERE id = ?
-                """, (news_id,))
+                    INSERT INTO telegram_log (news_id, title, success, error)
+                    VALUES (?, ?, ?, ?)
+                """, (news_id, title, success, error))
+                if success and news_id:
+                    cursor.execute("""
+                        UPDATE news SET telegram_posted = 1 WHERE id = ?
+                    """, (news_id,))
             conn.commit()
         except Exception as e:
             logger.error(f"Error marking telegram post: {e}")
@@ -768,12 +944,14 @@ def mark_telegram_posted(news_id, title, success=True, error=""):
 
 def cleanup_telegram_log(days=3):
     """Clean up old telegram log entries."""
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                DELETE FROM telegram_log WHERE posted_at < ?
-            """, (hours_ago(days * 24),))
+            if _is_pg:
+                cursor.execute(f"DELETE FROM telegram_log WHERE posted_at < {p}", (hours_ago(days * 24),))
+            else:
+                cursor.execute("DELETE FROM telegram_log WHERE posted_at < ?", (hours_ago(days * 24),))
             conn.commit()
             logger.info("Telegram log cleaned up")
         except Exception as e:
@@ -784,43 +962,45 @@ def cleanup_telegram_log(days=3):
 # NEWSLETTER
 # ============================================================
 def newsletter_subscribe(email):
-    """Subscribe email to newsletter."""
     if not email:
         return False, "Email is required"
     from utils import is_valid_email
     if not is_valid_email(email):
         return False, "Invalid email address"
 
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                INSERT INTO newsletter (email) VALUES (?)
-            """, (email,))
+            if _is_pg():
+                cursor.execute(f"INSERT INTO newsletter (email) VALUES ({p})", (email,))
+            else:
+                cursor.execute("INSERT INTO newsletter (email) VALUES (?)", (email,))
             conn.commit()
             return True, "Subscribed successfully!"
         except Exception as e:
             if "UNIQUE" in str(e) or "duplicate" in str(e).lower():
-                # Reactivate if exists
-                cursor.execute("""
-                    UPDATE newsletter SET active = 1 WHERE email = ?
-                """, (email,))
+                if _is_pg():
+                    cursor.execute(f"UPDATE newsletter SET active = TRUE WHERE email = {p}", (email,))
+                else:
+                    cursor.execute("UPDATE newsletter SET active = 1 WHERE email = ?", (email,))
                 conn.commit()
                 return True, "Re-subscribed successfully!"
             return False, f"Subscription failed: {str(e)}"
 
 
 def newsletter_unsubscribe(email):
-    """Unsubscribe email from newsletter."""
     if not email:
         return False, "Email is required"
 
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                UPDATE newsletter SET active = 0 WHERE email = ?
-            """, (email,))
+            if _is_pg():
+                cursor.execute(f"UPDATE newsletter SET active = FALSE WHERE email = {p}", (email,))
+            else:
+                cursor.execute("UPDATE newsletter SET active = 0 WHERE email = ?", (email,))
             conn.commit()
             return True, "Unsubscribed successfully!"
         except Exception as e:
@@ -828,13 +1008,13 @@ def newsletter_unsubscribe(email):
 
 
 def get_newsletter_subscribers():
-    """Get all active newsletter subscribers."""
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                SELECT email, created_at FROM newsletter WHERE active = 1
-            """)
+            if _is_pg():
+                cursor.execute("SELECT email, created_at FROM newsletter WHERE active = TRUE")
+            else:
+                cursor.execute("SELECT email, created_at FROM newsletter WHERE active = 1")
             return [dict(row) for row in cursor.fetchall()]
         except Exception as e:
             logger.error(f"Error getting subscribers: {e}")
@@ -842,14 +1022,20 @@ def get_newsletter_subscribers():
 
 
 def get_newsletter_stats():
-    """Get newsletter statistics."""
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT COUNT(*) as cnt FROM newsletter WHERE active = 1")
-            active = cursor.fetchone()["cnt"]
+            if _is_pg():
+                cursor.execute("SELECT COUNT(*) as cnt FROM newsletter WHERE active = TRUE")
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM newsletter WHERE active = 1")
+            row = cursor.fetchone()
+            active = row["cnt"] if hasattr(row, "keys") else row[0]
+
             cursor.execute("SELECT COUNT(*) as cnt FROM newsletter")
-            total = cursor.fetchone()["cnt"]
+            row = cursor.fetchone()
+            total = row["cnt"] if hasattr(row, "keys") else row[0]
+
             return {"active": active, "total": total}
         except Exception:
             return {"active": 0, "total": 0}
@@ -859,13 +1045,13 @@ def get_newsletter_stats():
 # PRICE ALERTS
 # ============================================================
 def get_active_alerts():
-    """Get all active price alerts."""
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                SELECT * FROM price_alerts WHERE active = 1 ORDER BY created_at DESC
-            """)
+            if _is_pg():
+                cursor.execute("SELECT * FROM price_alerts WHERE active = TRUE ORDER BY created_at DESC")
+            else:
+                cursor.execute("SELECT * FROM price_alerts WHERE active = 1 ORDER BY created_at DESC")
             return [dict(row) for row in cursor.fetchall()]
         except Exception as e:
             logger.error(f"Error getting alerts: {e}")
@@ -873,14 +1059,20 @@ def get_active_alerts():
 
 
 def add_price_alert(coin, symbol, target_price, condition="above"):
-    """Add a new price alert."""
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                INSERT INTO price_alerts (coin, symbol, target_price, condition)
-                VALUES (?, ?, ?, ?)
-            """, (coin, symbol, float(target_price), condition))
+            if _is_pg():
+                cursor.execute(f"""
+                    INSERT INTO price_alerts (coin, symbol, target_price, condition)
+                    VALUES ({p}, {p}, {p}, {p})
+                """, (coin, symbol, float(target_price), condition))
+            else:
+                cursor.execute("""
+                    INSERT INTO price_alerts (coin, symbol, target_price, condition)
+                    VALUES (?, ?, ?, ?)
+                """, (coin, symbol, float(target_price), condition))
             conn.commit()
             return True
         except Exception as e:
@@ -889,15 +1081,22 @@ def add_price_alert(coin, symbol, target_price, condition="above"):
 
 
 def mark_alert_triggered(alert_id):
-    """Mark alert as triggered."""
+    p = _param(0)
     with get_db() as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                UPDATE price_alerts
-                SET active = 0, triggered = 1, triggered_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            """, (alert_id,))
+            if _is_pg():
+                cursor.execute(f"""
+                    UPDATE price_alerts
+                    SET active = FALSE, triggered = TRUE, triggered_at = CURRENT_TIMESTAMP
+                    WHERE id = {p}
+                """, (alert_id,))
+            else:
+                cursor.execute("""
+                    UPDATE price_alerts
+                    SET active = 0, triggered = 1, triggered_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                """, (alert_id,))
             conn.commit()
         except Exception as e:
             logger.error(f"Error marking alert triggered: {e}")
@@ -908,16 +1107,20 @@ def mark_alert_triggered(alert_id):
 # ============================================================
 def get_health_info():
     """Get comprehensive health information."""
-    import psutil
-    from utils import get_memory_usage
-
     info = {
         "status": "healthy",
         "database": "connected",
+        "database_type": "postgresql" if _is_pg() else "sqlite",
         "cache_backend": "redis" if get_redis() else "memory",
-        "memory_mb": get_memory_usage(),
         "uptime": time.time(),
     }
+
+    try:
+        import psutil
+        process = psutil.Process(os.getpid())
+        info["memory_mb"] = round(process.memory_info().rss / 1024 / 1024, 2)
+    except Exception:
+        info["memory_mb"] = 0
 
     # Check database connectivity
     try:
