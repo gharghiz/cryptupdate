@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}About — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="page-header">
+        <h1>About {{ site_name }}</h1>
+        <p>The smarter way to follow crypto news</p>
+    </div>
+
+    <div class="about-content">
+        <p>
+            <strong>{{ site_name }}</strong> is a real-time crypto news aggregator that combines automation,
+            artificial intelligence, and a clean reading experience to help traders stay informed without the noise.
+        </p>
+
+        <h2>🎯 Our Mission</h2>
+        <p>
+            The crypto space moves fast. Every minute counts. We built {{ site_name }} to filter the noise
+            and deliver only what matters — concise, AI-analyzed news from the most trusted sources in the industry.
+        </p>
+
+        <h2>⚙️ How It Works</h2>
+        <p>
+            Our system continuously monitors <strong>70+ RSS feeds</strong> from top crypto publications including
+            CoinTelegraph, CoinDesk, The Block, Decrypt, and many more. Every 15 minutes, our Python-based
+            scraper fetches the latest articles, runs them through <strong>OpenAI's GPT-4o-mini</strong> for
+            intelligent summarization, and publishes them to both our website and Telegram channel.
+        </p>
+
+        <h2>🧠 AI-Powered Analysis</h2>
+        <p>
+            Important and breaking news gets an AI-generated summary, sentiment classification (Bullish/Bearish/Neutral),
+            and a brief reasoning. This gives traders instant context without having to read the full article.
+        </p>
+
+        <h2>📊 Market Data</h2>
+        <p>
+            Live prices from CoinGecko, TradingView charts, Fear & Greed Index, and comprehensive market tables
+            — all integrated into one clean dashboard.
+        </p>
+
+        <h2>🏗️ Tech Stack</h2>
+        <p>
+            <strong>Backend:</strong> Python (Flask, feedparser, OpenAI API)<br>
+            <strong>Database:</strong> PostgreSQL / SQLite<br>
+            <strong>Frontend:</strong> Vanilla HTML/CSS/JS (dark theme, mobile-first)<br>
+            <strong>APIs:</strong> CoinGecko, Alternative.me, TradingView<br>
+            <strong>Hosting:</strong> Railway
+        </p>
+
+        <h2>📧 Contact</h2>
+        <p>
+            Have questions or feedback? Reach out at
+            <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+            or join our <a href="{{ telegram_channel }}" target="_blank">Telegram channel</a>.
+        </p>
+    </div>
+
+    <div class="cta-block" style="margin-top:40px">
+        <h2>🔔 Stay Updated</h2>
+        <p>Join our Telegram for instant crypto news with AI insights.</p>
+        <a href="{{ telegram_channel }}" target="_blank" class="btn btn-primary">🚀 Join Channel</a>
+    </div>
+</div>
+{% endblock %}
