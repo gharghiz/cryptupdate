@@ -78,6 +78,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .t-item .sym{color:var(--text);font-weight:500;}
 .macro-wrap{background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 92%, var(--accent) 8%),var(--surface));border-bottom:1px solid var(--border);height:30px;overflow:hidden;display:flex;align-items:center;}
 .up{color:var(--green);} .dn{color:var(--red);}
+.terminal-ticker{overflow:hidden;white-space:nowrap;border-bottom:1px solid #1f2a3a;padding:6px 12px;background:rgba(8,12,22,.8);font-family:var(--mono);font-size:.64rem}
+.ticker-scroll{display:inline-block;min-width:200%;animation:ticker 28s linear infinite;}
 
 /* NAV TABS */
 .nav-tabs{position:sticky;top:62px;z-index:90;background:color-mix(in srgb,var(--surface) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:.5rem 1.5rem;display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;}
@@ -264,6 +266,8 @@ footer a{color:var(--purple);text-decoration:none;}
     <form class="search-wrap" method="get" action="/"><span class="s-icon">⌕</span><input type="text" name="q" placeholder="Search news, coins, signals..." value="{{ search }}" list="searchHints"></form>
     <datalist id="searchHints"><option>BTC</option><option>Ethereum</option><option>ETF news</option></datalist>
     <div class="header-actions">
+      <span id="headBtc" class="alpha-badge">BTC —</span>
+      <span id="headGold" class="alpha-badge">GOLD —</span>
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
       <a class="icon-btn" href="https://x.com" target="_blank" title="X">𝕏</a>
       <a class="icon-btn" href="https://t.me/CryptositNews" target="_blank" title="Telegram">✈️</a>
@@ -281,6 +285,7 @@ footer a{color:var(--purple);text-decoration:none;}
     </div>
   </div>
 </div>
+<div class="terminal-ticker"><div id="ticker-content" class="ticker-scroll">Loading terminal feed...</div></div>
 <div class="macro-wrap">
   <div class="ticker-label">MACRO</div>
   <div class="ticker-inner">
@@ -414,6 +419,14 @@ footer a{color:var(--purple);text-decoration:none;}
       </div>
     </article>
     {% endmacro %}
+    {% macro render_widget_list(title, icon, items, tab) %}
+    <div class="cat-section">
+      <div class="cat-header"><div class="cat-title">{{ icon }} {{ title }}</div><a class="source-tag" href="?tab={{ tab }}">View all →</a></div>
+      <div class="news-grid">
+        {% for it in items[:5] %}{{ render_card(it, tab, loop.index, False) }}{% endfor %}
+      </div>
+    </div>
+    {% endmacro %}
 
     {% if not active_tab %}
       {# ALL MODE — grouped #}
@@ -436,19 +449,7 @@ footer a{color:var(--purple);text-decoration:none;}
         ('altcoin','📰','More Signals',other_news,True),
       ] %}
       {% for cat_key,cat_icon,cat_label,cat_news,is_list in smart_sections %}
-      {% if cat_news %}
-      <div class="cat-section">
-        <div class="cat-header">
-          <div class="cat-title cat-color-{{ cat_key }}">{{ cat_icon }} {{ cat_label }}</div>
-          <span class="cat-count">{{ cat_news|length }}</span>
-        </div>
-        <div class="news-grid {% if not is_list %}grid-2{% endif %}">
-          {% for item in cat_news[:6] %}
-            {{ render_card(item, cat_key, loop.index, not is_list) }}
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+        {% if cat_news %}{{ render_widget_list(cat_label, cat_icon, cat_news, cat_key) }}{% endif %}
       {% endfor %}
 
     {% else %}
@@ -721,6 +722,24 @@ function renderMacro(){
   ['macroNasdaq','macroNasdaq2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=n;});
 }
 renderMacro(); setInterval(renderMacro, 15000);
+async function loadTerminalTicker(){
+  try{
+    const r = await fetch('/api/prices');
+    if(!r.ok) return;
+    const d = await r.json();
+    const btc = d.BTC || {};
+    const btcPrice = `$${(btc.price||0).toLocaleString()}`;
+    const btcCh = Number(btc.change||0);
+    const gold = 2350 + Math.random()*15 - 7.5; // mock for now
+    const goldCh = (Math.random()*2-1).toFixed(2);
+    const line = `BTC ${btcPrice} ${btcCh>=0?'+':''}${btcCh.toFixed?btcCh.toFixed(2):btcCh}%  •  ETH $${(d.ETH?.price||0).toLocaleString()}  •  SOL $${(d.SOL?.price||0).toLocaleString()}  •  GOLD $${gold.toFixed(2)} ${goldCh>=0?'+':''}${goldCh}%   `;
+    const html = `${line}${line}${line}`;
+    const tc = document.getElementById('ticker-content'); if(tc) tc.textContent = html;
+    const hb = document.getElementById('headBtc'); if(hb) hb.textContent = `BTC ${btcPrice}`;
+    const hg = document.getElementById('headGold'); if(hg) hg.textContent = `GOLD $${gold.toFixed(0)}`;
+  }catch(e){}
+}
+loadTerminalTicker(); setInterval(loadTerminalTicker, 5000);
 
 // Fear & Greed
 async function loadFearGreed() {
