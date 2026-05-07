@@ -301,6 +301,28 @@ footer a{color:var(--purple);text-decoration:none;}
     </div>
   </div>
 </section>
+<section style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,14,30,.55);">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;">
+    <div class="widget" style="margin-bottom:0;">
+      <div class="widget-title">🧠 Market Brain</div>
+      <div class="ai-preview"><b>{{ intel.ai_signal.coin }} → {{ intel.ai_signal.signal }}</b> · Confidence {{ intel.ai_signal.confidence }}%</div>
+      <div class="price-row"><span class="coin-sym">Bullish</span><span class="up">{{ intel.sentiment.bullish }}%</span></div>
+      <div class="price-row"><span class="coin-sym">Bearish</span><span class="dn">{{ intel.sentiment.bearish }}%</span></div>
+      <div class="fg-sub">Reason: {{ intel.ai_signal.reason }}</div>
+      <div class="fg-sub">Trigger: {{ intel.ai_signal.trigger }}</div>
+      <div class="fg-sub">Watch: {{ intel.ai_signal.watch }}</div>
+    </div>
+    <div class="widget" style="margin-bottom:0;">
+      <div class="widget-title">🔥 Top Story</div>
+      {% if top_story %}
+      <div class="card-title" style="font-size:1rem;">{{ top_story.title }}</div>
+      <div class="fg-sub" style="margin-top:.6rem;">Why it matters: {{ top_story.reason or top_story.summary or "Institutional flow / risk sentiment impact." }}</div>
+      {% else %}
+      <div class="fg-sub">No top story detected.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
 
 <div class="container">
   <div class="stats-bar">
@@ -337,7 +359,9 @@ footer a{color:var(--purple);text-decoration:none;}
       {% if item.summary %}
       <div class="ai-preview"><b>🧠</b> {{ item.summary }}</div>
       {% endif %}
+      {% if item.reason %}<div class="fg-sub" style="margin-bottom:.35rem;">💡 Why it matters: {{ item.reason }}</div>{% endif %}
       <div class="card-meta">
+        {% if item.summary or item.reason %}<span class="source-tag" style="color:var(--accent);border-color:rgba(0,229,255,.25);">AI PICK</span>{% endif %}
         {% if 'breaking' in t or 'urgent' in t %}<span class="breaking-tag">🚨 BREAKING</span>{% endif %}
         <span class="source-tag">{{ item.source }}</span>
         <span class="time-tag">{{ item.posted_at[11:16] }} UTC</span>
@@ -481,6 +505,12 @@ footer a{color:var(--purple);text-decoration:none;}
         <div id="topOpportunity" style="font-family:var(--mono);font-size:.63rem;line-height:1.6;color:var(--text);">
           <div class="skeleton" style="width:90%;height:14px;margin-bottom:6px;"></div>
           <div class="skeleton" style="width:75%;height:12px;"></div>
+        </div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">🧠 Today’s Insight</div>
+        <div style="font-family:var(--mono);font-size:.64rem;line-height:1.6;">
+          {{ intel.ai_signal.coin }} dominates sentiment today after momentum shift in latest headlines.
         </div>
       </div>
 

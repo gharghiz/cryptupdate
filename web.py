@@ -10,6 +10,7 @@ import requests
 import re
 from datetime import datetime, timezone, timedelta
 from database import init_db, get_news, get_news_by_id, get_stats, save_subscriber
+from processor import is_breaking, is_high_impact
 
 app = Flask(__name__)
 init_db()
@@ -173,8 +174,20 @@ def index():
 
     stats = get_stats()
     pages = max(1, (total + 19) // 20)
+    intel = get_cached_intel()
+    top_story = None
+    for item in news:
+        title = item.get("title", "")
+        if is_breaking(title) or is_high_impact(title):
+            top_story = item
+            break
+    if not top_story and news:
+        top_story = news[0]
+
     rendered = render_template("index.html",
         news=news, stats=stats,
+        intel=intel,
+        top_story=top_story,
         page=page, pages=pages,
         total=total, search=search,
         active_tab=active_tab,
