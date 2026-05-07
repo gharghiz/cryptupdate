@@ -53,6 +53,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .logo-name em{color:var(--accent);font-style:normal;}
 .alpha-badge{font-family:var(--mono);font-size:.65rem;color:var(--accent);border:1px solid rgba(0,229,255,.28);padding:.12rem .35rem;border-radius:999px;}
 .live-pill{display:flex;align-items:center;gap:.3rem;font-family:var(--mono);font-size:.58rem;color:var(--green);border:1px solid rgba(0,201,122,.2);padding:.2rem .5rem;border-radius:20px;flex-shrink:0;}
+.ai-pill{display:flex;align-items:center;gap:.3rem;font-family:var(--mono);font-size:.58rem;color:var(--accent);border:1px solid rgba(0,229,255,.25);padding:.2rem .5rem;border-radius:20px;flex-shrink:0;}
 .live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.4s ease infinite;}
 .live-pill{animation:pulseLive 2.4s ease-in-out infinite;}
 @keyframes pulseLive{0%,100%{box-shadow:0 0 0 rgba(0,201,122,0)}50%{box-shadow:0 0 16px rgba(0,201,122,.25)}}
@@ -75,6 +76,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .t-item{font-family:var(--mono);font-size:.68rem;display:flex;align-items:center;gap:.3rem;color:var(--muted);}
 .t-item .sym{color:var(--text);font-weight:500;}
+.macro-wrap{background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 92%, var(--accent) 8%),var(--surface));border-bottom:1px solid var(--border);height:30px;overflow:hidden;display:flex;align-items:center;}
 .up{color:var(--green);} .dn{color:var(--red);}
 
 /* NAV TABS */
@@ -258,12 +260,13 @@ footer a{color:var(--purple);text-decoration:none;}
   <div class="header-inner">
     <a class="logo" href="/"><div class="logo-mark">₿</div><span class="logo-name">Cryptosit<em>IQ</em></span><span class="alpha-badge">ALPHA</span></a>
     <div class="live-pill"><div class="live-dot"></div>LIVE</div>
-    <form class="search-wrap" method="get" action="/"><span class="s-icon">⌕</span><input type="text" name="q" placeholder="Search news, coins..." value="{{ search }}"></form>
+    <div class="ai-pill">🧠 AI</div>
+    <form class="search-wrap" method="get" action="/"><span class="s-icon">⌕</span><input type="text" name="q" placeholder="Search news, coins, signals..." value="{{ search }}" list="searchHints"></form>
+    <datalist id="searchHints"><option>BTC</option><option>Ethereum</option><option>ETF news</option></datalist>
     <div class="header-actions">
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
-      <button class="icon-btn" onclick="toggleAllTranslations()" id="trAllBtn" title="Translate">🌐</button>
-      <a class="icon-btn" href="/feed.xml" title="RSS Feed" style="color:#f26522;">⊕</a>
-      <a class="tg-btn" href="https://t.me/CryptositNews" target="_blank">✈️ Telegram</a>
+      <a class="icon-btn" href="https://x.com" target="_blank" title="X">𝕏</a>
+      <a class="icon-btn" href="https://t.me/CryptositNews" target="_blank" title="Telegram">✈️</a>
     </div>
   </div>
 </header>
@@ -278,17 +281,27 @@ footer a{color:var(--purple);text-decoration:none;}
     </div>
   </div>
 </div>
+<div class="macro-wrap">
+  <div class="ticker-label">MACRO</div>
+  <div class="ticker-inner">
+    <div class="ticker-track">
+      <span class="t-item"><span class="sym">GOLD</span> <span id="macroGold">—</span></span>
+      <span class="t-item"><span class="sym">DXY</span> <span id="macroDxy">—</span></span>
+      <span class="t-item"><span class="sym">NASDAQ</span> <span id="macroNasdaq">—</span></span>
+      <span class="t-item"><span class="sym">GOLD</span> <span id="macroGold2">—</span></span>
+      <span class="t-item"><span class="sym">DXY</span> <span id="macroDxy2">—</span></span>
+      <span class="t-item"><span class="sym">NASDAQ</span> <span id="macroNasdaq2">—</span></span>
+    </div>
+  </div>
+</div>
 
 <div class="nav-tabs">
   <button class="tab-btn {% if not active_tab %}active{% endif %}" onclick="goTab('')">🌐 All</button>
   <button class="tab-btn {% if active_tab=='breaking' %}active{% endif %}" onclick="goTab('breaking')">🚨 Breaking</button>
-  <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">₿ Bitcoin</button>
-  <button class="tab-btn {% if active_tab=='ethereum' %}active{% endif %}" onclick="goTab('ethereum')">Ξ Ethereum</button>
-  <button class="tab-btn {% if active_tab=='defi' %}active{% endif %}" onclick="goTab('defi')">🏦 DeFi</button>
-  <button class="tab-btn {% if active_tab=='nft' %}active{% endif %}" onclick="goTab('nft')">🎨 NFT</button>
-  <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">⚖️ Regulation</button>
-  <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">📊 Market</button>
-  <button class="tab-btn {% if active_tab=='altcoin' %}active{% endif %}" onclick="goTab('altcoin')">🪙 Altcoins</button>
+  <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">📈 Market Moving</button>
+  <button class="tab-btn {% if active_tab=='defi' %}active{% endif %}" onclick="goTab('defi')">🧠 AI Picks</button>
+  <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">🪙 BTC Focus</button>
+  <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">🌍 Macro Impact</button>
 </div>
 <div style="padding:.5rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:.5rem;flex-wrap:wrap;">
   <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('bitcoin')">تابع BTC فقط</button>
@@ -509,23 +522,23 @@ footer a{color:var(--purple);text-decoration:none;}
           <span style="color:var(--muted)">{{ intel.opportunity.reason }}</span>
         </div>
       </div>
+      <div class="widget">
+        <div class="widget-title">🧠 Market Context</div>
+        <div class="fg-sub" style="font-size:.66rem;line-height:1.7;">
+          Risk-{{ 'on' if intel.ai_signal.signal == 'Bullish' else 'off' }} environment driven by {{ intel.ai_signal.coin }} strength and {{ 'weak dollar bias' if intel.sentiment.bullish > 55 else 'defensive flows' }}.
+        </div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">📅 Top Events Today</div>
+        <div class="fg-sub">• Fed speech <span class="dn">(High)</span></div>
+        <div class="fg-sub">• ETF flow update <span class="up">(High)</span></div>
+        <div class="fg-sub">• CPI watch window <span class="dn">(Medium)</span></div>
+      </div>
 
 
       
 
-      {% if stats.sources %}
-      <div class="widget">
-        <div class="widget-title">📡 Sources</div>
-        {% set mx = stats.sources[0].count %}
-        {% for s in stats.sources %}
-        <div class="source-row">
-          <span class="source-name">{{ s.name }}</span>
-          <div class="bar-wrap"><div class="bar-fill" style="width:{{ (s.count/mx*100)|int }}%"></div></div>
-          <span class="source-c">{{ s.count }}</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
+      
     </aside>
   </div>
 </div>
@@ -696,6 +709,18 @@ async function loadPrices() {
   } catch(e){}
 }
 loadPrices(); setInterval(loadPrices, 60000);
+let macroState = {gold:2350,dxy:104.2,nasdaq:18200};
+function renderMacro(){
+  const gCh=(Math.random()-.5)*6, dCh=(Math.random()-.5)*.25, nCh=(Math.random()-.5)*120;
+  macroState.gold += gCh; macroState.dxy += dCh; macroState.nasdaq += nCh;
+  const fmt=(v,ch)=>`<span class="${ch>=0?'up':'dn'}">$${v.toFixed(v>100?2:3)} ${ch>=0?'+':''}${ch.toFixed(2)}</span>`;
+  const fmtIdx=(v,ch)=>`<span class="${ch>=0?'up':'dn'}">${v.toFixed(0)} ${ch>=0?'+':''}${ch.toFixed(0)}</span>`;
+  const g=fmt(macroState.gold,gCh), d=fmt(macroState.dxy,dCh), n=fmtIdx(macroState.nasdaq,nCh);
+  ['macroGold','macroGold2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=g;});
+  ['macroDxy','macroDxy2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=d;});
+  ['macroNasdaq','macroNasdaq2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=n;});
+}
+renderMacro(); setInterval(renderMacro, 15000);
 
 // Fear & Greed
 async function loadFearGreed() {
