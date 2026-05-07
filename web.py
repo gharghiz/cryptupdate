@@ -173,10 +173,17 @@ def compute_market_intelligence(items: list) -> dict:
             "confidence": confidence,
             "reason": f"Positive signals {c['pos']} vs negative {c['neg']} across {c['mentions']} related stories",
             "timeframe": "Short-term (24-72h)",
+            "mid_timeframe": "Mid-term (1-2 weeks)",
             "trigger": "Momentum + sentiment divergence in latest headlines",
             "watch": f"Watch ETF/regulation headlines and {best_coin} volume spikes"
         },
         "trend": {"direction": direction, "strength": strength, "shift": trend_shift},
+        "decision_snapshot": {
+            "market": signal,
+            "confidence": confidence,
+            "best_opportunity": best_coin,
+            "risk_level": "Low" if abs(net) >= 35 else ("Medium" if abs(net) >= 15 else "High"),
+        },
         "opportunity": {
             "coin": best_coin,
             "direction": opportunity_dir,

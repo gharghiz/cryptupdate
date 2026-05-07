@@ -54,6 +54,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .alpha-badge{font-family:var(--mono);font-size:.65rem;color:var(--accent);border:1px solid rgba(0,229,255,.28);padding:.12rem .35rem;border-radius:999px;}
 .live-pill{display:flex;align-items:center;gap:.3rem;font-family:var(--mono);font-size:.58rem;color:var(--green);border:1px solid rgba(0,201,122,.2);padding:.2rem .5rem;border-radius:20px;flex-shrink:0;}
 .live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.4s ease infinite;}
+.live-pill{animation:pulseLive 2.4s ease-in-out infinite;}
+@keyframes pulseLive{0%,100%{box-shadow:0 0 0 rgba(0,201,122,0)}50%{box-shadow:0 0 16px rgba(0,201,122,.25)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .search-wrap{flex:1;position:relative;max-width:380px;}
 .search-wrap input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:.4rem .9rem .4rem 2rem;border-radius:6px;outline:none;transition:border-color .2s;}
@@ -129,6 +131,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .news-card.breaking{padding:1.15rem;border-color:rgba(255,51,102,.55);box-shadow:0 0 0 1px rgba(255,51,102,.2);}
 .news-card.moving{padding:1rem;border-color:rgba(0,229,255,.35);}
 .news-card.normal{padding:.78rem .85rem;opacity:.93;}
+.news-card.new-arrival{animation:newGlow 2.2s ease;}
+@keyframes newGlow{0%{box-shadow:0 0 0 0 rgba(0,229,255,.55)}100%{box-shadow:none}}
 .mini-signal{font-family:var(--mono);font-size:.52rem;padding:.08rem .3rem;border-radius:999px;border:1px solid var(--border);}
 .mini-bull{color:var(--green);border-color:rgba(0,201,122,.35);}
 .mini-bear{color:var(--red);border-color:rgba(255,51,102,.35);}
@@ -314,6 +318,9 @@ footer a{color:var(--purple);text-decoration:none;}
 <section style="padding:.65rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(0,229,255,.06);font-family:var(--mono);font-size:.68rem;">
   🧠 <b>Today’s Market Summary:</b> {{ intel.ai_signal.coin }} {{ intel.ai_signal.signal|lower }} with {{ intel.sentiment.bullish }}% bullish sentiment driven by {{ intel.ai_signal.trigger|lower }}.
 </section>
+<section style="padding:.65rem 1.5rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.66rem;">
+  🧠 <b>Decision Snapshot:</b> Market: <b>{{ intel.decision_snapshot.market }}</b> · Confidence: <b>{{ intel.decision_snapshot.confidence }}%</b> · Best Opportunity: <b>{{ intel.decision_snapshot.best_opportunity }}</b> · Risk Level: <b>{{ intel.decision_snapshot.risk_level }}</b> · <span id="lastUpdatedAgo">updated 0s ago</span>
+</section>
 <section style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,14,30,.55);">
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;">
     <div class="widget" style="margin-bottom:0;{% if intel.ai_signal.signal == 'Bullish' %}box-shadow:0 0 24px rgba(0,201,122,.2);{% else %}box-shadow:0 0 24px rgba(255,51,102,.2);{% endif %}animation:fadeUp .5s ease;">
@@ -327,6 +334,7 @@ footer a{color:var(--purple);text-decoration:none;}
       <div class="price-row"><span class="coin-sym">Bearish</span><span class="dn">{{ intel.sentiment.bearish }}%</span></div>
       <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:.4rem;"><div style="height:100%;width:{{ intel.sentiment.bearish }}%;background:linear-gradient(90deg,#ff3366,#ff8aa7);"></div></div>
       <div class="fg-sub">Reason: {{ intel.ai_signal.reason }}</div>
+      <div class="fg-sub">Timeframes: {{ intel.ai_signal.timeframe }} / {{ intel.ai_signal.mid_timeframe }}</div>
       <div class="fg-sub">Trigger: {{ intel.ai_signal.trigger }}</div>
       <div class="fg-sub"><b>What to watch next:</b> {{ intel.ai_signal.watch }}</div>
     </div>
@@ -619,7 +627,11 @@ async function loadNextPage() {
     const data = await response.json();
     const feed = document.getElementById('mainFeed');
     const baseIdx = scrollState.totalInitialCards;
-    (data.news || []).forEach((item, i) => feed.insertAdjacentHTML('beforeend', buildCardHTML(item, baseIdx + i + 1)));
+    (data.news || []).forEach((item, i) => {
+      feed.insertAdjacentHTML('beforeend', buildCardHTML(item, baseIdx + i + 1));
+      const card = feed.lastElementChild;
+      if(card) card.classList.add('new-arrival');
+    });
     scrollState.totalInitialCards += (data.news || []).length;
     const totalPages = Math.ceil((data.total || 0) / scrollState.perPage);
     if (scrollState.currentPage >= totalPages || (data.news || []).length === 0) {
@@ -758,7 +770,7 @@ async function loadIntel() {
       aiWrap.innerHTML = `
         <div class="ai-preview"><b>${ai.coin || 'N/A'}:</b> ${(ai.signal || 'Neutral')} momentum detected</div>
         <div class="price-row"><span class="coin-sym">Confidence</span><span class="up">${ai.confidence || 0}%</span></div>
-        <div class="fg-sub">Timeframe: ${ai.timeframe || 'Short-term'}</div>
+        <div class="fg-sub">Timeframes: ${ai.timeframe || 'Short-term'} / ${ai.mid_timeframe || 'Mid-term'}</div>
         <div class="fg-sub">Trigger: ${ai.trigger || 'Sentiment + momentum shift'}</div>
         <div class="fg-sub">Watch: ${ai.watch || 'Volume + macro headlines'}</div>
         <div class="fg-sub">Reason: ${ai.reason || 'No signal context available yet.'}</div>
@@ -787,6 +799,13 @@ async function loadIntel() {
   }
 }
 loadIntel(); setInterval(loadIntel, 300000);
+setInterval(() => {
+  const el = document.getElementById('lastUpdatedAgo');
+  if(!el) return;
+  const sec = parseInt(el.dataset.sec || '0', 10) + 1;
+  el.dataset.sec = String(sec);
+  el.textContent = `updated ${sec}s ago`;
+}, 1000);
 
 // Translation
 let allTranslated = false;
