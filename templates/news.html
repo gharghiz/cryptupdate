@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}All News — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="page-header">
+        <h1>📰 All Crypto News</h1>
+        <p>{{ stats.total }} articles from 70+ sources</p>
+    </div>
+
+    <div class="search-box">
+        <form action="/news" method="get" style="display:flex;gap:8px;flex:1">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search news...">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <div class="tabs">
+        <a href="/news" class="tab {% if not active_tab or active_tab == 'all' %}active{% endif %}">All</a>
+        <a href="/news?tab=breaking" class="tab {% if active_tab == 'breaking' %}active{% endif %}">🚨 Breaking</a>
+        <a href="/news?tab=bitcoin" class="tab {% if active_tab == 'bitcoin' %}active{% endif %}">Bitcoin</a>
+        <a href="/news?tab=ethereum" class="tab {% if active_tab == 'ethereum' %}active{% endif %}">Ethereum</a>
+        <a href="/news?tab=altcoin" class="tab {% if active_tab == 'altcoin' %}active{% endif %}">Altcoins</a>
+        <a href="/news?tab=defi" class="tab {% if active_tab == 'defi' %}active{% endif %}">DeFi</a>
+        <a href="/news?tab=nft" class="tab {% if active_tab == 'nft' %}active{% endif %}">NFT</a>
+        <a href="/news?tab=regulation" class="tab {% if active_tab == 'regulation' %}active{% endif %}">Regulation</a>
+        <a href="/news?tab=market" class="tab {% if active_tab == 'market' %}active{% endif %}">Market</a>
+    </div>
+
+    {% if news %}
+    <div class="news-grid">
+        {% for item in news %}
+        <a href="/news/{{ item.id }}" class="news-card" data-id="{{ item.id }}">
+            <div class="news-card-img">
+                {% if item.image_url %}
+                <img src="{{ item.image_url }}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=news-card-placeholder>📰</div>'">
+                {% else %}
+                <div class="news-card-placeholder">📰</div>
+                {% endif %}
+            </div>
+            <div class="news-card-body">
+                <div class="news-card-title">{{ item.title }}</div>
+                <div class="news-card-meta">
+                    <span class="news-card-source">{{ item.source }}</span>
+                    <span class="news-card-cat {% if item.category == 'breaking' %}breaking{% endif %}">{{ item.category }}</span>
+                    <span>{{ item.posted_at|time_ago }}</span>
+                    {% if item.views %}<span class="news-card-views">👁 {{ item.views }}</span>{% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+        <div class="empty-icon">📭</div>
+        <p>{% if search %}No results for "{{ search }}"{% else %}No news yet{% endif %}</p>
+    </div>
+    {% endif %}
+
+    {% if pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}<a href="/news?page={{ page - 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}{% if search %}&q={{ search }}{% endif %}">← Prev</a>{% endif %}
+        {% for p in range(1, pages + 1) %}
+            {% if p == page %}
+            <span class="active">{{ p }}</span>
+            {% elif p <= 3 or p >= pages - 2 or (p >= page - 1 and p <= page + 1) %}
+            <a href="/news?page={{ p }}{% if active_tab %}&tab={{ active_tab }}{% endif %}{% if search %}&q={{ search }}{% endif %}">{{ p }}</a>
+            {% elif p == 4 or p == pages - 3 %}
+            <span>...</span>
+            {% endif %}
+        {% endfor %}
+        {% if page < pages %}<a href="/news?page={{ page + 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}{% if search %}&q={{ search }}{% endif %}">Next →</a>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.news-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+        fetch('/api/view/'+card.dataset.id).catch(()=>{});
+    });
+});
+</script>
+{% endblock %}
