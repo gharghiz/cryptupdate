@@ -1,292 +1,87 @@
-<!DOCTYPE html>
-<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ news.title }} - CryptositNews</title>
-    <meta name="description" content="{{ news.ai_summary or news.summary[:200] if news.summary else '' }}">
-    <meta property="og:title" content="{{ news.title }}">
-    <meta property="og:description" content="{{ news.ai_summary or (news.summary[:200] if news.summary else '') }}">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="{{ news.url or request.url }}">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#0a0e1a">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        [data-theme="dark"]{--bg:#0a0e1a;--bg-elevated:#0f1424;--bg-card:#141929;--bg-card-hover:#181e33;--bg-input:#111728;--text-primary:#edf2f7;--text-secondary:#8b9dc3;--text-muted:#4a5e85;--border:#1c2540;--border-hover:#2a3658;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--shadow:0 1px 3px rgba(0,0,0,0.4),0 4px 12px rgba(0,0,0,0.2);--shadow-lg:0 4px 12px rgba(0,0,0,0.5),0 16px 40px rgba(0,0,0,0.3);--nav-bg:rgba(10,14,26,0.92)}
-        [data-theme="light"]{--bg:#f7f9fc;--bg-elevated:#ffffff;--bg-card:#ffffff;--bg-card-hover:#f0f4fa;--bg-input:#f1f5f9;--text-primary:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;--border:#e2e8f0;--border-hover:#cbd5e1;--accent:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706;--purple:#7c3aed;--shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--shadow-lg:0 4px 12px rgba(0,0,0,0.08),0 12px 32px rgba(0,0,0,0.06);--nav-bg:rgba(255,255,255,0.92)}
-        body{background:var(--bg);color:var(--text-primary);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}
-        #reading-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--purple));z-index:200;border-radius:0 2px 2px 0;transition:width 0.1s}
+{% extends "base.html" %}
 
-        /* Nav */
-        .site-nav{background:var(--nav-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-        .nav-inner{max-width:800px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
-        .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary)}
-        .nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center}
-        .nav-logo-text{font-size:17px;font-weight:800;letter-spacing:-0.03em}
-        .nav-logo-text span{color:var(--accent)}
-        .nav-actions{display:flex;align-items:center;gap:4px}
-        .nav-btn{width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
-        .nav-btn:hover{background:var(--bg-input);color:var(--text-primary)}
-        .nav-btn svg{width:18px;height:18px}
-        .nav-divider{width:1px;height:20px;background:var(--border);margin:0 6px}
+{% block title %}{{ item.title }} — {{ site_name }}{% endblock %}
 
-        /* Container */
-        .container{max-width:800px;margin:0 auto;padding:0 24px}
+{% block head %}
+<meta property="og:title" content="{{ item.title }}">
+<meta property="og:description" content="{{ item.summary or '' }}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ site_url }}/news/{{ item.id }}">
+{% if item.image_url %}<meta property="og:image" content="{{ item.image_url }}">{% endif %}
+{% endblock %}
 
-        /* Breadcrumb */
-        .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);padding:24px 0 0}
-        .breadcrumb a{color:var(--text-muted);text-decoration:none;transition:color 0.15s}
-        .breadcrumb a:hover{color:var(--accent)}
-
-        /* Article */
-        .article-header{padding:24px 0 0}
-        .article-meta{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-        .article-tag{padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;background:rgba(59,130,246,0.1);color:var(--accent)}
-        .article-sentiment{padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700}
-        .article-title{font-size:32px;font-weight:900;line-height:1.25;letter-spacing:-0.03em;margin-bottom:20px}
-        @media(min-width:640px){.article-title{font-size:40px}}
-        .article-info{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-        .article-source{display:flex;align-items:center;gap:10px}
-        .source-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
-        .source-detail-name{font-size:14px;font-weight:600}
-        .source-detail-time{font-size:12px;color:var(--text-muted)}
-        .article-actions{display:flex;gap:8px;padding:20px 0;flex-wrap:wrap}
-        .action-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;text-decoration:none}
-        .action-btn:hover{border-color:var(--border-hover);color:var(--text-primary);background:var(--bg-card)}
-        .action-btn svg{width:14px;height:14px}
-        .action-btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-        .action-btn-primary:hover{opacity:0.9}
-        .action-btn.bookmarked svg{fill:var(--amber);color:var(--amber)}
-
-        /* Content */
-        .article-content{padding:32px 0}
-        .article-summary{font-size:16px;line-height:1.8;color:var(--text-secondary);padding:24px;border-left:3px solid var(--accent);background:var(--bg-card);border-radius:0 8px 8px 0;margin-bottom:32px}
-        [dir="rtl"] .article-summary{border-left:none;border-right:3px solid var(--accent);border-radius:8px 0 0 8px}
-
-        /* AI Box */
-        .ai-box{border:1px solid rgba(139,92,246,0.15);border-radius:10px;background:var(--bg-card);overflow:hidden}
-        .ai-box-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:rgba(139,92,246,0.04)}
-        .ai-box-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#a855f7);display:flex;align-items:center;justify-content:center}
-        .ai-box-icon svg{width:18px;height:18px;color:#fff}
-        .ai-box-title{font-size:14px;font-weight:700}
-        .ai-box-subtitle{font-size:11px;color:var(--text-muted)}
-        .ai-box-body{padding:20px}
-        .ai-section{display:flex;gap:14px;padding:14px 0}
-        .ai-section+.ai-section{border-top:1px solid var(--border)}
-        .ai-section-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;background:var(--bg-input)}
-        .ai-section-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
-        .ai-section-text{font-size:14px;line-height:1.7;color:var(--text-secondary)}
-
-        /* Related */
-        .related-title{font-size:18px;font-weight:800;letter-spacing:-0.02em;margin:40px 0 16px}
-        .related-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        @media(max-width:640px){.related-grid{grid-template-columns:1fr}}
-        .related-card{display:block;padding:16px 18px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);text-decoration:none;color:inherit;transition:all 0.15s}
-        .related-card:hover{border-color:var(--border-hover);background:var(--bg-card-hover)}
-        .related-card-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-        .related-card-title{font-size:14px;font-weight:600;line-height:1.45;margin-bottom:6px}
-        .related-card:hover .related-card-title{color:var(--accent)}
-        .related-card-excerpt{font-size:12px;color:var(--text-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .related-tag{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;background:rgba(59,130,246,0.1);color:var(--accent)}
-
-        /* Footer */
-        .site-footer{border-top:1px solid var(--border);margin-top:48px;padding:24px 0}
-        .footer-inner{max-width:800px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-        .footer-brand{font-size:14px;font-weight:800}
-        .footer-brand span{color:var(--accent)}
-        .footer-copy{font-size:12px;color:var(--text-muted)}
-
-        /* Toast */
-        .toast-container{position:fixed;top:16px;right:16px;z-index:100;display:flex;flex-direction:column;gap:8px}
-        .toast{padding:12px 20px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);box-shadow:var(--shadow-lg);font-size:13px;font-weight:600;color:var(--text-primary);animation:toast-in 0.3s ease,toast-out 0.3s ease 2.7s forwards}
-        @keyframes toast-in{from{transform:translateY(-8px);opacity:0}}
-        @keyframes toast-out{to{transform:translateY(-8px);opacity:0}}
-
-        .bm-btn.bookmarked svg{fill:var(--amber)!important;color:var(--amber)!important}
-
-        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-    </style>
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"NewsArticle","headline":"{{ news.title }}","description":"{{ news.ai_summary or '' }}","datePublished":"{{ news.published or news.created_at }}","author":{"@type":"Organization","name":"{{ news.source or 'CryptositNews' }}"},"publisher":{"@type":"Organization","name":"CryptositNews"}}
-    </script>
-</head>
-<body>
-    <div id="reading-progress" style="width:0%"></div>
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- Nav -->
-    <nav class="site-nav">
-        <div class="nav-inner">
-            <a href="/" class="nav-logo">
-                <div class="nav-logo-icon"><svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                <span class="nav-logo-text">Crypto<span>sit</span>News</span>
-            </a>
-            <div class="nav-actions">
-                <a href="/" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-hover)'" onmouseout="this.style.borderColor='var(--border)'">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    Back
-                </a>
-                <button onclick="toggleLang()" id="lang-btn" class="nav-btn" style="width:auto;padding:0 10px;font-size:11px;font-weight:700;letter-spacing:0.05em">
-                    {{ 'EN' if lang == 'ar' else 'AR' }}
-                </button>
-                <button onclick="toggleTheme()" class="nav-btn">
-                    <svg id="theme-dark-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                </button>
-            </div>
+{% block content %}
+<div class="main">
+    <div class="article-header">
+        <span class="article-cat {% if item.category == 'breaking' %}breaking{% endif %}">{{ item.category }}</span>
+        <h1 class="article-title">{{ item.title }}</h1>
+        <div class="article-meta">
+            <span>{{ item.source }}</span>
+            <span>·</span>
+            <span>{{ item.posted_at|time_ago }}</span>
+            {% if item.views %}<span>·</span><span>👁 {{ item.views }} views</span>{% endif %}
         </div>
-    </nav>
+    </div>
 
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="/">Home</a>
-            <span>›</span>
-            <span style="text-transform:capitalize">{{ news.category or 'market' }}</span>
+    {% if item.image_url %}
+    <div style="margin-bottom:24px;border-radius:12px;overflow:hidden;max-height:400px">
+        <img src="{{ item.image_url }}" alt="" style="width:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">
+    </div>
+    {% endif %}
+
+    <div class="article-body">
+        {% if item.summary %}
+        <div class="article-summary-label">🧠 AI Summary</div>
+        <div class="article-summary">{{ item.summary }}</div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">📝</div>
+            <p>No AI summary available for this article.</p>
         </div>
+        {% endif %}
 
-        <!-- Article Header -->
-        <header class="article-header">
-            <div class="article-meta">
-                <span class="article-tag">{{ news.category or 'market' }}</span>
-                {% if news.ai_sentiment %}
-                <span class="article-sentiment" style="{% if news.ai_sentiment in ['positive','bullish'] %}background:rgba(34,197,94,0.1);color:var(--green){% else %}background:rgba(239,68,68,0.1);color:var(--red){% endif %}">
-                    {% if news.ai_sentiment == 'positive' %}🟢 Positive{% elif news.ai_sentiment == 'negative' %}🔴 Negative{% elif news.ai_sentiment == 'bullish' %}🚀 Bullish{% elif news.ai_sentiment == 'bearish' %}📉 Bearish{% else %}⚪ Neutral{% endif %}
-                </span>
-                {% endif %}
-            </div>
-            <h1 class="article-title">{{ news.title }}</h1>
-            <div class="article-info">
-                {% if news.source %}
-                <div class="article-source">
-                    <div class="source-avatar">{{ news.source[0] }}</div>
-                    <div>
-                        <div class="source-detail-name">{{ news.source }}</div>
-                        <div class="source-detail-time">
-                            {% if news.published %}{{ news.published[:16] }}{% elif news.created_at %}{{ news.created_at[:16] }}{% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                {% if news.category_confidence %}
-                <span style="font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;padding:3px 8px;border-radius:4px;background:var(--bg-input);color:var(--text-muted)">confidence: {{ "%.0f"|format(news.category_confidence * 100) }}%</span>
-                {% endif %}
-            </div>
-
-            <!-- Actions -->
-            <div class="article-actions">
-                <button onclick="toggleBookmark({{ news.id }},'{{ news.title[:50]|e }}')" class="action-btn bm-btn" data-id="{{ news.id }}">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                    Bookmark
-                </button>
-                <a href="https://twitter.com/intent/tweet?text={{ news.title|urlencode }}&url={{ (request.url_root ~ 'article/' ~ news.id)|urlencode }}" target="_blank" rel="noopener" class="action-btn">
-                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    Post
-                </a>
-                <a href="https://t.me/share/url?url={{ (request.url_root ~ 'article/' ~ news.id)|urlencode }}&text={{ news.title|urlencode }}" target="_blank" rel="noopener" class="action-btn">Telegram</a>
-                <button onclick="navigator.clipboard.writeText(window.location.href);showToast(t('copied'))" class="action-btn">Copy Link</button>
-                {% if news.url %}
-                <a href="{{ news.url }}" target="_blank" rel="noopener" class="action-btn action-btn-primary" style="margin-left:auto">Read Source →</a>
-                {% endif %}
-            </div>
-        </header>
-
-        <!-- Content -->
-        <div class="article-content">
-            {% if news.summary %}
-            <div class="article-summary">{{ news.summary }}</div>
-            {% endif %}
-
-            {% if news.ai_summary or news.ai_sentiment %}
-            <div class="ai-box">
-                <div class="ai-box-header">
-                    <div class="ai-box-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
-                    <div>
-                        <div class="ai-box-title">AI Analysis</div>
-                        <div class="ai-box-subtitle">Powered by artificial intelligence</div>
-                    </div>
-                </div>
-                <div class="ai-box-body">
-                    {% if news.ai_summary %}
-                    <div class="ai-section">
-                        <div class="ai-section-icon">💡</div>
-                        <div>
-                            <div class="ai-section-label">Summary</div>
-                            <div class="ai-section-text">{{ news.ai_summary }}</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if news.ai_sentiment %}
-                    <div class="ai-section">
-                        <div class="ai-section-icon">📊</div>
-                        <div>
-                            <div class="ai-section-label">Sentiment</div>
-                            <div class="ai-section-text" style="font-weight:600">
-                                {% if news.ai_sentiment == 'positive' %}🟢 Positive{% elif news.ai_sentiment == 'negative' %}🔴 Negative{% elif news.ai_sentiment == 'bullish' %}🚀 Bullish{% elif news.ai_sentiment == 'bearish' %}📉 Bearish{% else %}⚪ Neutral{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if news.ai_reason %}
-                    <div class="ai-section">
-                        <div class="ai-section-icon">🔍</div>
-                        <div>
-                            <div class="ai-section-label">Reasoning</div>
-                            <div class="ai-section-text">{{ news.ai_reason }}</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Related -->
-        {% if related %}
-        <h2 class="related-title">Related Articles</h2>
-        <div class="related-grid">
-            {% for item in related %}
-            <a href="/article/{{ item.id }}" class="related-card">
-                <div class="related-card-meta">
-                    <span class="related-tag">{{ item.category or 'market' }}</span>
-                    {% if item.source %}<span style="font-size:11px;color:var(--text-muted)">{{ item.source }}</span>{% endif %}
-                </div>
-                <div class="related-card-title">{{ item.title }}</div>
-                {% if item.ai_summary %}<div class="related-card-excerpt">{{ item.ai_summary[:120] }}</div>{% endif %}
-            </a>
-            {% endfor %}
+        {% if item.sentiment %}
+        <div style="margin-top:20px;padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:0.85rem">
+            <span class="text-muted">Sentiment:</span>
+            <strong class="{% if 'Bullish' in item.sentiment %}text-green{% elif 'Bearish' in item.sentiment %}text-red{% else %}text-yellow{% endif %}">
+                {{ item.sentiment }}
+            </strong>
+            {% if item.reason %}<span class="text-muted" style="margin-left:12px">— {{ item.reason }}</span>{% endif %}
         </div>
         {% endif %}
     </div>
 
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="footer-inner">
-            <div class="footer-brand">Crypto<span>sit</span>News</div>
-            <span class="footer-copy">© 2024 CryptositNews</span>
-        </div>
-    </footer>
+    <div class="article-actions">
+        {% if item.url %}
+        <a href="{{ item.url }}" target="_blank" rel="noopener">🔗 Read Original Source</a>
+        {% endif %}
+        <a href="https://twitter.com/intent/tweet?text={{ item.title | urlencode }}&url={{ (site_url + '/news/' + item.id) | urlencode }}" target="_blank">𝕏 Share on X</a>
+        <a href="https://t.me/share/url?url={{ (site_url + '/news/' + item.id) | urlencode }}&text={{ item.title | urlencode }}" target="_blank">✈️ Share on Telegram</a>
+    </div>
 
-    <script>
-    let currentLang="{{ lang }}"||"en", currentTheme="{{ theme }}"||"dark";
-    const i18n={en:{copied:"Link copied!",bookmark_added:"Bookmark added!",bookmark_removed:"Bookmark removed!"},ar:{copied:"تم نسخ الرابط!",bookmark_added:"تمت الإضافة!",bookmark_removed:"تمت الإزالة!"}};
-    function t(k){return(i18n[currentLang]||{})[k]||i18n.en[k]||k;}
-    function toggleTheme(){currentTheme=currentTheme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",currentTheme);document.getElementById("theme-dark-icon").style.display=currentTheme==="dark"?"none":"block";document.getElementById("theme-light-icon").style.display=currentTheme==="light"?"none":"block";fetch("/api/theme",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({theme:currentTheme})});}
-    function toggleLang(){currentLang=currentLang==="en"?"ar":"en";document.getElementById("lang-btn").textContent=currentLang==="ar"?"EN":"AR";document.documentElement.lang=currentLang==="ar"?"ar":"en";document.documentElement.dir=currentLang==="ar"?"rtl":"ltr";fetch("/api/lang",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lang:currentLang})});}
-    function showToast(msg){const c=document.getElementById("toast-container");const d=document.createElement("div");d.className="toast";d.textContent=msg;c.appendChild(d);setTimeout(()=>d.remove(),3000);}
-    function getBookmarks(){try{return JSON.parse(localStorage.getItem("crypto_bookmarks")||"[]");}catch(e){return[];}}
-    function toggleBookmark(id,title){let bm=getBookmarks();const i=bm.findIndex(b=>b.id===id);if(i>=0){bm.splice(i,1);showToast(t("bookmark_removed"));}else{bm.unshift({id,title,time:new Date().toISOString()});showToast(t("bookmark_added"));}localStorage.setItem("crypto_bookmarks",JSON.stringify(bm));document.querySelectorAll(`.bm-btn[data-id="${id}"]`).forEach(b=>b.classList.toggle("bookmarked",i<0));}
-    document.getElementById("theme-dark-icon").style.display=currentTheme==="dark"?"none":"block";
-    document.getElementById("theme-light-icon").style.display=currentTheme==="light"?"none":"block";
-    (function(){const bm=getBookmarks();const id={{news.id}};if(bm.some(b=>b.id===id))document.querySelectorAll(`.bm-btn[data-id="${id}"]`).forEach(b=>b.classList.add("bookmarked"));})();
-    window.addEventListener("scroll",()=>{const h=document.documentElement;const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;document.getElementById("reading-progress").style.width=Math.min(pct,100)+"%";});
-    if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
-    </script>
-</body>
-</html>
+    {% if related %}
+    <div class="section">
+        <h2 class="section-title">📝 Related News</h2>
+        <div class="news-grid">
+            {% for r in related %}
+            <a href="/news/{{ r.id }}" class="news-card">
+                <div class="news-card-body">
+                    <div class="news-card-title">{{ r.title }}</div>
+                    <div class="news-card-meta">
+                        <span class="news-card-source">{{ r.source }}</span>
+                        <span>{{ r.posted_at|time_ago }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('/api/view/{{ item.id }}').catch(()=>{});
+</script>
+{% endblock %}
