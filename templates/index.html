@@ -17,4 +17,139 @@
 
     <!-- MARKET STRIP -->
     <div class="section">
-        <div class="section
+        <div class="section-header">
+            <h2 class="section-title">📊 Market Overview</h2>
+            <a href="/market" class="section-link">View All →</a>
+        </div>
+        <div class="market-strip" id="marketStrip">
+            <div class="coin-card"><div class="loading">Loading...</div></div>
+        </div>
+    </div>
+
+    <!-- TRENDING -->
+    {% if trending %}
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">🔥 Trending Now</h2>
+        </div>
+        <div class="trending-list">
+            {% for item in trending %}
+            <a href="/news/{{ item.id }}" class="trending-item">
+                <span class="trending-rank">#{{ loop.index }}</span>
+                <span class="trending-title">{{ item.title }}</span>
+                <span class="trending-meta">{{ item.source }} · {{ item.posted_at|time_ago }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- LATEST NEWS -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">📰 Latest News</h2>
+            <a href="/news" class="section-link">All News →</a>
+        </div>
+
+        <div class="tabs">
+            <a href="/?tab=all" class="tab {% if not active_tab or active_tab == 'all' %}active{% endif %}">All</a>
+            <a href="/?tab=breaking" class="tab {% if active_tab == 'breaking' %}active{% endif %}">🚨 Breaking</a>
+            <a href="/?tab=bitcoin" class="tab {% if active_tab == 'bitcoin' %}active{% endif %}">Bitcoin</a>
+            <a href="/?tab=ethereum" class="tab {% if active_tab == 'ethereum' %}active{% endif %}">Ethereum</a>
+            <a href="/?tab=altcoin" class="tab {% if active_tab == 'altcoin' %}active{% endif %}">Altcoins</a>
+            <a href="/?tab=defi" class="tab {% if active_tab == 'defi' %}active{% endif %}">DeFi</a>
+            <a href="/?tab=nft" class="tab {% if active_tab == 'nft' %}active{% endif %}">NFT</a>
+            <a href="/?tab=regulation" class="tab {% if active_tab == 'regulation' %}active{% endif %}">Regulation</a>
+        </div>
+
+        {% if news %}
+        <div class="news-grid">
+            {% for item in news %}
+            <a href="/news/{{ item.id }}" class="news-card" data-id="{{ item.id }}">
+                <div class="news-card-img">
+                    {% if item.image_url %}
+                    <img src="{{ item.image_url }}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=news-card-placeholder>📰</div>'">
+                    {% else %}
+                    <div class="news-card-placeholder">📰</div>
+                    {% endif %}
+                </div>
+                <div class="news-card-body">
+                    <div class="news-card-title">{{ item.title }}</div>
+                    <div class="news-card-meta">
+                        <span class="news-card-source">{{ item.source }}</span>
+                        <span class="news-card-cat {% if item.category == 'breaking' %}breaking{% endif %}">{{ item.category }}</span>
+                        <span>{{ item.posted_at|time_ago }}</span>
+                        {% if item.views %}<span class="news-card-views">👁 {{ item.views }}</span>{% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">📭</div>
+            <p>No news yet. Check back soon!</p>
+        </div>
+        {% endif %}
+
+        {% if pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}<a href="/?page={{ page - 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}">← Prev</a>{% endif %}
+            {% for p in range(1, pages + 1) %}
+                {% if p == page %}
+                <span class="active">{{ p }}</span>
+                {% elif p <= 3 or p >= pages - 2 or (p >= page - 1 and p <= page + 1) %}
+                <a href="/?page={{ p }}{% if active_tab %}&tab={{ active_tab }}{% endif %}">{{ p }}</a>
+                {% elif p == 4 or p == pages - 3 %}
+                <span>...</span>
+                {% endif %}
+            {% endfor %}
+            {% if page < pages %}<a href="/?page={{ page + 1 }}{% if active_tab %}&tab={{ active_tab }}{% endif %}">Next →</a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+        <h2>⚡ Get News Instantly on Telegram</h2>
+        <p>AI-summarized crypto news delivered to your phone in real-time. Join 1000+ traders.</p>
+        <a href="{{ telegram_channel }}" target="_blank" class="btn btn-primary">🚀 Join Channel</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('/api/prices').then(r=>r.json()).then(data=>{
+    if(data.error) return;
+    const coins = [
+        {sym:'BTC',id:'bitcoin'},{sym:'ETH',id:'ethereum'},{sym:'SOL',id:'solana'},
+        {sym:'BNB',id:'binancecoin'},{sym:'XRP',id:'ripple'}
+    ];
+    const icons = {
+        BTC:'₿',ETH:'Ξ',SOL:'◎',BNB:'◆',XRP:'✕'
+    };
+    const strip = document.getElementById('marketStrip');
+    strip.innerHTML = coins.map(c=>{
+        const d = data[c.sym];
+        if(!d) return '';
+        const up = d.change >= 0;
+        return `<a href="/market" class="coin-card" style="text-decoration:none;color:inherit">
+            <div class="coin-card-header">
+                <span style="font-size:1.3rem">${icons[c.sym]||'●'}</span>
+                <div><div class="coin-card-name">${c.sym}</div></div>
+            </div>
+            <div class="coin-card-price">$${d.price.toLocaleString()}</div>
+            <div class="coin-card-change ${up?'up':'down'}">${up?'▲':'▼'} ${up?'+':''}${d.change.toFixed(2)}%</div>
+        </a>`;
+    }).join('');
+}).catch(()=>{});
+
+document.querySelectorAll('.news-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+        const id = card.dataset.id;
+        fetch('/api/view/'+id).catch(()=>{});
+    });
+});
+</script>
+{% endblock %}
