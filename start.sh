@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
+
 PORT="${PORT:-8000}"
 echo "Starting CryptositNews v3.0 on port $PORT..."
+
 exec gunicorn wsgi:app \
     --workers 2 \
     --threads 4 \
