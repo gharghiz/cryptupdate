@@ -67,6 +67,27 @@ RSS_FEEDS = [
     {"name": "Into The Block",  "url": "https://medium.com/feed/intotheblock"},
     {"name": "Delphi Digital",  "url": "https://members.delphidigital.io/feed/research"},
     {"name": "Messari",         "url": "https://messari.io/rss"},
+    # +20 مصادر موثوقة إضافية (Crypto + Markets + Forex/Stocks context)
+    {"name": "Reuters Business", "url": "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"},
+    {"name": "Bloomberg Markets", "url": "https://feeds.bloomberg.com/markets/news.rss"},
+    {"name": "CNBC Markets", "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html"},
+    {"name": "MarketWatch Top Stories", "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories"},
+    {"name": "Investing.com Crypto", "url": "https://www.investing.com/rss/news_301.rss"},
+    {"name": "Investing.com Forex", "url": "https://www.investing.com/rss/news_1.rss"},
+    {"name": "FXStreet News", "url": "https://www.fxstreet.com/rss/news"},
+    {"name": "Forexlive", "url": "https://www.forexlive.com/feed/"},
+    {"name": "DailyFX", "url": "https://www.dailyfx.com/feeds/market-news"},
+    {"name": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex"},
+    {"name": "Seeking Alpha Market News", "url": "https://seekingalpha.com/market_currents.xml"},
+    {"name": "Benzinga", "url": "https://www.benzinga.com/feed"},
+    {"name": "Nasdaq News", "url": "https://www.nasdaq.com/feed/rssoutbound?category=Markets"},
+    {"name": "The Motley Fool", "url": "https://www.fool.com/feeds/index.aspx"},
+    {"name": "Kitco News", "url": "https://www.kitco.com/rss/news"},
+    {"name": "Financial Times Markets", "url": "https://www.ft.com/markets?format=rss"},
+    {"name": "WSJ Markets", "url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"},
+    {"name": "CoinShares Research", "url": "https://coinshares.com/news/feed"},
+    {"name": "Glassnode Insights", "url": "https://insights.glassnode.com/rss/"},
+    {"name": "Kraken Blog", "url": "https://blog.kraken.com/feed"},
 ]
 
 # Keywords
