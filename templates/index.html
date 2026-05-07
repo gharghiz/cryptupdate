@@ -42,6 +42,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:radial-gradient(1200px 500px at 20% -10%, rgba(124,77,255,.14), transparent 55%),radial-gradient(900px 420px at 80% -15%, rgba(0,229,255,.12), transparent 60%),var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden;line-height:1.45;}
+.signal-float{position:fixed;right:14px;bottom:14px;z-index:999;background:rgba(18,18,30,.88);border:1px solid rgba(0,229,255,.22);border-radius:10px;padding:.5rem .7rem;font-family:var(--mono);font-size:.62rem;box-shadow:0 12px 30px rgba(0,0,0,.35);}
 
 /* HEADER */
 header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);background:color-mix(in srgb,var(--surface) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);box-shadow:0 2px 12px var(--shadow);}
@@ -244,6 +245,7 @@ footer a{color:var(--purple);text-decoration:none;}
 </style>
 </head>
 <body>
+<div class="signal-float">🧠 {{ intel.ai_signal.signal }} · {{ intel.ai_signal.coin }} · {{ intel.ai_signal.confidence }}%</div>
 
 <header>
   <div class="header-inner">
@@ -370,7 +372,8 @@ footer a{color:var(--purple);text-decoration:none;}
       {% if item.reason %}<div class="fg-sub" style="margin-bottom:.35rem;">💡 Why it matters: {{ item.reason }}</div>{% endif %}
       <div class="card-meta">
         {% if item.summary or item.reason %}<span class="source-tag" style="color:var(--accent);border-color:rgba(0,229,255,.25);">AI PICK</span>{% endif %}
-        {% if 'breaking' in t or 'urgent' in t %}<span class="breaking-tag">🚨 BREAKING</span>{% endif %}
+        {% if item.is_breaking %}<span class="breaking-tag">🚨 BREAKING</span>{% endif %}
+        {% if item.is_market_moving %}<span class="source-tag" style="color:#ffd700;border-color:rgba(255,215,0,.3);">MARKET MOVING</span>{% endif %}
         <span class="source-tag">{{ item.source }}</span>
         <span class="time-tag">{{ item.posted_at[11:16] }} UTC</span>
         <span class="read-time">· {{ read_min }}m read</span>
@@ -388,9 +391,9 @@ footer a{color:var(--purple);text-decoration:none;}
       {% set breaking_news = [] %}{% set moving_news = [] %}{% set ai_picks = [] %}{% set coin_focus = [] %}{% set other_news = [] %}
       {% for item in news %}
         {% set t = item.title|lower %}
-        {% if 'breaking' in t or 'urgent' in t %}{% if breaking_news.append(item) %}{% endif %}
-        {% elif 'etf' in t or 'sec' in t or 'hack' in t or 'lawsuit' in t or 'liquidation' in t or 'fed' in t %}{% if moving_news.append(item) %}{% endif %}
-        {% elif item.summary or item.reason %}{% if ai_picks.append(item) %}{% endif %}
+        {% if item.is_breaking %}{% if breaking_news.append(item) %}{% endif %}
+        {% elif item.is_market_moving %}{% if moving_news.append(item) %}{% endif %}
+        {% elif item.is_ai_pick %}{% if ai_picks.append(item) %}{% endif %}
         {% elif intel.ai_signal.coin|lower in t or intel.ai_signal.secondary_coin|lower in t %}{% if coin_focus.append(item) %}{% endif %}
         {% else %}{% if other_news.append(item) %}{% endif %}
         {% endif %}
@@ -495,8 +498,9 @@ footer a{color:var(--purple);text-decoration:none;}
       <div class="widget">
         <div class="widget-title">🔥 Top Opportunity Today</div>
         <div id="topOpportunity" style="font-family:var(--mono);font-size:.63rem;line-height:1.6;color:var(--text);">
-          <div class="skeleton" style="width:90%;height:14px;margin-bottom:6px;"></div>
-          <div class="skeleton" style="width:75%;height:12px;"></div>
+          <b>{{ intel.opportunity.coin }} → {{ intel.opportunity.direction }}</b><br>
+          Confidence: {{ intel.opportunity.confidence }}%<br>
+          <span style="color:var(--muted)">{{ intel.opportunity.reason }}</span>
         </div>
       </div>
       <div class="widget">
@@ -581,7 +585,9 @@ function buildCardHTML(item, idx) {
   const cat = scrollState.category || detectCategory(item.title || '');
   const t = (item.title || '').toLowerCase();
   const sent = (t.includes('surge') || t.includes('pump') || t.includes('bull') || t.includes('rise') || t.includes('approved') || t.includes('gain')) ? '🟢' : ((t.includes('crash') || t.includes('dump') || t.includes('fall') || t.includes('hack') || t.includes('drop') || t.includes('ban')) ? '🔴' : '🟡');
-  const isBreaking = t.includes('breaking') || t.includes('urgent');
+  const isBreaking = !!item.is_breaking;
+  const isMoving = !!item.is_market_moving;
+  const isAiPick = !!item.is_ai_pick;
   const words = (item.title || '').split(' ').length;
   const readMin = Math.max(1, Math.floor(words / 200) + 1);
   const encTitle = escapeHtml(item.title || '');
@@ -592,7 +598,9 @@ function buildCardHTML(item, idx) {
     <div class="card-top"><div class="card-content"><div class="card-title" id="ct${cat}${idx}">${escapeHtml(item.title || '')}</div></div><span class="sentiment">${sent}</span></div>
     ${item.summary ? `<div class="ai-preview"><b>🧠</b> ${escapeHtml(item.summary)}</div>` : ''}
     <div class="card-meta">
+      ${isAiPick ? '<span class="source-tag" style="color:var(--accent);border-color:rgba(0,229,255,.25);">AI PICK</span>' : ''}
       ${isBreaking ? '<span class="breaking-tag">🚨 BREAKING</span>' : ''}
+      ${isMoving ? '<span class="source-tag" style="color:#ffd700;border-color:rgba(255,215,0,.3);">MARKET MOVING</span>' : ''}
       <span class="source-tag">${escapeHtml(item.source || '')}</span>
       <span class="time-tag">${(item.posted_at || '').substring(11,16)} UTC</span>
       <span class="read-time">· ${readMin}m read</span>

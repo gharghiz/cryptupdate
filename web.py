@@ -35,6 +35,32 @@ def parse_int_param(name: str, default: int, minimum: int = None, maximum: int =
 def get_filtered_news_page(category: str, search: str, page: int, per_page: int):
     return get_news(page=page, per_page=per_page, search=search or None, category=category)
 
+def classify_item(item: dict) -> dict:
+    title = (item.get("title") or "").lower()
+    is_breaking = any(k in title for k in ["breaking", "urgent", "alert"])
+    is_market_moving = any(k in title for k in ["etf", "sec", "lawsuit", "hack", "liquidation", "fed"])
+    is_ai_pick = bool(item.get("summary") or item.get("reason"))
+    category = item.get("category") or (
+        "bitcoin" if ("bitcoin" in title or " btc " in title) else
+        "ethereum" if ("ethereum" in title or " eth " in title) else
+        "breaking" if is_breaking else
+        "market"
+    )
+    return {"category": category, "is_breaking": is_breaking, "is_market_moving": is_market_moving, "is_ai_pick": is_ai_pick}
+
+def rank_news(items: list) -> list:
+    def score(item):
+        c = classify_item(item)
+        title = (item.get("title") or "").lower()
+        s = 0
+        s += 5 if c["is_breaking"] else 0
+        s += 4 if c["is_market_moving"] else 0
+        s += 3 if c["is_ai_pick"] else 0
+        s += 2 if ("bitcoin" in title or " btc " in title or "ethereum" in title or " eth " in title) else 0
+        s += 1 if item.get("posted_at") else 0
+        return s
+    return sorted(items, key=score, reverse=True)
+
 # ============================================================
 # Page cache
 # ============================================================
@@ -130,6 +156,15 @@ def compute_market_intelligence(items: list) -> dict:
     direction = "⬆ Uptrend" if net >= 0 else "⬇ Downtrend"
     trend_shift = f"{'+' if net >= 0 else ''}{net}% sentiment bias"
 
+    opportunity_dir = "LONG" if bullish_pct > 60 else ("SHORT" if bearish_pct > 60 else "NEUTRAL")
+    opportunity_reason = "News sentiment + trend bias alignment"
+    try:
+        fg = requests.get("https://api.alternative.me/fng/?limit=1", timeout=5).json()
+        fg_val = int(fg["data"][0]["value"])
+        opportunity_reason = f"Fear & Greed {fg_val} with {bullish_pct}% bullish news sentiment"
+    except Exception:
+        pass
+
     return {
         "ai_signal": {
             "coin": best_coin,
@@ -142,6 +177,12 @@ def compute_market_intelligence(items: list) -> dict:
             "watch": f"Watch ETF/regulation headlines and {best_coin} volume spikes"
         },
         "trend": {"direction": direction, "strength": strength, "shift": trend_shift},
+        "opportunity": {
+            "coin": best_coin,
+            "direction": opportunity_dir,
+            "confidence": confidence,
+            "reason": opportunity_reason
+        },
         "sentiment": {
             "bullish": bullish_pct,
             "bearish": bearish_pct
@@ -180,6 +221,7 @@ def index():
         news, total = get_filtered_news_page(active_tab, search, page, per_page)
     else:
         news, total = get_news(page=page, per_page=per_page, search=search or None)
+    news = [{**n, **classify_item(n)} for n in rank_news(news)]
 
     stats = get_stats()
     pages = max(1, (total + 19) // 20)
@@ -284,7 +326,11 @@ def api_news():
     else:
         news, total = get_news(page=page, per_page=per_page, search=search or None)
 
-    return jsonify({"news": news, "total": total, "page": page, "per_page": per_page})
+    enriched = []
+    for n in news:
+        meta = classify_item(n)
+        enriched.append({**n, **meta})
+    return jsonify({"news": enriched, "total": total, "page": page, "per_page": per_page})
 
 @app.route("/api/prices")
 def api_prices():
