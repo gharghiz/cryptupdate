@@ -89,8 +89,14 @@ def analyze_sentiment(title: str):
 # ============================
 
 def is_important(title: str) -> bool:
-    # ⚡ خففنا الفلترة بزاف
-    return True
+    t = title.lower()
+    score = 0
+    for k in IMPORTANT_KEYWORDS:
+        if k in t:
+            score += 1
+    if is_breaking(title) or is_high_impact(title):
+        return True
+    return score >= 2
 
 def is_breaking(title: str):
     return any(k in title.lower() for k in BREAKING_KEYWORDS)
