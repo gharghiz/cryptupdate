@@ -305,12 +305,15 @@ footer a{color:var(--purple);text-decoration:none;}
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;">
     <div class="widget" style="margin-bottom:0;">
       <div class="widget-title">🧠 Market Brain</div>
-      <div class="ai-preview"><b>{{ intel.ai_signal.coin }} → {{ intel.ai_signal.signal }}</b> · Confidence {{ intel.ai_signal.confidence }}%</div>
+      <div class="ai-preview"><b>{{ intel.ai_signal.coin }} / {{ intel.ai_signal.secondary_coin }} → {{ intel.ai_signal.signal }}</b> · Confidence {{ intel.ai_signal.confidence }}%</div>
+      <div class="price-row"><span class="coin-sym">Trend</span><span class="up">{{ intel.trend.direction }}</span></div>
+      <div class="price-row"><span class="coin-sym">Strength</span><span class="up">{{ intel.trend.strength }}</span></div>
+      <div class="price-row"><span class="coin-sym">Shift</span><span class="up">{{ intel.trend.shift }}</span></div>
       <div class="price-row"><span class="coin-sym">Bullish</span><span class="up">{{ intel.sentiment.bullish }}%</span></div>
       <div class="price-row"><span class="coin-sym">Bearish</span><span class="dn">{{ intel.sentiment.bearish }}%</span></div>
       <div class="fg-sub">Reason: {{ intel.ai_signal.reason }}</div>
       <div class="fg-sub">Trigger: {{ intel.ai_signal.trigger }}</div>
-      <div class="fg-sub">Watch: {{ intel.ai_signal.watch }}</div>
+      <div class="fg-sub"><b>What to watch next:</b> {{ intel.ai_signal.watch }}</div>
     </div>
     <div class="widget" style="margin-bottom:0;">
       <div class="widget-title">🔥 Top Story</div>
@@ -377,47 +380,40 @@ footer a{color:var(--purple);text-decoration:none;}
 
     {% if not active_tab %}
       {# ALL MODE — grouped #}
-      {% set categories = [
-        ('breaking','🚨','Breaking News',True),
-        ('bitcoin','₿','Bitcoin',False),
-        ('ethereum','Ξ','Ethereum',False),
-        ('regulation','⚖️','Regulation',True),
-        ('market','📊','Market',False),
-        ('defi','🏦','DeFi',False),
-        ('altcoin','🪙','Altcoins',False),
-        ('nft','🎨','NFT',False),
-      ] %}
-
-      {% for cat_key,cat_icon,cat_label,is_list in categories %}
-        {% set cat_news = [] %}
-        {% for item in news %}
-          {% set t = item.title | lower %}
-          {% set item_cat =
-            'breaking'   if ('breaking' in t or 'urgent' in t or ('hack' in t and 'million' in t) or ('exploit' in t and 'million' in t) or ('crash' in t and '%' in item.title)) else
-            'bitcoin'    if ('bitcoin' in t or ' btc ' in t or t.startswith('btc')) else
-            'ethereum'   if ('ethereum' in t or ' eth ' in t) else
-            'defi'       if ('defi' in t or 'uniswap' in t or 'aave' in t or 'protocol' in t or 'staking' in t) else
-            'nft'        if ('nft' in t or 'opensea' in t or 'metaverse' in t) else
-            'regulation' if ('sec ' in t or 'regulation' in t or 'lawsuit' in t or 'congress' in t or 'legislation' in t) else
-            'altcoin'    if ('solana' in t or 'cardano' in t or 'ripple' in t or 'dogecoin' in t or 'bnb' in t or 'binance' in t or ' xrp ' in t or ' doge ' in t or ' ada ' in t or ' sol ' in t) else
-            'market'
-          %}
-          {% if item_cat == cat_key %}{% if cat_news.append(item) %}{% endif %}{% endif %}
-        {% endfor %}
-
-        {% if cat_news %}
-        <div class="cat-section">
-          <div class="cat-header">
-            <div class="cat-title cat-color-{{ cat_key }}">{{ cat_icon }} {{ cat_label }}</div>
-            <span class="cat-count">{{ cat_news|length }}</span>
-          </div>
-          <div class="news-grid {% if not is_list %}grid-2{% endif %}">
-            {% for item in cat_news[:6] %}
-              {{ render_card(item, cat_key, loop.index, not is_list) }}
-            {% endfor %}
-          </div>
-        </div>
+      {% set breaking_news = [] %}{% set moving_news = [] %}{% set ai_picks = [] %}{% set btc_news = [] %}{% set eth_news = [] %}{% set other_news = [] %}
+      {% for item in news %}
+        {% set t = item.title|lower %}
+        {% if 'breaking' in t or 'urgent' in t %}{% if breaking_news.append(item) %}{% endif %}
+        {% elif item.reason or ('etf' in t or 'sec' in t or 'hack' in t or 'lawsuit' in t) %}{% if moving_news.append(item) %}{% endif %}
+        {% elif item.summary or item.reason %}{% if ai_picks.append(item) %}{% endif %}
+        {% elif 'bitcoin' in t or ' btc ' in t %}{% if btc_news.append(item) %}{% endif %}
+        {% elif 'ethereum' in t or ' eth ' in t %}{% if eth_news.append(item) %}{% endif %}
+        {% else %}{% if other_news.append(item) %}{% endif %}
         {% endif %}
+      {% endfor %}
+
+      {% set smart_sections = [
+        ('breaking','🚨','Breaking Now',breaking_news,True),
+        ('market','📈','Market Moving',moving_news,True),
+        ('defi','🧠','AI Picks',ai_picks,False),
+        ('bitcoin','₿','Bitcoin Focus',btc_news,False),
+        ('ethereum','Ξ','Ethereum Focus',eth_news,False),
+        ('altcoin','📰','More Signals',other_news,True),
+      ] %}
+      {% for cat_key,cat_icon,cat_label,cat_news,is_list in smart_sections %}
+      {% if cat_news %}
+      <div class="cat-section">
+        <div class="cat-header">
+          <div class="cat-title cat-color-{{ cat_key }}">{{ cat_icon }} {{ cat_label }}</div>
+          <span class="cat-count">{{ cat_news|length }}</span>
+        </div>
+        <div class="news-grid {% if not is_list %}grid-2{% endif %}">
+          {% for item in cat_news[:6] %}
+            {{ render_card(item, cat_key, loop.index, not is_list) }}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
       {% endfor %}
 
     {% else %}
@@ -509,8 +505,8 @@ footer a{color:var(--purple);text-decoration:none;}
       </div>
       <div class="widget">
         <div class="widget-title">🧠 Today’s Insight</div>
-        <div style="font-family:var(--mono);font-size:.64rem;line-height:1.6;">
-          {{ intel.ai_signal.coin }} dominates sentiment today after momentum shift in latest headlines.
+        <div style="font-family:var(--mono);font-size:.73rem;line-height:1.7;font-weight:700;">
+          {{ intel.ai_signal.coin }} dominates sentiment today after {{ intel.ai_signal.trigger|lower }}{% if intel.whale_activity %} and whale flows ({{ intel.whale_activity[0] }}){% endif %}.
         </div>
       </div>
 

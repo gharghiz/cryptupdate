@@ -105,14 +105,17 @@ def compute_market_intelligence(items: list) -> dict:
                 coin_scores[coin]["pos"] += pos
                 coin_scores[coin]["neg"] += neg
 
-    best_coin = max(
+    ranked = sorted(
         coin_aliases.keys(),
         key=lambda c: (
             coin_scores[c]["mentions"] > 0,
             coin_scores[c]["pos"] - coin_scores[c]["neg"],
             coin_scores[c]["mentions"],
         ),
+        reverse=True
     )
+    best_coin = ranked[0]
+    second_coin = ranked[1] if len(ranked) > 1 else ranked[0]
 
     c = coin_scores[best_coin]
     total = max(1, c["pos"] + c["neg"])
@@ -122,10 +125,15 @@ def compute_market_intelligence(items: list) -> dict:
     total_sent = max(1, bull + bear)
     bullish_pct = int((bull / total_sent) * 100)
     bearish_pct = 100 - bullish_pct
+    net = bullish_pct - bearish_pct
+    strength = "Strong" if abs(net) >= 30 else ("Moderate" if abs(net) >= 12 else "Weak")
+    direction = "⬆ Uptrend" if net >= 0 else "⬇ Downtrend"
+    trend_shift = f"{'+' if net >= 0 else ''}{net}% sentiment bias"
 
     return {
         "ai_signal": {
             "coin": best_coin,
+            "secondary_coin": second_coin,
             "signal": signal,
             "confidence": confidence,
             "reason": f"Positive signals {c['pos']} vs negative {c['neg']} across {c['mentions']} related stories",
@@ -133,6 +141,7 @@ def compute_market_intelligence(items: list) -> dict:
             "trigger": "Momentum + sentiment divergence in latest headlines",
             "watch": f"Watch ETF/regulation headlines and {best_coin} volume spikes"
         },
+        "trend": {"direction": direction, "strength": strength, "shift": trend_shift},
         "sentiment": {
             "bullish": bullish_pct,
             "bearish": bearish_pct
