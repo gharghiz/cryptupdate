@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} — {{ site_name }}{% endblock %}
+
+{% block head %}
+<meta property="og:title" content="{{ item.title }}">
+<meta property="og:description" content="{{ item.summary or '' }}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ site_url }}/news/{{ item.id }}">
+{% if item.image_url %}<meta property="og:image" content="{{ item.image_url }}">{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="article-header">
+        <span class="article-cat {% if item.category == 'breaking' %}breaking{% endif %}">{{ item.category }}</span>
+        <h1 class="article-title">{{ item.title }}</h1>
+        <div class="article-meta">
+            <span>{{ item.source }}</span>
+            <span>·</span>
+            <span>{{ item.posted_at|time_ago }}</span>
+            {% if item.views %}<span>·</span><span>👁 {{ item.views }} views</span>{% endif %}
+        </div>
+    </div>
+
+    {% if item.image_url %}
+    <div style="margin-bottom:24px;border-radius:12px;overflow:hidden;max-height:400px">
+        <img src="{{ item.image_url }}" alt="" style="width:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">
+    </div>
+    {% endif %}
+
+    <div class="article-body">
+        {% if item.summary %}
+        <div class="article-summary-label">🧠 AI Summary</div>
+        <div class="article-summary">{{ item.summary }}</div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">📝</div>
+            <p>No AI summary available for this article.</p>
+        </div>
+        {% endif %}
+
+        {% if item.sentiment %}
+        <div style="margin-top:20px;padding:12px 16px;background:var(--bg2);border-radius:8px;font-size:0.85rem">
+            <span class="text-muted">Sentiment:</span>
+            <strong class="{% if 'Bullish' in item.sentiment %}text-green{% elif 'Bearish' in item.sentiment %}text-red{% else %}text-yellow{% endif %}">
+                {{ item.sentiment }}
+            </strong>
+            {% if item.reason %}<span class="text-muted" style="margin-left:12px">— {{ item.reason }}</span>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="article-actions">
+        {% if item.url %}
+        <a href="{{ item.url }}" target="_blank" rel="noopener">🔗 Read Original Source</a>
+        {% endif %}
+        <a href="https://twitter.com/intent/tweet?text={{ item.title | urlencode }}&url={{ (site_url + '/news/' + item.id) | urlencode }}" target="_blank">𝕏 Share on X</a>
+        <a href="https://t.me/share/url?url={{ (site_url + '/news/' + item.id) | urlencode }}&text={{ item.title | urlencode }}" target="_blank">✈️ Share on Telegram</a>
+    </div>
+
+    {% if related %}
+    <div class="section">
+        <h2 class="section-title">📝 Related News</h2>
+        <div class="news-grid">
+            {% for r in related %}
+            <a href="/news/{{ r.id }}" class="news-card">
+                <div class="news-card-body">
+                    <div class="news-card-title">{{ r.title }}</div>
+                    <div class="news-card-meta">
+                        <span class="news-card-source">{{ r.source }}</span>
+                        <span>{{ r.posted_at|time_ago }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('/api/view/{{ item.id }}').catch(()=>{});
+</script>
+{% endblock %}
