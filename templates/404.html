@@ -1,340 +1,54 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found | CryptositNews</title>
-    <meta name="description" content="The page you're looking for doesn't exist or has been moved.">
-    <meta name="theme-color" content="#080b12">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: ['class', '[data-theme="dark"]'],
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    colors: {
-                        brand: { 500:'#3b82f6', 600:'#2563eb' }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --brand: #3b82f6; --brand-glow: rgba(59,130,246,0.15); --accent: #8b5cf6; --accent2: #06b6d4; }
-        [data-theme="light"] {
-            --bg: #f0f3fa; --bg2: #edf0f7; --surface: rgba(255,255,255,0.85); --surface-solid: #ffffff;
-            --surface2: rgba(248,250,255,0.9); --surface3: rgba(240,244,252,0.6); --text: #0f172a;
-            --text2: #64748b; --text3: #94a3b8; --border: rgba(15,23,42,0.08); --border2: rgba(15,23,42,0.13);
-            --shadow: rgba(15,23,42,0.06); --shadow-lg: rgba(15,23,42,0.08);
-            --glow1: rgba(59,130,246,0.05); --glow2: rgba(139,92,246,0.04); --glow3: rgba(6,182,212,0.03);
-            --nav-bg: rgba(255,255,255,0.8);
-        }
-        [data-theme="dark"] {
-            --bg: #04070d; --bg2: #080c14; --surface: rgba(14,20,33,0.78); --surface-solid: #0e1421;
-            --surface2: rgba(18,26,42,0.7); --surface3: rgba(22,32,52,0.5); --text: #e8ecf4;
-            --text2: #7b8ba5; --text3: #4a5a75; --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
-            --shadow: rgba(0,0,0,0.4); --shadow-lg: rgba(0,0,0,0.7);
-            --glow1: rgba(59,130,246,0.06); --glow2: rgba(139,92,246,0.05); --glow3: rgba(6,182,212,0.035);
-            --nav-bg: rgba(14,20,33,0.85);
-        }
-        html { scroll-behavior: smooth; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; min-height: 100vh; }
-
-        /* === NOISE TEXTURE OVERLAY === */
-        body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.018;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
-
-        /* === ANIMATED MESH BACKGROUND === */
-        .mesh-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-        .mesh-bg .orb { position: absolute; border-radius: 50%; filter: blur(140px); }
-        .mesh-bg .orb-1 { width: 1000px; height: 800px; background: var(--glow1); top: -350px; left: -250px; animation: orbFloat1 28s ease-in-out infinite; }
-        .mesh-bg .orb-2 { width: 800px; height: 700px; background: var(--glow2); top: -150px; right: -300px; animation: orbFloat2 32s ease-in-out infinite; }
-        .mesh-bg .orb-3 { width: 600px; height: 600px; background: var(--glow3); bottom: -250px; left: 25%; animation: orbFloat3 22s ease-in-out infinite; }
-        .mesh-bg .orb-4 { width: 400px; height: 400px; background: rgba(251,191,36,0.02); top: 40%; right: 10%; animation: orbFloat1 35s ease-in-out infinite reverse; }
-        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0)}33%{transform:translate(80px,60px)}66%{transform:translate(-40px,100px)} }
-        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0)}33%{transform:translate(-60px,80px)}66%{transform:translate(40px,-50px)} }
-        @keyframes orbFloat3 { 0%,100%{transform:translate(0,0)}50%{transform:translate(100px,-80px)} }
-
-        /* === GRID PATTERN === */
-        .grid-pattern { position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 64px 64px; opacity: 0.2; mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 100%);
-            -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 100%);
-        }
-
-        /* === NAVBAR === */
-        .nav-bar { background: var(--nav-bg); backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6);
-            border-bottom: 1px solid transparent; border-image: linear-gradient(90deg, transparent 0%, var(--border2) 20%, rgba(59,130,246,0.12) 50%, var(--border2) 80%, transparent 100%) 1;
-            box-shadow: 0 1px 20px -4px var(--shadow); }
-
-        /* === 404 NUMBER === */
-        .error-number {
-            font-size: clamp(100px, 18vw, 180px);
-            font-weight: 900;
-            line-height: 1;
-            letter-spacing: -0.06em;
-            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 30%, #8b5cf6 55%, #a855f7 75%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            user-select: none;
-        }
-        .error-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: clamp(200px, 40vw, 400px);
-            height: clamp(100px, 20vw, 200px);
-            background: radial-gradient(ellipse, rgba(99,102,241,0.15), rgba(139,92,246,0.1) 40%, rgba(168,85,247,0.05) 60%, transparent 80%);
-            filter: blur(40px);
-            pointer-events: none;
-            z-index: -1;
-            animation: glowPulse 4s ease-in-out infinite;
-        }
-        @keyframes glowPulse { 0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)} }
-
-        /* === FLOATING ANIMATION === */
-        .float-slow { animation: floatSlow 7s ease-in-out infinite; }
-        @keyframes floatSlow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
-
-        /* === DECORATIVE CRYPTO ICONS === */
-        .deco-icon {
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 13px;
-            color: white;
-            opacity: 0.12;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .deco-icon-1 { background: linear-gradient(135deg, #f7931a, #e2761b); top: 15%; left: 8%; animation: decoDrift1 20s ease-in-out infinite; }
-        .deco-icon-2 { background: linear-gradient(135deg, #627eea, #4a67d6); top: 25%; right: 10%; animation: decoDrift2 24s ease-in-out infinite; width: 36px; height: 36px; border-radius: 12px; font-size: 11px; }
-        .deco-icon-3 { background: linear-gradient(135deg, #26a17b, #1a8a6a); bottom: 20%; left: 12%; animation: decoDrift3 22s ease-in-out infinite; width: 40px; height: 40px; border-radius: 13px; font-size: 12px; }
-        .deco-icon-4 { background: linear-gradient(135deg, #f3ba2f, #d4a320); bottom: 30%; right: 7%; animation: decoDrift1 26s ease-in-out infinite reverse; width: 38px; height: 38px; border-radius: 13px; font-size: 11px; }
-        .deco-icon-5 { background: linear-gradient(135deg, #8247e5, #6b2fc4); top: 60%; left: 4%; animation: decoDrift2 28s ease-in-out infinite reverse; width: 32px; height: 32px; border-radius: 10px; font-size: 10px; }
-        @keyframes decoDrift1 { 0%,100%{transform:translate(0,0) rotate(0deg)}25%{transform:translate(15px,-20px) rotate(5deg)}50%{transform:translate(-10px,15px) rotate(-3deg)}75%{transform:translate(20px,10px) rotate(7deg)} }
-        @keyframes decoDrift2 { 0%,100%{transform:translate(0,0) rotate(0deg)}33%{transform:translate(-20px,-15px) rotate(-6deg)}66%{transform:translate(15px,20px) rotate(4deg)} }
-        @keyframes decoDrift3 { 0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(20px,-25px) rotate(8deg)} }
-
-        /* === CIRCUIT PATTERN SVG === */
-        .circuit-lines {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.04;
-        }
-        .circuit-lines line {
-            stroke: var(--text);
-            stroke-width: 1;
-        }
-        .circuit-lines circle {
-            fill: var(--text);
-        }
-
-        /* === ANIMATIONS === */
-        .fade-up { animation: fadeUp 0.7s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-        .stagger-1 { animation-delay: 0.1s; } .stagger-2 { animation-delay: 0.22s; }
-        .stagger-3 { animation-delay: 0.34s; } .stagger-4 { animation-delay: 0.46s; }
-        .stagger-5 { animation-delay: 0.58s; } .stagger-6 { animation-delay: 0.70s; }
-
-        /* === BUTTONS === */
-        .btn-primary { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white;
-            border: none; border-radius: 14px; padding: 14px 28px; font-weight: 700; font-size: 14px; cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4,0,0.2,1); font-family: inherit; letter-spacing: 0.01em;
-            position: relative; overflow: hidden; text-decoration: none; }
-        .btn-primary::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent); opacity: 0; transition: opacity 0.3s; }
-        .btn-primary:hover { box-shadow: 0 14px 44px rgba(59,130,246,0.3); transform: translateY(-2px); }
-        .btn-primary:hover::before { opacity: 1; }
-        .btn-primary:active { transform: translateY(0); }
-
-        .btn-secondary { display: inline-flex; align-items: center; gap: 10px; background: transparent; color: var(--text);
-            border: 1px solid var(--border2); border-radius: 14px; padding: 14px 28px; font-weight: 700; font-size: 14px;
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); font-family: inherit; text-decoration: none; }
-        .btn-secondary:hover { border-color: rgba(59,130,246,0.25); background: var(--surface2); transform: translateY(-2px);
-            box-shadow: 0 10px 32px -8px var(--shadow); }
-        .btn-secondary:active { transform: translateY(0); }
-
-        /* === GLASS CARD FOR CONTENT === */
-        .error-card {
-            background: var(--surface);
-            backdrop-filter: blur(24px) saturate(1.3);
-            -webkit-backdrop-filter: blur(24px) saturate(1.3);
-            border: 1px solid var(--border);
-            border-radius: 28px;
-            position: relative;
-            overflow: hidden;
-        }
-        .error-card::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: 28px;
-            padding: 1px;
-            background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.1), rgba(168,85,247,0.05), transparent);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-
-        /* === GRADIENT DIVIDER === */
-        .grad-divider { height: 1px; border: none; background: linear-gradient(90deg, transparent, var(--border2), rgba(59,130,246,0.15), var(--border2), transparent); margin: 0; }
-
-        /* === SCROLLBAR === */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 6px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 640px) {
-            .deco-icon { display: none; }
-            .error-card { border-radius: 20px; }
-        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--bg:#0a0e1a;--bg-elevated:#0f1424;--text-primary:#edf2f7;--text-secondary:#8b9dc3;--text-muted:#4a5e85;--border:#1c2540;--accent:#3b82f6;--purple:#8b5cf6}
+        body{background:var(--bg);color:var(--text-primary);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+        .nav{border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center}
+        .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary)}
+        .nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center}
+        .nav-logo-text{font-size:17px;font-weight:800;letter-spacing:-0.03em}
+        .nav-logo-text span{color:var(--accent)}
+        .content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+        .error-code{font-family:'JetBrains Mono',monospace;font-size:clamp(100px,20vw,200px);font-weight:700;letter-spacing:-0.05em;line-height:1;background:linear-gradient(135deg,var(--text-primary),var(--text-muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px}
+        .error-title{font-size:20px;font-weight:700;margin-bottom:8px}
+        .error-desc{font-size:14px;color:var(--text-muted);max-width:400px;line-height:1.6;margin-bottom:32px}
+        .actions{display:flex;gap:12px}
+        .btn{padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:all 0.15s;border:1px solid var(--border)}
+        .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .btn-primary:hover{opacity:0.9}
+        .btn-secondary{background:transparent;color:var(--text-secondary)}
+        .btn-secondary:hover{border-color:var(--text-muted);color:var(--text-primary)}
+        .footer{border-top:1px solid var(--border);padding:20px 24px;text-align:center}
+        .footer-text{font-size:12px;color:var(--text-muted)}
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative">
-    <!-- Animated Background -->
-    <div class="mesh-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-    </div>
-    <div class="grid-pattern"></div>
-
-    <!-- ===== NAVIGATION ===== -->
-    <nav class="nav-bar sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-[14px] bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-300">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-                <span class="text-[17px] font-black tracking-tight">Crypto<span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">sit</span>News</span>
-            </a>
-            <a href="/" class="flex items-center gap-2 text-[13px] font-semibold hover:text-blue-400 transition group" style="color:var(--text2); text-decoration:none;">
-                <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Home
-            </a>
-        </div>
+<body>
+    <nav class="nav">
+        <a href="/" class="nav-logo">
+            <div class="nav-logo-icon"><svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+            <span class="nav-logo-text">Crypto<span>sit</span>News</span>
+        </a>
     </nav>
-
-    <!-- ===== MAIN CONTENT ===== -->
-    <main class="flex-1 flex items-center justify-center px-4 sm:px-6 py-16 relative z-10">
-        <!-- Decorative crypto icons -->
-        <div class="deco-icon deco-icon-1" aria-hidden="true">&#8383;</div>
-        <div class="deco-icon deco-icon-2" aria-hidden="true">&#926;</div>
-        <div class="deco-icon deco-icon-3" aria-hidden="true">&#8383;</div>
-        <div class="deco-icon deco-icon-4" aria-hidden="true">&#926;</div>
-        <div class="deco-icon deco-icon-5" aria-hidden="true">&#9670;</div>
-
-        <!-- Circuit decoration SVG -->
-        <svg class="circuit-lines hidden lg:block" aria-hidden="true" width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
-            <!-- Horizontal lines -->
-            <line x1="50" y1="80" x2="200" y2="80"/>
-            <line x1="600" y1="120" x2="750" y2="120"/>
-            <line x1="100" y1="500" x2="280" y2="500"/>
-            <line x1="520" y1="480" x2="700" y2="480"/>
-            <line x1="300" y1="550" x2="500" y2="550"/>
-            <!-- Vertical lines -->
-            <line x1="200" y1="80" x2="200" y2="180"/>
-            <line x1="600" y1="120" x2="600" y2="250"/>
-            <line x1="100" y1="400" x2="100" y2="500"/>
-            <line x1="700" y1="380" x2="700" y2="480"/>
-            <!-- Corner nodes -->
-            <circle cx="50" cy="80" r="3"/>
-            <circle cx="200" cy="80" r="3"/>
-            <circle cx="200" cy="180" r="3"/>
-            <circle cx="600" cy="120" r="3"/>
-            <circle cx="750" cy="120" r="3"/>
-            <circle cx="600" cy="250" r="3"/>
-            <circle cx="100" cy="400" r="3"/>
-            <circle cx="100" cy="500" r="3"/>
-            <circle cx="280" cy="500" r="3"/>
-            <circle cx="700" cy="380" r="3"/>
-            <circle cx="700" cy="480" r="3"/>
-            <circle cx="520" cy="480" r="3"/>
-            <circle cx="300" cy="550" r="3"/>
-            <circle cx="500" cy="550" r="3"/>
-        </svg>
-
-        <div class="error-card max-w-lg w-full px-6 sm:px-10 py-12 sm:py-16 text-center">
-            <!-- 404 Number -->
-            <div class="relative inline-block mb-6 float-slow fade-up">
-                <div class="error-glow"></div>
-                <div class="error-number" aria-label="404 Error">404</div>
-            </div>
-
-            <!-- Status badge -->
-            <div class="fade-up stagger-1 mb-5">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.08em]"
-                      style="background:linear-gradient(135deg, rgba(239,68,68,0.08), rgba(251,191,36,0.06)); color:#f87171; border:1px solid rgba(239,68,68,0.12);">
-                    <span style="width:6px;height:6px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.5);display:inline-block;"></span>
-                    Error
-                </span>
-            </div>
-
-            <!-- Heading -->
-            <h1 class="text-[22px] sm:text-[28px] font-black tracking-tight mb-3 fade-up stagger-2" style="color:var(--text)">
-                Page Not Found
-            </h1>
-
-            <!-- Description -->
-            <p class="text-[14px] sm:text-[15px] leading-relaxed max-w-sm mx-auto mb-10 fade-up stagger-3" style="color:var(--text2)">
-                The page you're looking for doesn't exist or has been moved. Check the URL or head back to the homepage.
-            </p>
-
-            <!-- Buttons -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 fade-up stagger-4">
-                <a href="/" class="btn-primary w-full sm:w-auto justify-center">
-                    <svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-                    Back to Home
-                </a>
-                <a href="/?search=true" class="btn-secondary w-full sm:w-auto justify-center">
-                    <svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    Search News
-                </a>
-            </div>
-
-            <!-- Helpful hint -->
-            <p class="mt-8 text-[12px] fade-up stagger-5" style="color:var(--text3)">
-                Try searching for what you need or browse our
-                <a href="/" class="underline underline-offset-2 transition-colors" style="color:var(--text2)" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='var(--text2)'">latest articles</a>.
-            </p>
+    <div class="content">
+        <div class="error-code">404</div>
+        <div class="error-title">Page Not Found</div>
+        <div class="error-desc">The page you're looking for doesn't exist or has been moved.</div>
+        <div class="actions">
+            <a href="/" class="btn btn-primary">Back to Home</a>
+            <a href="/" class="btn btn-secondary">Search News</a>
         </div>
-    </main>
-
-    <!-- ===== FOOTER ===== -->
-    <footer class="relative z-10" style="border-top:1px solid var(--border)">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <span class="text-[14px] font-bold tracking-tight" style="color:var(--text2)">Crypto<span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">sit</span>News</span>
-                </div>
-                <p class="text-[12px]" style="color:var(--text3)">
-                    &copy; {{ now.strftime('%Y') if now else '2025' }} CryptositNews. All rights reserved.
-                </p>
-            </div>
-        </div>
+    </div>
+    <footer class="footer">
+        <div class="footer-text">© 2024 CryptositNews. All rights reserved.</div>
     </footer>
 </body>
 </html>

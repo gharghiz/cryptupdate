@@ -6,563 +6,190 @@
     <title>Admin Dashboard - CryptositNews</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: ['class', '[data-theme="dark"]'],
-            theme: { extend: { fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['JetBrains Mono','monospace'] },
-                colors: { brand:{500:'#3b82f6',600:'#2563eb'}, surface:{0:'#060910',1:'#0a0f18',2:'#0f1520',3:'#1a2438'} }
-            }}
-        }
-    </script>
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        :root { --brand: #3b82f6; }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        [data-theme="dark"]{--bg:#0a0e1a;--bg-elevated:#0f1424;--bg-card:#141929;--bg-card-hover:#181e33;--bg-input:#111728;--text-primary:#edf2f7;--text-secondary:#8b9dc3;--text-muted:#4a5e85;--border:#1c2540;--border-hover:#2a3658;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--shadow:0 1px 3px rgba(0,0,0,0.4),0 4px 12px rgba(0,0,0,0.2);--nav-bg:rgba(10,14,26,0.92)}
+        [data-theme="light"]{--bg:#f7f9fc;--bg-elevated:#ffffff;--bg-card:#ffffff;--bg-card-hover:#f0f4fa;--bg-input:#f1f5f9;--text-primary:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;--border:#e2e8f0;--border-hover:#cbd5e1;--accent:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706;--purple:#7c3aed;--shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--nav-bg:rgba(255,255,255,0.92)}
+        body{background:var(--bg);color:var(--text-primary);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
+        .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-        [data-theme="light"] {
-            --bg:#f0f3fa; --surface:rgba(255,255,255,0.82); --surface-solid:#ffffff; --surface2:rgba(248,250,255,0.9);
-            --text:#0f172a; --text2:#64748b; --text3:#94a3b8; --border:rgba(15,23,42,0.08); --border2:rgba(15,23,42,0.12);
-            --shadow:rgba(15,23,42,0.06); --shadow-lg:rgba(15,23,42,0.10); --glow-blue:rgba(59,130,246,0.08);
-            --glow-purple:rgba(139,92,246,0.06); --noise-opacity:0.025;
-        }
-        [data-theme="dark"] {
-            --bg:#04070d; --surface:rgba(14,20,33,0.78); --surface-solid:#0e1421; --surface2:rgba(18,26,42,0.7);
-            --text:#e8ecf4; --text2:#7b8ba5; --text3:#4a5a75; --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.09);
-            --shadow:rgba(0,0,0,0.4); --shadow-lg:rgba(0,0,0,0.6); --glow-blue:rgba(59,130,246,0.06);
-            --glow-purple:rgba(139,92,246,0.05); --noise-opacity:0.03;
-        }
+        /* Nav */
+        .site-nav{background:var(--nav-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+        .nav-inner{height:56px;display:flex;align-items:center;justify-content:space-between}
+        .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary)}
+        .nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center}
+        .nav-logo-text{font-size:17px;font-weight:800;letter-spacing:-0.03em}
+        .nav-logo-text span{color:var(--accent)}
+        .admin-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;background:rgba(139,92,246,0.1);color:var(--purple);border:1px solid rgba(139,92,246,0.15)}
+        .nav-actions{display:flex;align-items:center;gap:8px}
+        .nav-btn{width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+        .nav-btn:hover{background:var(--bg-input);color:var(--text-primary)}
+        .nav-btn svg{width:18px;height:18px}
+        .btn-sm{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all 0.15s}
+        .btn-primary{background:var(--accent);color:#fff}
+        .btn-primary:hover{opacity:0.9}
+        .btn-danger{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.15)}
+        .btn-danger:hover{background:rgba(239,68,68,0.15)}
 
-        body {
-            background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
-            -webkit-font-smoothing:antialiased; overflow-x:hidden;
-        }
+        /* Stats */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
+        .stat-cell{background:var(--bg-elevated);padding:24px;transition:background 0.15s}
+        .stat-cell:hover{background:var(--bg-card-hover)}
+        .stat-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+        .stat-number{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em}
+        .stat-number.blue{color:var(--accent)}
+        .stat-number.green{color:var(--green)}
+        .stat-number.amber{color:var(--amber)}
+        .stat-number.purple{color:var(--purple)}
+        @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
 
-        /* ═══════════ MESH BACKGROUND ═══════════ */
-        .mesh-bg { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-        .mesh-bg .orb { position:absolute; border-radius:50%; filter:blur(140px); will-change:transform; }
-        .mesh-bg .orb-1 { width:800px; height:600px; background:rgba(59,130,246,0.06); top:-250px; left:-200px; animation:orbFloat1 35s ease-in-out infinite; }
-        .mesh-bg .orb-2 { width:600px; height:500px; background:rgba(139,92,246,0.05); bottom:-150px; right:-200px; animation:orbFloat2 40s ease-in-out infinite; }
-        .mesh-bg .orb-3 { width:500px; height:400px; background:rgba(16,185,129,0.035); top:40%; left:50%; animation:orbFloat3 30s ease-in-out infinite; }
-        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(60px,40px) scale(1.05)} 66%{transform:translate(-30px,70px) scale(0.98)} }
-        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-50px,-40px) scale(1.04)} 66%{transform:translate(40px,-60px) scale(0.97)} }
-        @keyframes orbFloat3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(calc(-50% + 80px),calc(-50% - 60px)) scale(1.06)} }
+        .stats-secondary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+        .stat-mini{padding:16px 20px;border:1px solid var(--border);border-radius:8px;background:var(--bg-elevated)}
+        .stat-mini-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+        .stat-mini-value{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+        @media(max-width:768px){.stats-secondary{grid-template-columns:repeat(2,1fr)}}
 
-        /* Noise overlay */
-        .noise-overlay {
-            position:fixed; inset:0; z-index:1; pointer-events:none; opacity:var(--noise-opacity);
-            background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-            background-repeat:repeat; background-size:256px 256px;
-        }
+        /* Cards */
+        .card{border:1px solid var(--border);border-radius:10px;background:var(--bg-card);overflow:hidden}
+        .card+.card{margin-top:16px}
+        .card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+        .card-header h3{font-size:13px;font-weight:700}
+        .card-body{padding:20px}
 
-        /* ═══════════ SCROLLBAR ═══════════ */
-        ::-webkit-scrollbar { width:6px; }
-        ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:6px; }
-        ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+        /* Bar chart */
+        .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .bar-row:last-child{margin-bottom:0}
+        .bar-label{width:100px;font-size:12px;font-weight:600;flex-shrink:0}
+        .bar-track{flex:1;height:6px;background:var(--bg-input);border-radius:3px;overflow:hidden}
+        .bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+        .bar-count{width:40px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);flex-shrink:0}
 
-        /* ═══════════ NAVIGATION ═══════════ */
-        .nav-bar {
-            height:72px; position:sticky; top:0; z-index:50;
-            background:var(--surface); backdrop-filter:blur(32px) saturate(1.8); -webkit-backdrop-filter:blur(32px) saturate(1.8);
-        }
-        .nav-bar::after {
-            content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
-            background:linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.3) 20%, rgba(139,92,246,0.3) 50%, rgba(16,185,129,0.2) 80%, transparent 100%);
-        }
+        /* Cache grid */
+        .cache-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+        .cache-item{text-align:center;padding:16px;border:1px solid var(--border);border-radius:8px;background:var(--bg-elevated)}
+        .cache-item-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+        .cache-item-value{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700}
+        @media(max-width:768px){.cache-grid{grid-template-columns:repeat(3,1fr)}}
 
-        .logo-text { font-size:18px; font-weight:800; letter-spacing:-0.03em; }
-        .logo-text .gradient { background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 50%,#a78bfa 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .skeleton{background:var(--bg-input);border-radius:6px;animation:pulse-skel 1.5s ease-in-out infinite}
+        @keyframes pulse-skel{0%,100%{opacity:1}50%{opacity:0.5}}
+        .pt-8{padding-top:32px}
+        .pb-20{padding-bottom:80px}
+        .gap-3{gap:12px}
+        .flex-wrap{flex-wrap:wrap}
 
-        .admin-badge {
-            display:inline-flex; align-items:center; gap:6px; padding:6px 16px; border-radius:14px;
-            font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
-            background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(59,130,246,0.15));
-            color:#a78bfa; border:1px solid rgba(139,92,246,0.2);
-            box-shadow:0 0 20px rgba(139,92,246,0.08);
-        }
-        [data-theme="light"] .admin-badge { color:#7c3aed; border-color:rgba(124,58,237,0.2); background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(59,130,246,0.08)); }
-
-        .nav-btn {
-            display:inline-flex; align-items:center; justify-content:center; gap:8px;
-            height:40px; padding:0 18px; border-radius:12px; border:none;
-            font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
-            transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
-        }
-        .nav-btn-refresh {
-            background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(99,102,241,0.12));
-            color:#60a5fa; border:1px solid rgba(59,130,246,0.15);
-        }
-        [data-theme="light"] .nav-btn-refresh { color:#2563eb; border-color:rgba(59,130,246,0.2); background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(99,102,241,0.06)); }
-        .nav-btn-refresh:hover { background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.2)); box-shadow:0 4px 20px rgba(59,130,246,0.15); transform:translateY(-1px); }
-        .nav-btn-refresh .spin { transition:transform 0.6s cubic-bezier(0.4,0,0.2,1); }
-        .nav-btn-refresh.spinning .spin { transform:rotate(360deg); }
-
-        .nav-btn-theme {
-            width:40px; height:40px; padding:0; border-radius:12px;
-            background:var(--surface2); border:1px solid var(--border); color:var(--text2);
-        }
-        .nav-btn-theme:hover { border-color:var(--border2); background:var(--surface-solid); box-shadow:0 2px 12px var(--shadow); }
-
-        /* ═══════════ FADE-IN ANIMATIONS ═══════════ */
-        .fade-up { animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) forwards; opacity:0; }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .stagger-1{animation-delay:.08s} .stagger-2{animation-delay:.16s} .stagger-3{animation-delay:.24s} .stagger-4{animation-delay:.32s} .stagger-5{animation-delay:.40s} .stagger-6{animation-delay:.48s}
-
-        /* ═══════════ PRIMARY STAT CARDS ═══════════ */
-        .stat-card-primary {
-            position:relative; border-radius:24px; padding:28px; overflow:hidden;
-            background:var(--surface-solid); border:1px solid var(--border);
-            transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
-        }
-        .stat-card-primary::before {
-            content:''; position:absolute; inset:-2px; border-radius:26px; z-index:-1; opacity:0;
-            transition:opacity 0.4s ease;
-        }
-        .stat-card-primary:hover::before { opacity:1; }
-        .stat-card-primary:hover {
-            transform:translateY(-4px);
-            box-shadow:0 20px 60px -12px var(--shadow), 0 0 40px var(--glow-blue);
-        }
-
-        /* Animated gradient borders per card color */
-        .stat-card-primary.blue::before {
-            background:conic-gradient(from 0deg, #3b82f6, #6366f1, #8b5cf6, #3b82f6);
-            animation:gradientSpin 4s linear infinite;
-        }
-        .stat-card-primary.emerald::before {
-            background:conic-gradient(from 0deg, #10b981, #06b6d4, #34d399, #10b981);
-            animation:gradientSpin 4s linear infinite;
-        }
-        .stat-card-primary.amber::before {
-            background:conic-gradient(from 0deg, #f59e0b, #f97316, #eab308, #f59e0b);
-            animation:gradientSpin 4s linear infinite;
-        }
-        .stat-card-primary.violet::before {
-            background:conic-gradient(from 0deg, #8b5cf6, #a78bfa, #6366f1, #8b5cf6);
-            animation:gradientSpin 4s linear infinite;
-        }
-        @keyframes gradientSpin { to{transform:rotate(360deg)} }
-
-        .stat-icon {
-            width:52px; height:52px; border-radius:18px; display:flex; align-items:center; justify-content:center;
-            position:relative; flex-shrink:0;
-        }
-        .stat-icon::after {
-            content:''; position:absolute; inset:0; border-radius:18px; opacity:0.12;
-        }
-        .stat-icon.blue { background:radial-gradient(circle at 30% 30%, rgba(59,130,246,0.2), rgba(59,130,246,0.05)); color:#60a5fa; }
-        .stat-icon.emerald { background:radial-gradient(circle at 30% 30%, rgba(16,185,129,0.2), rgba(16,185,129,0.05)); color:#34d399; }
-        .stat-icon.amber { background:radial-gradient(circle at 30% 30%, rgba(245,158,11,0.2), rgba(245,158,11,0.05)); color:#fbbf24; }
-        .stat-icon.violet { background:radial-gradient(circle at 30% 30%, rgba(139,92,246,0.2), rgba(139,92,246,0.05)); color:#a78bfa; }
-
-        .stat-number { font-size:36px; font-weight:700; line-height:1; font-family:'JetBrains Mono',monospace; letter-spacing:-0.02em; }
-        .stat-number.blue { color:#60a5fa; }
-        .stat-number.emerald { color:#34d399; }
-        .stat-number.amber { color:#fbbf24; }
-        .stat-number.violet { color:#a78bfa; }
-
-        /* Mini decorative bar chart beneath numbers */
-        .mini-bars { display:flex; align-items:flex-end; gap:3px; height:24px; margin-top:12px; }
-        .mini-bars .bar {
-            width:6px; border-radius:3px; opacity:0.5; transition:height 0.5s cubic-bezier(0.16,1,0.3,1);
-        }
-        .mini-bars .bar:nth-child(1) { height:40%; }
-        .mini-bars .bar:nth-child(2) { height:70%; }
-        .mini-bars .bar:nth-child(3) { height:55%; }
-        .mini-bars .bar:nth-child(4) { height:90%; }
-        .mini-bars .bar:nth-child(5) { height:65%; }
-        .mini-bars.blue .bar { background:linear-gradient(to top, #3b82f6, #60a5fa); }
-        .mini-bars.emerald .bar { background:linear-gradient(to top, #10b981, #34d399); }
-        .mini-bars.amber .bar { background:linear-gradient(to top, #f59e0b, #fbbf24); }
-        .mini-bars.violet .bar { background:linear-gradient(to top, #8b5cf6, #a78bfa); }
-
-        /* ═══════════ SECONDARY STAT CARDS ═══════════ */
-        .stat-card-secondary {
-            position:relative; border-radius:16px; padding:20px 22px; overflow:hidden;
-            background:var(--surface-solid); border:1px solid var(--border);
-            border-left:3px solid transparent;
-            transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
-        }
-        .stat-card-secondary:hover {
-            transform:translateY(-2px);
-            box-shadow:0 12px 40px -8px var(--shadow);
-        }
-        .stat-card-secondary.cyan { border-left-color:#22d3ee; }
-        .stat-card-secondary.green { border-left-color:#34d399; }
-        .stat-card-secondary.orange { border-left-color:#fb923c; }
-        .stat-card-secondary.red { border-left-color:#f87171; }
-
-        .stat-secondary-number { font-size:22px; font-weight:700; line-height:1; font-family:'JetBrains Mono',monospace; }
-        .stat-secondary-number.cyan { color:#22d3ee; }
-        .stat-secondary-number.green { color:#34d399; }
-        .stat-secondary-number.orange { color:#fb923c; }
-        .stat-secondary-number.red { color:#f87171; }
-
-        /* ═══════════ WIDGET CONTAINERS ═══════════ */
-        .widget {
-            background:var(--surface-solid); border:1px solid var(--border);
-            border-radius:24px; overflow:hidden;
-            box-shadow:0 4px 24px -4px var(--shadow);
-            transition:box-shadow 0.3s ease;
-        }
-        .widget:hover { box-shadow:0 8px 40px -8px var(--shadow-lg); }
-        .widget-header {
-            padding:20px 28px; border-bottom:1px solid var(--border);
-            display:flex; align-items:center; gap:12px;
-        }
-        .widget-header-icon {
-            width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center;
-            background:var(--surface2); border:1px solid var(--border);
-            color:var(--text2); flex-shrink:0;
-        }
-        .widget-header h3 { font-size:14px; font-weight:700; letter-spacing:-0.01em; }
-        .widget-body { padding:28px; }
-
-        /* ═══════════ CATEGORY CHART ═══════════ */
-        .cat-row { margin-bottom:16px; }
-        .cat-row:last-child { margin-bottom:0; }
-        .cat-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-        .cat-label span:first-child { font-size:13px; font-weight:600; }
-        .cat-label span:last-child { font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--text3); }
-        .cat-bar-track { height:10px; border-radius:8px; background:var(--surface2); overflow:hidden; }
-        .cat-bar-fill {
-            height:100%; border-radius:8px;
-            transition:width 1s cubic-bezier(0.16,1,0.3,1);
-            position:relative; overflow:hidden;
-        }
-        .cat-bar-fill::after {
-            content:''; position:absolute; inset:0;
-            background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
-            animation:barShine 2s ease-in-out infinite;
-        }
-        @keyframes barShine { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-
-        /* ═══════════ SOURCES LIST ═══════════ */
-        .source-item {
-            display:flex; align-items:center; gap:14px; padding:12px 16px; border-radius:14px;
-            transition:background 0.2s ease; margin-bottom:4px;
-        }
-        .source-item:hover { background:var(--surface2); }
-        .source-rank {
-            width:28px; height:28px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-            font-size:12px; font-weight:700; font-family:'JetBrains Mono',monospace;
-            background:var(--surface2); border:1px solid var(--border); color:var(--text3); flex-shrink:0;
-        }
-        .source-rank.gold { background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#78350f; border:none; }
-        .source-rank.silver { background:linear-gradient(135deg,#94a3b8,#cbd5e1); color:#1e293b; border:none; }
-        .source-rank.bronze { background:linear-gradient(135deg,#d97706,#f59e0b); color:#451a03; border:none; }
-        [data-theme="light"] .source-rank.gold { color:#713f12; }
-        [data-theme="light"] .source-rank.bronze { color:#78350f; }
-        .source-name { font-size:13px; font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .source-count { font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--text2); flex-shrink:0; min-width:36px; text-align:right; }
-        .source-bar-track { width:80px; height:5px; border-radius:4px; background:var(--surface2); overflow:hidden; flex-shrink:0; }
-        .source-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#3b82f6,#8b5cf6); transition:width 0.8s cubic-bezier(0.16,1,0.3,1); }
-
-        /* ═══════════ CACHE STAT BOXES ═══════════ */
-        .cache-stat {
-            text-align:center; padding:24px 16px; border-radius:18px; position:relative; overflow:hidden;
-            background:var(--surface-solid); border:1px solid var(--border);
-            transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
-        }
-        .cache-stat:hover { transform:translateY(-2px); box-shadow:0 8px 30px -6px var(--shadow); }
-        .cache-stat::before {
-            content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:18px 18px 0 0;
-        }
-        .cache-stat.blue::before { background:linear-gradient(90deg,#3b82f6,#6366f1); }
-        .cache-stat.green::before { background:linear-gradient(90deg,#10b981,#34d399); }
-        .cache-stat.red::before { background:linear-gradient(90deg,#ef4444,#f87171); }
-        .cache-stat.indigo::before { background:linear-gradient(90deg,#6366f1,#818cf8); }
-        .cache-stat.teal::before { background:linear-gradient(90deg,#14b8a6,#2dd4bf); }
-
-        .cache-stat-number { font-size:28px; font-weight:700; line-height:1; font-family:'JetBrains Mono',monospace; margin:8px 0 4px; }
-        .cache-stat-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); }
-
-        /* ═══════════ BUTTONS ═══════════ */
-        .btn {
-            display:inline-flex; align-items:center; justify-content:center; gap:8px;
-            height:44px; padding:0 24px; border-radius:14px; border:none;
-            font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
-            transition:all 0.3s cubic-bezier(0.4,0,0.2,1); position:relative; overflow:hidden;
-        }
-        .btn::after {
-            content:''; position:absolute; inset:0; opacity:0;
-            background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);
-            transition:opacity 0.3s;
-        }
-        .btn:hover::after { opacity:1; }
-
-        .btn-blue {
-            background:linear-gradient(135deg,#3b82f6,#2563eb); color:white;
-            box-shadow:0 4px 20px rgba(59,130,246,0.25);
-        }
-        .btn-blue:hover { box-shadow:0 8px 30px rgba(59,130,246,0.35); transform:translateY(-2px); }
-
-        .btn-red {
-            background:linear-gradient(135deg,#dc2626,#b91c1c); color:white;
-            box-shadow:0 4px 20px rgba(220,38,38,0.2);
-        }
-        .btn-red:hover { box-shadow:0 8px 30px rgba(220,38,38,0.3); transform:translateY(-2px); }
-
-        .btn-danger-outline {
-            background:rgba(239,68,68,0.06); color:#f87171; border:1px solid rgba(239,68,68,0.15);
-        }
-        [data-theme="light"] .btn-danger-outline { color:#dc2626; border-color:rgba(220,38,38,0.2); }
-        .btn-danger-outline:hover { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.25); box-shadow:0 4px 20px rgba(239,68,68,0.1); transform:translateY(-1px); }
-
-        /* ═══════════ ACTION BAR ═══════════ */
-        .action-bar {
-            display:flex; flex-wrap:wrap; align-items:center; gap:14px;
-            padding:8px 0;
-        }
-        .action-warning {
-            display:flex; align-items:center; gap:10px; padding:14px 20px; border-radius:14px;
-            background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.1);
-            font-size:12px; color:var(--text2);
-        }
-        [data-theme="light"] .action-warning { background:rgba(220,38,38,0.04); border-color:rgba(220,38,38,0.1); }
-        .action-warning svg { flex-shrink:0; color:#f87171; }
-
-        /* ═══════════ SKELETON ═══════════ */
-        .skeleton {
-            background:linear-gradient(90deg,var(--surface2) 25%,var(--surface-solid) 50%,var(--surface2) 75%);
-            background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:12px;
-        }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-        /* ═══════════ SECTION SPACING ═══════════ */
-        .section-gap { margin-top:28px; }
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
     </style>
 </head>
-<body class="min-h-screen relative">
-    <!-- Animated Mesh Background -->
-    <div class="mesh-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-    <div class="noise-overlay"></div>
-
-    <!-- ═══════════ NAVIGATION ═══════════ -->
-    <nav class="nav-bar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="/" class="flex items-center gap-3 group">
-                    <div class="w-11 h-11 rounded-[14px] bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all duration-300">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <span class="logo-text">Crypto<span class="gradient">sit</span>News</span>
+<body>
+    <nav class="site-nav">
+        <div class="nav-inner" style="max-width:1200px;margin:0 auto;padding:0 24px">
+            <div style="display:flex;align-items:center;gap:12px">
+                <a href="/" class="nav-logo">
+                    <div class="nav-logo-icon"><svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                    <span class="nav-logo-text">Crypto<span>sit</span>News</span>
                 </a>
-                <span class="admin-badge">
-                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/></svg>
-                    Admin
-                </span>
+                <span class="admin-badge">🔒 Admin</span>
             </div>
-            <div class="flex items-center gap-3">
-                <button id="refresh-btn" onclick="loadAllData(); this.classList.add('spinning'); setTimeout(()=>this.classList.remove('spinning'),700);" class="nav-btn nav-btn-refresh">
-                    <svg class="w-4 h-4 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    Refresh
-                </button>
-                <button onclick="toggleTheme()" class="nav-btn nav-btn-theme">
-                    <svg id="theme-dark-icon" class="w-[18px] h-[18px] hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg id="theme-light-icon" class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <div class="nav-actions">
+                <button onclick="loadAllData()" class="btn-sm btn-primary">↻ Refresh</button>
+                <button onclick="toggleTheme()" class="nav-btn">
+                    <svg id="theme-dark-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- ═══════════ MAIN CONTENT ═══════════ -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24 relative z-10">
-
-        <!-- ── Primary Stats (4 Cards) ── -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Total News -->
-            <div class="stat-card-primary blue fade-up">
-                <div class="flex items-start justify-between mb-5">
-                    <div class="stat-icon blue">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                    </div>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.1em] mt-1" style="color:var(--text3)">Total News</span>
-                </div>
-                <p id="s-total" class="stat-number blue">-</p>
-                <div class="mini-bars blue"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+    <div class="container pt-8 pb-20">
+        <!-- Primary Stats -->
+        <div class="stats-grid">
+            <div class="stat-cell">
+                <div class="stat-label">Total News</div>
+                <div class="stat-number" id="s-total">—</div>
             </div>
-
-            <!-- Today -->
-            <div class="stat-card-primary emerald fade-up stagger-1">
-                <div class="flex items-start justify-between mb-5">
-                    <div class="stat-icon emerald">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.1em] mt-1" style="color:var(--text3)">Today</span>
-                </div>
-                <p id="s-today" class="stat-number emerald">-</p>
-                <div class="mini-bars emerald"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            <div class="stat-cell">
+                <div class="stat-label">Today</div>
+                <div class="stat-number blue" id="s-today">—</div>
             </div>
-
-            <!-- Important -->
-            <div class="stat-card-primary amber fade-up stagger-2">
-                <div class="flex items-start justify-between mb-5">
-                    <div class="stat-icon amber">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                    </div>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.1em] mt-1" style="color:var(--text3)">Important</span>
-                </div>
-                <p id="s-important" class="stat-number amber">-</p>
-                <div class="mini-bars amber"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            <div class="stat-cell">
+                <div class="stat-label">Important</div>
+                <div class="stat-number amber" id="s-important">—</div>
             </div>
-
-            <!-- Telegram -->
-            <div class="stat-card-primary violet fade-up stagger-3">
-                <div class="flex items-start justify-between mb-5">
-                    <div class="stat-icon violet">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.1em] mt-1" style="color:var(--text3)">Telegram</span>
-                </div>
-                <p id="s-telegram" class="stat-number violet">-</p>
-                <div class="mini-bars violet"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            <div class="stat-cell">
+                <div class="stat-label">Telegram</div>
+                <div class="stat-number purple" id="s-telegram">—</div>
             </div>
         </div>
 
-        <!-- ── Secondary Stats (4 Cards) ── -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 section-gap fade-up stagger-3">
-            <div class="stat-card-secondary cyan">
-                <span class="text-[10px] font-bold uppercase tracking-[0.1em] block mb-3" style="color:var(--text3)">AI Analyzed</span>
-                <p id="s-ai" class="stat-secondary-number cyan">-</p>
-            </div>
-            <div class="stat-card-secondary green">
-                <span class="text-[10px] font-bold uppercase tracking-[0.1em] block mb-3" style="color:var(--text3)">Sources</span>
-                <p id="s-sources" class="stat-secondary-number green">-</p>
-            </div>
-            <div class="stat-card-secondary orange">
-                <span class="text-[10px] font-bold uppercase tracking-[0.1em] block mb-3" style="color:var(--text3)">Newsletter</span>
-                <p id="s-newsletter" class="stat-secondary-number orange">-</p>
-            </div>
-            <div class="stat-card-secondary red">
-                <span class="text-[10px] font-bold uppercase tracking-[0.1em] block mb-3" style="color:var(--text3)">Alerts</span>
-                <p id="s-alerts" class="stat-secondary-number red">-</p>
-            </div>
+        <!-- Secondary Stats -->
+        <div class="stats-secondary">
+            <div class="stat-mini"><div class="stat-mini-label">AI Analyzed</div><div class="stat-mini-value" id="s-ai" style="color:var(--accent)">—</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Sources</div><div class="stat-mini-value" id="s-sources" style="color:var(--green)">—</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Newsletter</div><div class="stat-mini-value" id="s-newsletter" style="color:var(--amber)">—</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Alerts</div><div class="stat-mini-value" id="s-alerts" style="color:var(--red)">—</div></div>
         </div>
 
-        <!-- ── Charts Row (Categories + Sources) ── -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 section-gap fade-up stagger-4">
-            <!-- Category Distribution -->
-            <div class="widget">
-                <div class="widget-header">
-                    <div class="widget-header-icon">
-                        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    </div>
-                    <h3>Category Distribution</h3>
-                </div>
-                <div class="widget-body">
-                    <div id="cat-chart">
-                        <div class="skeleton h-6 w-full" style="margin-bottom:12px"></div>
-                        <div class="skeleton h-6 w-full" style="margin-bottom:12px"></div>
-                        <div class="skeleton h-6 w-full" style="margin-bottom:12px"></div>
-                        <div class="skeleton h-6 w-full"></div>
-                    </div>
+        <!-- Charts Row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div class="card">
+                <div class="card-header"><h3>Categories Distribution</h3></div>
+                <div class="card-body" id="cat-chart">
+                    <div class="skeleton" style="height:24px;width:100%;margin-bottom:12px"></div>
+                    <div class="skeleton" style="height:24px;width:100%;margin-bottom:12px"></div>
+                    <div class="skeleton" style="height:24px;width:100%"></div>
                 </div>
             </div>
-
-            <!-- Top Sources -->
-            <div class="widget">
-                <div class="widget-header">
-                    <div class="widget-header-icon">
-                        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <h3>Top Sources</h3>
-                </div>
-                <div class="widget-body" style="padding:16px 20px;">
-                    <div id="sources-list" class="max-h-[340px] overflow-y-auto" style="margin:-4px -8px;">
-                        <div class="skeleton h-10 w-full" style="margin-bottom:8px"></div>
-                        <div class="skeleton h-10 w-full" style="margin-bottom:8px"></div>
-                        <div class="skeleton h-10 w-full" style="margin-bottom:8px"></div>
-                        <div class="skeleton h-10 w-full"></div>
-                    </div>
+            <div class="card">
+                <div class="card-header"><h3>Top Sources</h3></div>
+                <div class="card-body" style="max-height:320px;overflow-y:auto" id="sources-list">
+                    <div class="skeleton" style="height:24px;width:100%;margin-bottom:12px"></div>
+                    <div class="skeleton" style="height:24px;width:100%;margin-bottom:12px"></div>
                 </div>
             </div>
         </div>
 
-        <!-- ── Cache Statistics ── -->
-        <div class="widget section-gap fade-up stagger-5">
-            <div class="widget-header">
-                <div class="widget-header-icon">
-                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
-                </div>
-                <h3 class="flex-1">Cache Statistics</h3>
-                <button onclick="clearCache()" class="btn btn-danger-outline" style="height:36px;padding:0 16px;font-size:12px;border-radius:10px;">Clear Cache</button>
+        <!-- Cache -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Cache Statistics</h3>
+                <button onclick="clearCache()" class="btn-sm btn-danger">Clear Cache</button>
             </div>
-            <div class="widget-body">
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <div class="cache-stat blue">
-                        <p class="cache-stat-label">Backend</p>
-                        <p id="c-backend" class="cache-stat-number">-</p>
-                    </div>
-                    <div class="cache-stat green">
-                        <p class="cache-stat-label">Hits</p>
-                        <p id="c-hits" class="cache-stat-number" style="color:#34d399">-</p>
-                    </div>
-                    <div class="cache-stat red">
-                        <p class="cache-stat-label">Misses</p>
-                        <p id="c-misses" class="cache-stat-number" style="color:#f87171">-</p>
-                    </div>
-                    <div class="cache-stat indigo">
-                        <p class="cache-stat-label">Hit Rate</p>
-                        <p id="c-rate" class="cache-stat-number" style="color:#818cf8">-</p>
-                    </div>
-                    <div class="cache-stat teal">
-                        <p class="cache-stat-label">Entries</p>
-                        <p id="c-entries" class="cache-stat-number" style="color:#2dd4bf">-</p>
-                    </div>
+            <div class="card-body">
+                <div class="cache-grid">
+                    <div class="cache-item"><div class="cache-item-label">Backend</div><div class="cache-item-value" id="c-backend">—</div></div>
+                    <div class="cache-item"><div class="cache-item-label">Hits</div><div class="cache-item-value" id="c-hits" style="color:var(--green)">—</div></div>
+                    <div class="cache-item"><div class="cache-item-label">Misses</div><div class="cache-item-value" id="c-misses" style="color:var(--red)">—</div></div>
+                    <div class="cache-item"><div class="cache-item-label">Hit Rate</div><div class="cache-item-value" id="c-rate" style="color:var(--accent)">—</div></div>
+                    <div class="cache-item"><div class="cache-item-label">Entries</div><div class="cache-item-value" id="c-entries">—</div></div>
                 </div>
             </div>
         </div>
 
-        <!-- ── Admin Actions ── -->
-        <div class="widget section-gap fade-up stagger-6">
-            <div class="widget-header">
-                <div class="widget-header-icon">
-                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                </div>
-                <h3>Admin Actions</h3>
-            </div>
-            <div class="widget-body">
-                <div class="action-bar">
-                    <button onclick="initDB()" class="btn btn-blue">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
-                        Init Database
-                    </button>
-                    <button onclick="clearAllNews()" class="btn btn-red">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        Clear All News
-                    </button>
-                    <div class="action-warning">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                        Destructive actions cannot be undone. Proceed with caution.
-                    </div>
-                </div>
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header"><h3>Admin Actions</h3></div>
+            <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap">
+                <button onclick="initDB()" class="btn-sm btn-primary">Init Database</button>
+                <button onclick="clearAllNews()" class="btn-sm btn-danger">Clear All News</button>
             </div>
         </div>
-
-    </main>
+    </div>
 
     <script>
     const adminKey=new URLSearchParams(window.location.search).get("key")||"";
     let currentTheme="{{ theme }}"||"dark";
-    function toggleTheme(){currentTheme=currentTheme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",currentTheme);document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");}
-    document.getElementById("theme-dark-icon").classList.toggle("hidden",currentTheme==="dark");
-    document.getElementById("theme-light-icon").classList.toggle("hidden",currentTheme==="light");
-
+    function toggleTheme(){currentTheme=currentTheme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",currentTheme);document.getElementById("theme-dark-icon").style.display=currentTheme==="dark"?"none":"block";document.getElementById("theme-light-icon").style.display=currentTheme==="light"?"none":"block";}
+    document.getElementById("theme-dark-icon").style.display=currentTheme==="dark"?"none":"block";
+    document.getElementById("theme-light-icon").style.display=currentTheme==="light"?"none":"block";
     const barColors={regulation:"#3b82f6",defi:"#8b5cf6",nft:"#ec4899",layer1:"#06b6d4",layer2:"#6366f1",meme:"#eab308",ai_crypto:"#10b981",mining:"#f97316",stablecoin:"#14b8a6",gaming:"#f43f5e",exchange:"#f59e0b",security:"#ef4444",adoption:"#34d399",market:"#64748b"};
-
     async function api(url,opts){try{const r=await fetch(url,opts);return await r.json();}catch(e){console.error(e);return null;}}
     function h(){return{"Content-Type":"application/json","X-Admin-Key":adminKey};}
-
     async function loadAllData(){
         const s=await api("/api/admin/stats",{headers:h()});
-        if(s&&s.stats){
-            const d=s.stats;
+        if(s&&s.stats){const d=s.stats;
             document.getElementById("s-total").textContent=d.total_news||0;
             document.getElementById("s-today").textContent=d.today_news||0;
             document.getElementById("s-important").textContent=d.important_news||0;
@@ -571,21 +198,16 @@
             document.getElementById("s-sources").textContent=d.active_sources||0;
             document.getElementById("s-newsletter").textContent=(d.newsletter&&d.newsletter.active)||0;
             document.getElementById("s-alerts").textContent=d.alerts||0;
-            const cats=d.categories||{};
-            const maxC=Math.max(...Object.values(cats),1);
-            document.getElementById("cat-chart").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
-                <div><div class="flex justify-between text-xs mb-2"><span class="font-semibold">${c}</span><span class="font-mono" style="color:var(--text3)">${n}</span></div><div style="background:var(--surface2);border-radius:6px;height:6px;overflow:hidden"><div class="bar-fill" style="width:${(n/maxC*100).toFixed(1)}%;background:${barColors[c]||'#64748b'}"></div></div></div>`).join("");
+            const cats=d.categories||{};const maxC=Math.max(...Object.values(cats),1);
+            document.getElementById("cat-chart").innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="bar-row"><span class="bar-label">${c}</span><div class="bar-track"><div class="bar-fill" style="width:${(n/maxC*100).toFixed(1)}%;background:${barColors[c]||'#64748b'}"></div></div><span class="bar-count">${n}</span></div>`).join("");
             if(d.cache_stats){const c=d.cache_stats;document.getElementById("c-backend").textContent=c.backend||"memory";document.getElementById("c-hits").textContent=c.hits||0;document.getElementById("c-misses").textContent=c.misses||0;document.getElementById("c-rate").textContent=(c.hit_rate||0).toFixed(1)+"%";document.getElementById("c-entries").textContent=c.memory_entries||0;}
         }
         const src=await api("/api/admin/sources",{headers:h()});
-        if(src&&src.sources){const maxS=Math.max(...src.sources.map(s=>s.count),1);document.getElementById("sources-list").innerHTML=src.sources.slice(0,15).map(s=>`
-            <div><div class="flex justify-between text-xs mb-2"><span class="font-semibold truncate max-w-[200px]">${s.source}</span><span class="font-mono shrink-0" style="color:var(--text3)">${s.count}</span></div><div style="background:var(--surface2);border-radius:6px;height:4px;overflow:hidden"><div class="bar-fill" style="width:${(s.count/maxS*100).toFixed(1)}%;background:var(--brand)"></div></div></div>`).join("");}
+        if(src&&src.sources){const maxS=Math.max(...src.sources.map(s=>s.count),1);document.getElementById("sources-list").innerHTML=src.sources.slice(0,15).map(s=>`<div class="bar-row"><span class="bar-label" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.source}</span><div class="bar-track" style="height:4px"><div class="bar-fill" style="width:${(s.count/maxS*100).toFixed(1)}%;background:var(--accent)"></div></div><span class="bar-count">${s.count}</span></div>`).join("");}
     }
-
     async function clearCache(){const r=await api("/api/admin/cache/clear",{method:"POST",headers:h()});if(r&&r.success){loadAllData();}}
     async function initDB(){const r=await api("/api/admin/init",{method:"POST",headers:h()});if(r&&r.success)loadAllData();}
     async function clearAllNews(){if(!confirm("Delete ALL news?"))return;const r=await api("/api/admin/clear",{method:"POST",headers:h()});if(r&&r.success)loadAllData();}
-
     loadAllData(); setInterval(loadAllData,30000);
     </script>
 </body>
