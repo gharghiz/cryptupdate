@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Telegram Bot — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="hero" style="padding:40px 20px">
+        <div class="hero-badge">🤖 Telegram Bot</div>
+        <h1>AI-Powered <em>Crypto News Bot</em></h1>
+        <p>Get instant, AI-summarized crypto news delivered straight to your Telegram.</p>
+        <div class="hero-btns">
+            <a href="{{ telegram_channel }}" target="_blank" class="btn btn-primary">🚀 Open Channel</a>
+        </div>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Real-Time Updates</h3>
+            <p>News fetched every 15 minutes from 70+ trusted sources and posted instantly.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <h3>AI Summaries</h3>
+            <p>Every important news gets an AI-powered summary with sentiment analysis.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3>Live Prices</h3>
+            <p>Each post includes real-time price data for the mentioned cryptocurrency.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🚨</div>
+            <h3>Breaking Alerts</h3>
+            <p>Major hacks, regulations, and market-moving events flagged immediately.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Price Alerts</h3>
+            <p>Get notified when BTC, ETH, SOL, BNB, or XRP move more than 3% in 1 hour.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Smart Filtering</h3>
+            <p>Duplicate detection and relevance scoring ensure only quality news reaches you.</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title mb-16">How It Works</h2>
+        <div style="display:flex;flex-direction:column;gap:16px;max-width:600px">
+            <div style="display:flex;gap:16px;align-items:flex-start">
+                <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue)">1</div>
+                <div>
+                    <div style="font-weight:700;color:#fff;margin-bottom:4px">Scrape</div>
+                    <div style="font-size:0.85rem;color:var(--text2)">Bot fetches RSS feeds from 70+ crypto news sources in parallel.</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:16px;align-items:flex-start">
+                <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--purple)">2</div>
+                <div>
+                    <div style="font-weight:700;color:#fff;margin-bottom:4px">Analyze</div>
+                    <div style="font-size:0.85rem;color:var(--text2)">AI (GPT-4o-mini) summarizes important news and determines sentiment.</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:16px;align-items:flex-start">
+                <div style="min-width:40px;height:40px;border-radius:10px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--green)">3</div>
+                <div>
+                    <div style="font-weight:700;color:#fff;margin-bottom:4px">Publish</div>
+                    <div style="font-size:0.85rem;color:var(--text2)">Formatted news with prices and AI insights posted to Telegram + website.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-block">
+        <h2>📱 Join Now — It's Free</h2>
+        <p>Don't miss important crypto news. Join our Telegram channel and stay ahead.</p>
+        <a href="{{ telegram_channel }}" target="_blank" class="btn btn-primary">🚀 Join Channel</a>
+    </div>
+</div>
+{% endblock %}
