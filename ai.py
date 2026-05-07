@@ -1,128 +1,56 @@
-# -*- coding: utf-8 -*-
 """
-CryptositNews - AI Analysis
-OpenAI GPT-4o-mini integration for news sentiment analysis.
+ai.py - OpenAI integration مع JSON output
 """
 
-import os
+import json
+import logging
+from config import OPENAI_API_KEY
 
-import config
-from utils import setup_logger
-
-logger = setup_logger("ai")
-
-_client = None
+logger = logging.getLogger("cryptobot")
 
 
-def get_client():
-    """Get or create OpenAI client."""
-    global _client
-    if _client is None and config.OPENAI_API_KEY:
-        try:
-            from openai import OpenAI
-            _client = OpenAI(api_key=config.OPENAI_API_KEY)
-            logger.info("OpenAI client initialized")
-        except Exception as e:
-            logger.error(f"Failed to initialize OpenAI: {e}")
-    return _client
-
-
-def analyze_news(title, summary=""):
-    """Analyze news with AI for sentiment, summary, and reasoning."""
-    if not title:
-        return None, None, None
-
-    client = get_client()
-    if not client:
-        return None, None, None
-
+def generate_ai_insight(title: str) -> dict:
+    empty = {"summary": "", "sentiment": "", "reason": ""}
+    if not OPENAI_API_KEY:
+        return empty
     try:
-        prompt = f"""Analyze this cryptocurrency news article. Provide a brief response in this EXACT format:
-Summary: [one sentence summary of the key point, max 25 words]
-Sentiment: [positive/negative/neutral/bullish/bearish]
-Reason: [brief explanation, max 20 words]
-
-Title: {title}
-"""
-        if summary:
-            prompt += f"\nSummary: {summary[:500]}"
-
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
         response = client.chat.completions.create(
-            model=config.AI_MODEL,
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a crypto news analyst. Be concise and accurate. Respond in the exact format requested."},
-                {"role": "user", "content": prompt},
+                {
+                    "role": "system",
+                    "content": "You are a crypto news analyst. Always respond with valid JSON only, no extra text."
+                },
+                {
+                    "role": "user",
+                    "content": f"""Analyze this crypto news headline and return JSON:
+
+"{title}"
+
+Return exactly this JSON format:
+{{
+  "summary": "max 20 words summary",
+  "sentiment": "Bullish" or "Bearish" or "Neutral",
+  "reason": "max 15 words reason"
+}}"""
+                }
             ],
-            max_tokens=150,
             temperature=0.3,
+            max_tokens=150,
+            response_format={"type": "json_object"},
         )
-
         text = response.choices[0].message.content.strip()
-
-        ai_summary = ""
-        ai_sentiment = "neutral"
-        ai_reason = ""
-
-        for line in text.split("\n"):
-            line = line.strip()
-            if line.lower().startswith("summary:"):
-                ai_summary = line[len("Summary:"):].strip()
-            elif line.lower().startswith("sentiment:"):
-                ai_sentiment = line[len("Sentiment:"):].strip().lower()
-            elif line.lower().startswith("reason:"):
-                ai_reason = line[len("Reason:"):].strip()
-
-        # Validate sentiment
-        valid = ["positive", "negative", "neutral", "bullish", "bearish"]
-        if ai_sentiment not in valid:
-            ai_sentiment = "neutral"
-
-        return ai_summary, ai_sentiment, ai_reason
-
+        result = json.loads(text)
+        return {
+            "summary":   str(result.get("summary", ""))[:150],
+            "sentiment": str(result.get("sentiment", ""))[:20],
+            "reason":    str(result.get("reason", ""))[:150],
+        }
+    except json.JSONDecodeError as e:
+        logger.warning(f"⚠️ AI JSON parse error: {e}")
+        return empty
     except Exception as e:
-        logger.error(f"AI analysis failed: {e}")
-        return None, None, None
-
-
-def generate_market_intelligence(news_items, prices=None, fear_greed=None):
-    """Generate overall market intelligence summary from recent news."""
-    if not news_items:
-        return ""
-
-    client = get_client()
-    if not client:
-        return ""
-
-    try:
-        # Collect top headlines
-        headlines = []
-        for item in news_items[:10]:
-            title = item.get("title", "")
-            sentiment = item.get("ai_sentiment", "")
-            if title:
-                headlines.append(f"- {title} [{sentiment}]")
-
-        if not headlines:
-            return ""
-
-        prompt = f"""Based on these latest crypto news headlines, provide a brief market intelligence summary.
-Include: overall market mood, key trends, and any notable events. Be concise (max 100 words).
-
-{chr(10).join(headlines)}
-"""
-
-        response = client.chat.completions.create(
-            model=config.AI_MODEL,
-            messages=[
-                {"role": "system", "content": "You are a senior crypto market analyst. Provide concise, actionable market intelligence."},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=200,
-            temperature=0.4,
-        )
-
-        return response.choices[0].message.content.strip()
-
-    except Exception as e:
-        logger.error(f"Market intelligence generation failed: {e}")
-        return ""
+        logger.warning(f"⚠️ AI error: {e}")
+        return empty
