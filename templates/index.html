@@ -318,8 +318,8 @@ footer a{color:var(--purple);text-decoration:none;}
 <section style="padding:.65rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(0,229,255,.06);font-family:var(--mono);font-size:.68rem;">
   🧠 <b>Today’s Market Summary:</b> {{ intel.ai_signal.coin }} {{ intel.ai_signal.signal|lower }} with {{ intel.sentiment.bullish }}% bullish sentiment driven by {{ intel.ai_signal.trigger|lower }}.
 </section>
-<section style="padding:.65rem 1.5rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.66rem;">
-  🧠 <b>Decision Snapshot:</b> Market: <b>{{ intel.decision_snapshot.market }}</b> · Confidence: <b>{{ intel.decision_snapshot.confidence }}%</b> · Best Opportunity: <b>{{ intel.decision_snapshot.best_opportunity }}</b> · Risk Level: <b>{{ intel.decision_snapshot.risk_level }}</b> · <span id="lastUpdatedAgo">updated 0s ago</span>
+<section style="position:sticky;top:96px;z-index:85;padding:.65rem 1.5rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.66rem;background:var(--surface);">
+  🧠 <b>Decision Snapshot:</b> Market: <b>{{ intel.decision_snapshot.market }}</b> | Confidence: <b>{{ intel.decision_snapshot.confidence }}%</b> | Best: <b>{{ intel.decision_snapshot.best_opportunity }}</b> | Risk: <b>{{ intel.decision_snapshot.risk_level }}</b> | TF: <b>{{ intel.decision_snapshot.timeframe }}</b> | <span id="lastUpdatedAgo" data-ts="{{ intel.last_update }}">updated 0s ago</span>
 </section>
 <section style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,14,30,.55);">
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;">
@@ -528,6 +528,36 @@ footer a{color:var(--purple);text-decoration:none;}
         <div style="font-family:var(--mono);font-size:.73rem;line-height:1.7;font-weight:700;">
           {{ intel.ai_signal.coin }} dominates sentiment today after {{ intel.ai_signal.trigger|lower }}{% if intel.whale_activity %} and whale flows ({{ intel.whale_activity[0] }}){% endif %}.
         </div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">📊 Live Sentiment Gauge</div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.6rem;margin-bottom:.35rem;"><span class="dn">{{ intel.sentiment.bearish }}%</span><span>Market Sentiment</span><span class="up">{{ intel.sentiment.bullish }}%</span></div>
+        <div style="height:10px;border-radius:999px;overflow:hidden;display:flex;background:var(--border);animation:fadeUp .5s ease;">
+          <div style="width:{{ intel.sentiment.bearish }}%;background:linear-gradient(90deg,#ff3366,#ff8aa7);"></div>
+          <div style="width:{{ intel.sentiment.bullish }}%;background:linear-gradient(90deg,#3ef0a1,#00c97a);"></div>
+        </div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">🐋 Whale Tracker PRO</div>
+        {% for w in intel.whale_tracker %}
+          <div class="fg-sub" style="color:{% if w.mood == 'Bearish' %}var(--red){% else %}var(--green){% endif %};">• {{ w.text }} → {{ w.direction }} ({{ w.mood }})</div>
+        {% endfor %}
+      </div>
+      <div class="widget">
+        <div class="widget-title">🧭 News Impact Heatmap</div>
+        {% for coin,val in intel.news_heatmap.items() %}
+        <div class="price-row" title="Top impact headlines for {{ coin }}">
+          <span class="coin-sym">{{ coin }}</span>
+          <div style="flex:1;height:6px;background:var(--border);margin:0 .5rem;border-radius:6px;overflow:hidden;"><div style="height:100%;width:{{ (val*10) if (val*10)<=100 else 100 }}%;background:{% if val >= 6 %}var(--red){% else %}var(--green){% endif %};"></div></div>
+          <span class="time-tag">{{ val }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="widget">
+        <div class="widget-title">🎯 Opportunity Radar</div>
+        {% for r in intel.opportunity_radar %}
+        <div class="price-row"><span class="coin-sym">{{ loop.index }}. {{ r.coin }}</span><span class="{% if r.stance == 'Bullish' %}up{% elif r.stance == 'Risky' %}dn{% endif %}">{{ r.score }}% · {{ r.stance }}</span></div>
+        {% endfor %}
       </div>
 
       
@@ -802,8 +832,8 @@ loadIntel(); setInterval(loadIntel, 300000);
 setInterval(() => {
   const el = document.getElementById('lastUpdatedAgo');
   if(!el) return;
-  const sec = parseInt(el.dataset.sec || '0', 10) + 1;
-  el.dataset.sec = String(sec);
+  const base = el.dataset.ts ? new Date(el.dataset.ts).getTime() : Date.now();
+  const sec = Math.max(0, Math.floor((Date.now() - base) / 1000));
   el.textContent = `updated ${sec}s ago`;
 }, 1000);
 

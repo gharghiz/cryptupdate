@@ -109,6 +109,7 @@ def compute_market_intelligence(items: list) -> dict:
 
     coin_scores = {c:{"pos":0,"neg":0,"mentions":0} for c in coin_aliases}
     whale_hits = []
+    heatmap = {"BTC": 0, "ETH": 0, "SOL": 0}
     bull = bear = 0
 
     for item in items[:50]:
@@ -130,6 +131,8 @@ def compute_market_intelligence(items: list) -> dict:
                 coin_scores[coin]["mentions"] += 1
                 coin_scores[coin]["pos"] += pos
                 coin_scores[coin]["neg"] += neg
+                if coin in heatmap:
+                    heatmap[coin] += (2 if (pos != neg) else 1)
 
     ranked = sorted(
         coin_aliases.keys(),
@@ -165,6 +168,19 @@ def compute_market_intelligence(items: list) -> dict:
     except Exception:
         pass
 
+    parsed_whales = []
+    for raw in whale_hits[:3]:
+        txt = raw.lower()
+        mood = "Bearish" if ("exchange" in txt or "outflow" in txt) else "Bullish"
+        direction = "Exchange" if mood == "Bearish" else "Wallet"
+        parsed_whales.append({"text": raw, "mood": mood, "direction": direction})
+    radar = []
+    for coin in ranked[:3]:
+        cc = coin_scores[coin]
+        score = min(95, max(35, 50 + (cc["pos"] - cc["neg"]) * 8 + cc["mentions"] * 3))
+        stance = "Bullish" if score >= 70 else ("Neutral" if score >= 55 else "Risky")
+        radar.append({"coin": coin, "score": score, "stance": stance})
+
     return {
         "ai_signal": {
             "coin": best_coin,
@@ -183,6 +199,7 @@ def compute_market_intelligence(items: list) -> dict:
             "confidence": confidence,
             "best_opportunity": best_coin,
             "risk_level": "Low" if abs(net) >= 35 else ("Medium" if abs(net) >= 15 else "High"),
+            "timeframe": "Short-term / Mid-term",
         },
         "opportunity": {
             "coin": best_coin,
@@ -195,6 +212,10 @@ def compute_market_intelligence(items: list) -> dict:
             "bearish": bearish_pct
         },
         "whale_activity": whale_hits[:3],
+        "whale_tracker": parsed_whales,
+        "news_heatmap": heatmap,
+        "opportunity_radar": radar,
+        "last_update": datetime.now(timezone.utc).isoformat(),
     }
 
 
