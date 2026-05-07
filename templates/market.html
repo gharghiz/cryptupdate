@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Markets - Live Prices, Charts & Data | CryptositNews</title>
+    <meta name="description" content="Real-time cryptocurrency market data, live prices, charts, Fear & Greed Index, trending coins, and BTC/USD TradingView chart.">
+    <meta property="og:title" content="Crypto Markets - CryptositNews">
+    <meta property="og:description" content="Real-time cryptocurrency market data, live prices, charts, and market intelligence.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0a0e1a">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Theme Variables ── */
+        [data-theme="dark"] {
+            --bg: #0a0e1a; --bg-elevated: #0f1424; --bg-card: #141929; --bg-card-hover: #181e33;
+            --bg-input: #111728; --text-primary: #edf2f7; --text-secondary: #8b9dc3; --text-muted: #4a5e85;
+            --border: #1c2540; --border-hover: #2a3658; --accent: #3b82f6; --accent-hover: #2563eb;
+            --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --purple: #8b5cf6;
+            --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px rgba(0,0,0,0.3);
+            --ticker-bg: #080c16; --nav-bg: rgba(10,14,26,0.92);
+        }
+        [data-theme="light"] {
+            --bg: #f7f9fc; --bg-elevated: #ffffff; --bg-card: #ffffff; --bg-card-hover: #f0f4fa;
+            --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8;
+            --border: #e2e8f0; --border-hover: #cbd5e1; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+            --ticker-bg: #f1f5f9; --nav-bg: rgba(255,255,255,0.92);
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+            line-height: 1.6; overflow-x: hidden;
+        }
+
+        /* ── Ticker Bar ── */
+        .ticker-bar {
+            background: var(--ticker-bg); border-bottom: 1px solid var(--border);
+            overflow: hidden; white-space: nowrap; height: 36px;
+        }
+        .ticker-track { display: inline-flex; animation: scroll 60s linear infinite; height: 100%; align-items: center; }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .ticker-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; font-size: 12px; font-weight: 500; }
+        .ticker-item .coin-icon { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; }
+        .ticker-item .price { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary); }
+        .ticker-item .change { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; }
+
+        /* ── Navigation ── */
+        .site-nav {
+            background: var(--nav-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+        }
+        .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+        .nav-logo-text span { color: var(--accent); }
+        .nav-live { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 8px 2px 6px; border-radius: 4px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.15); font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; }
+        .nav-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); position: relative; }
+        .nav-live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(34,197,94,0.3); animation: pulse-ring 2s ease-out infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+        .nav-link { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); text-decoration: none; transition: all 0.15s; cursor: pointer; border: none; background: none; font-family: inherit; }
+        .nav-link:hover { color: var(--text-primary); background: var(--bg-input); }
+        .nav-link.active { color: var(--accent); background: rgba(59,130,246,0.08); }
+        .nav-actions { display: flex; align-items: center; gap: 4px; }
+        .nav-btn { width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .nav-btn:hover { background: var(--bg-input); color: var(--text-primary); }
+        .nav-btn svg { width: 18px; height: 18px; }
+        .nav-divider { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
+
+        /* ── Container ── */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── Stats Bar ── */
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 32px; }
+        .stat-item { background: var(--bg-elevated); padding: 20px 24px; transition: background 0.2s; }
+        .stat-item:hover { background: var(--bg-card-hover); }
+        .stat-item:first-child { border-radius: 9px 0 0 9px; }
+        .stat-item:last-child { border-radius: 0 9px 9px 0; }
+        .stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+        .stat-sub { font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; margin-top: 4px; }
+
+        /* ── Section ── */
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
+        .section-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+        .section-title-accent { display: inline-block; width: 4px; height: 20px; background: var(--accent); border-radius: 2px; margin-right: 12px; vertical-align: middle; }
+        [dir="rtl"] .section-title-accent { margin-right: 0; margin-left: 12px; }
+
+        /* ── Market Layout ── */
+        .market-layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; }
+        @media (max-width: 1100px) { .market-layout { grid-template-columns: 1fr; } }
+
+        /* ── Price Table ── */
+        .price-table-wrap { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); overflow: hidden; }
+        .price-table { width: 100%; border-collapse: collapse; }
+        .price-table thead th {
+            padding: 12px 16px; font-size: 11px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.06em; text-align: start;
+            border-bottom: 1px solid var(--border); background: var(--bg-elevated);
+            position: sticky; top: 0; z-index: 2;
+        }
+        .price-table thead th:last-child { text-align: end; }
+        .price-table tbody tr { transition: background 0.15s; }
+        .price-table tbody tr:hover { background: var(--bg-card-hover); }
+        .price-table tbody td {
+            padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13px;
+            vertical-align: middle;
+        }
+        .price-table tbody tr:last-child td { border-bottom: none; }
+
+        .coin-cell { display: flex; align-items: center; gap: 12px; }
+        .coin-rank { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-muted); width: 24px; text-align: center; flex-shrink: 0; }
+        .coin-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .coin-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+        .coin-symbol { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .price-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+        .change-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; }
+        .change-positive { color: var(--green); background: rgba(34,197,94,0.08); }
+        .change-negative { color: var(--red); background: rgba(239,68,68,0.08); }
+        .mcap-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-secondary); }
+
+        /* ── Search/Filter Bar ── */
+        .table-toolbar { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border); background: var(--bg-elevated); flex-wrap: wrap; }
+        .table-search { flex: 1; min-width: 200px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-input); color: var(--text-primary); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+        .table-search:focus { border-color: var(--accent); }
+        .table-search::placeholder { color: var(--text-muted); }
+
+        /* ── Sidebar ── */
+        .sidebar-card { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); overflow: hidden; }
+        .sidebar-card + .sidebar-card { margin-top: 16px; }
+        .sidebar-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .sidebar-card-header h3 { font-size: 13px; font-weight: 700; }
+        .sidebar-card-body { padding: 16px 18px; }
+        .sidebar-card-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 3px; }
+
+        /* ── Gauge ── */
+        .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: 16px 0; }
+        .gauge-ring { position: relative; width: 180px; height: 90px; overflow: hidden; }
+        .gauge-bg { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 180px; height: 90px; border-radius: 90px 90px 0 0;
+            background: conic-gradient(from 180deg at 50% 100%, #ef4444 0deg, #f59e0b 54deg, #eab308 72deg, #22c55e 108deg, #16a34a 180deg);
+            -webkit-mask: radial-gradient(circle at 50% 100%, transparent 38px, black 40px);
+            mask: radial-gradient(circle at 50% 100%, transparent 38px, black 40px); }
+        .gauge-needle { position: absolute; bottom: 0; left: 50%; width: 2px; height: 42px; background: var(--text-primary); border-radius: 1px;
+            transform-origin: bottom center; transform: translateX(-50%) rotate(0deg); transition: transform 1.2s ease-out; }
+        .gauge-center { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%;
+            background: var(--text-primary); border: 3px solid var(--bg-card); z-index: 1; }
+        .gauge-labels { display: flex; justify-content: space-between; width: 100%; max-width: 180px; margin-top: 8px; }
+        .gauge-labels span { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+        /* ── Trending ── */
+        .trending-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+        .trending-item + .trending-item { border-top: 1px solid var(--border); }
+        .trending-rank { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; background: var(--bg-input); color: var(--text-muted); flex-shrink: 0; }
+        .trending-rank.top-1 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .trending-rank.top-2 { background: #64748b; color: #fff; }
+        .trending-rank.top-3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+        .trending-info { flex: 1; min-width: 0; }
+        .trending-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .trending-symbol { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        .trending-rank-badge { font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); background: var(--bg-input); padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+
+        /* ── TradingView ── */
+        .tv-widget-wrap { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); overflow: hidden; }
+        .tv-widget-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .tv-widget-header h3 { font-size: 13px; font-weight: 700; }
+        .tradingview-widget-container { height: 500px; }
+        @media (max-width: 768px) { .tradingview-widget-container { height: 350px; } }
+
+        /* ── Skeleton ── */
+        .skeleton { background: var(--bg-input); border-radius: 6px; animation: pulse-skeleton 1.5s ease-in-out infinite; }
+        @keyframes pulse-skeleton { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* ── Toast ── */
+        .toast-container { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 20px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 600; color: var(--text-primary); animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards; }
+        @keyframes toast-in { from { transform: translateY(-8px); opacity: 0; } }
+        @keyframes toast-out { to { transform: translateY(-8px); opacity: 0; } }
+
+        /* ── Page Header ── */
+        .page-header { padding: 32px 0 24px; }
+        .page-title { font-size: 28px; font-weight: 900; letter-spacing: -0.03em; }
+        .page-desc { font-size: 14px; color: var(--text-secondary); margin-top: 6px; }
+
+        /* ── Footer ── */
+        .site-footer { border-top: 1px solid var(--border); margin-top: 48px; padding: 40px 0 24px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+        .footer-brand { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+        .footer-brand span { color: var(--accent); }
+        .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 300px; }
+        .footer-heading { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+        .footer-link { display: block; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0; transition: color 0.15s; }
+        .footer-link:hover { color: var(--accent); }
+        .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .footer-copy { font-size: 12px; color: var(--text-muted); }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        /* ── RTL ── */
+        [dir="rtl"] .ticker-track { animation-direction: reverse; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .stat-item:first-child { border-radius: 9px 0 0 0; }
+            .stat-item:nth-child(2) { border-radius: 0 9px 0 0; }
+            .stat-item:nth-child(3) { border-radius: 0 0 0 9px; }
+            .stat-item:last-child { border-radius: 0 0 9px 0; }
+            .stat-value { font-size: 18px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .price-table .hide-mobile { display: none; }
+            .page-title { font-size: 22px; }
+            .nav-links-desktop { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ═══ TOP TICKER BAR ═══ -->
+    <div class="ticker-bar">
+        <div id="prices-ticker" class="ticker-track">
+            <div class="ticker-item" style="color:var(--text-muted)">Loading prices...</div>
+        </div>
+    </div>
+
+    <!-- ═══ NAVIGATION ═══ -->
+    <nav class="site-nav">
+        <div class="nav-inner">
+            <div style="display:flex;align-items:center;gap:24px;">
+                <a href="/" class="nav-logo">
+                    <div class="nav-logo-icon">
+                        <svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="nav-logo-text">Crypto<span>sit</span>News</span>
+                    <span class="nav-live"><span class="nav-live-dot"></span>Live</span>
+                </a>
+                <div class="nav-links nav-links-desktop">
+                    <a href="/" class="nav-link">News</a>
+                    <a href="/market" class="nav-link active">Markets</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <a href="/" class="nav-btn" title="Home">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </a>
+                <div class="nav-divider"></div>
+                <button onclick="toggleLang()" id="lang-btn" class="nav-btn" style="width:auto;padding:0 10px;font-size:11px;font-weight:700;letter-spacing:0.05em" title="Language">
+                    {{ 'EN' if lang == 'ar' else 'AR' }}
+                </button>
+                <button onclick="toggleTheme()" id="theme-btn" class="nav-btn" title="Theme">
+                    <svg id="theme-dark-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Crypto Markets</h1>
+            <p class="page-desc">Live cryptocurrency prices, market data, charts, and trends — updated in real time.</p>
+        </div>
+
+        <!-- Market Overview Stats -->
+        <section class="stats-bar" id="market-stats">
+            <div class="stat-item">
+                <div class="stat-label">Total Market Cap</div>
+                <div class="stat-value" id="stat-mcap">—</div>
+                <div class="stat-sub" id="stat-mcap-change" style="color:var(--text-muted)">—</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">24h Trading Volume</div>
+                <div class="stat-value" id="stat-vol">—</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">BTC Dominance</div>
+                <div class="stat-value" id="stat-btc">—</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Fear &amp; Greed Index</div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div class="stat-value" id="fg-value">—</div>
+                    <span id="fg-label" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:var(--bg-input);color:var(--text-muted)">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Layout: Table + Sidebar -->
+        <div class="market-layout">
+
+            <!-- Left: Price Table + TradingView -->
+            <div>
+                <!-- Coin Prices Table -->
+                <div class="section-header">
+                    <h2 class="section-title"><span class="section-title-accent"></span>Cryptocurrency Prices</h2>
+                </div>
+                <div class="price-table-wrap" style="margin-bottom:32px">
+                    <div class="table-toolbar">
+                        <input id="coin-search" type="text" placeholder="Search coins..." class="table-search" oninput="filterCoins()">
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="price-table" id="price-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>Coin</th>
+                                    <th>Price</th>
+                                    <th>24h Change</th>
+                                    <th class="hide-mobile">Market Cap</th>
+                                </tr>
+                            </thead>
+                            <tbody id="price-tbody">
+                                <tr><td colspan="5" style="padding:24px;text-align:center">
+                                    <div class="skeleton" style="height:16px;width:60%;margin:0 auto 8px"></div>
+                                    <div class="skeleton" style="height:16px;width:40%;margin:0 auto"></div>
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TradingView Chart -->
+                <div class="section-header">
+                    <h2 class="section-title"><span class="section-title-accent"></span>BTC / USDT Chart</h2>
+                </div>
+                <div class="tv-widget-wrap">
+                    <div class="tv-widget-header">
+                        <span style="font-size:16px">📊</span>
+                        <h3>Bitcoin Price Chart</h3>
+                        <span class="sidebar-card-label" style="margin-left:auto;background:rgba(247,147,26,0.1);color:#f7931a">BTC</span>
+                    </div>
+                    <div class="tradingview-widget-container">
+                        <div id="tradingview_chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Sidebar -->
+            <aside>
+                <!-- Fear & Greed Gauge -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <span id="fg-emoji" style="font-size:16px">😐</span>
+                        <h3>Fear &amp; Greed Index</h3>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="gauge-wrap">
+                            <div class="gauge-ring">
+                                <div class="gauge-bg"></div>
+                                <div id="fg-indicator" class="gauge-needle" style="transform: translateX(-50%) rotate(0deg)"></div>
+                                <div class="gauge-center"></div>
+                            </div>
+                            <div class="gauge-labels">
+                                <span style="color:var(--red)">Extreme Fear</span>
+                                <span>Neutral</span>
+                                <span style="color:var(--green)">Extreme Greed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Coins -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <span>🔥</span>
+                        <h3>Trending</h3>
+                        <span class="sidebar-card-label" style="margin-left:auto;background:rgba(239,68,68,0.1);color:var(--red)">Hot</span>
+                    </div>
+                    <div id="trending-list" class="sidebar-card-body">
+                        <div class="skeleton" style="height:48px;width:100%;margin-bottom:8px"></div>
+                        <div class="skeleton" style="height:48px;width:100%;margin-bottom:8px"></div>
+                        <div class="skeleton" style="height:48px;width:100%"></div>
+                    </div>
+                </div>
+
+                <!-- Market Dominance -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <span style="font-size:16px">🥧</span>
+                        <h3>Market Dominance</h3>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div id="dominance-bars">
+                            <div style="margin-bottom:14px">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                                    <span style="font-size:13px;font-weight:600">Bitcoin (BTC)</span>
+                                    <span id="btc-dom-pct" style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">—</span>
+                                </div>
+                                <div style="height:6px;background:var(--bg-input);border-radius:3px;overflow:hidden">
+                                    <div id="btc-dom-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#f7931a,#f59e0b);border-radius:3px;transition:width 1.2s ease-out"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                                    <span style="font-size:13px;font-weight:600">Ethereum (ETH)</span>
+                                    <span id="eth-dom-pct" style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--purple)">—</span>
+                                </div>
+                                <div style="height:6px;background:var(--bg-input);border-radius:3px;overflow:hidden">
+                                    <div id="eth-dom-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#627eea,#8b5cf6);border-radius:3px;transition:width 1.2s ease-out"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">Crypto<span>sit</span>News</div>
+                    <p class="footer-desc" style="margin-top:8px">Your trusted source for real-time cryptocurrency news, market intelligence, and AI-powered analysis from 50+ sources.</p>
+                </div>
+                <div>
+                    <div class="footer-heading">Resources</div>
+                    <a href="/rss" class="footer-link">RSS Feed</a>
+                    <a href="/sitemap.xml" class="footer-link">Sitemap</a>
+                    <a href="/health" class="footer-link">Health Status</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Features</div>
+                    <a href="/market" class="footer-link">Live Prices</a>
+                    <span class="footer-link" style="cursor:default">AI Analysis</span>
+                    <span class="footer-link" style="cursor:default">Price Alerts</span>
+                </div>
+                <div>
+                    <div class="footer-heading">Platform</div>
+                    <span class="footer-link" style="cursor:default">PWA Enabled</span>
+                    <span class="footer-link" style="cursor:default">SSE Live</span>
+                    <span class="footer-link" style="cursor:default">Multi-language</span>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span class="footer-copy">&copy; 2024 CryptositNews. All rights reserved.</span>
+                <span class="footer-copy">Powered by AI</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TradingView Widget Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+    <script>
+    /* ===== STATE ===== */
+    let currentLang = "{{ lang }}" || "en";
+    let currentTheme = "{{ theme }}" || "dark";
+    let allCoins = [];
+
+    /* ===== I18N ===== */
+    const i18n = {
+        en: {
+            market_cap: "Market Cap", volume_24h: "24h Volume", btc_dominance: "BTC Dominance",
+            fear_greed: "Fear & Greed", fear_greed_index: "Fear & Greed Index",
+            extreme_fear: "Extreme Fear", neutral: "Neutral", extreme_greed: "Extreme Greed",
+            search_placeholder: "Search coins..."
+        },
+        ar: {
+            market_cap: "القيمة السوقية", volume_24h: "حجم التداول 24س", btc_dominance: "هيمنة بيتكوين",
+            fear_greed: "الخوف والطمع", fear_greed_index: "مؤشر الخوف والطمع",
+            extreme_fear: "خوف شديد", neutral: "محايد", extreme_greed: "طمع شديد",
+            search_placeholder: "البحث عن عملات..."
+        }
+    };
+    function t(k) { return (i18n[currentLang] || {})[k] || i18n.en[k] || k; }
+
+    /* ===== FORMATTING ===== */
+    function formatCompact(n) {
+        if (n == null || isNaN(n)) return '—';
+        n = Number(n);
+        if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
+        if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+        if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+        if (n >= 1e3) return '$' + (n / 1e3).toFixed(2) + 'K';
+        return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatPrice(n) {
+        if (n == null || isNaN(n)) return '—';
+        n = Number(n);
+        if (n >= 1) return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (n >= 0.01) return '$' + n.toFixed(4);
+        return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 });
+    }
+
+    function formatPercent(n) {
+        if (n == null || isNaN(n)) return '0.00%';
+        return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+    }
+
+    /* ===== TOAST ===== */
+    function showToast(msg) {
+        const c = document.getElementById('toast-container');
+        const d = document.createElement('div');
+        d.className = 'toast'; d.textContent = msg;
+        c.appendChild(d);
+        setTimeout(() => d.remove(), 3000);
+    }
+
+    /* ===== THEME ===== */
+    function toggleTheme() {
+        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        document.getElementById('theme-dark-icon').style.display = currentTheme === 'dark' ? 'none' : 'block';
+        document.getElementById('theme-light-icon').style.display = currentTheme === 'light' ? 'none' : 'block';
+        fetch('/api/theme', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ theme: currentTheme }) });
+    }
+    document.getElementById('theme-dark-icon').style.display = currentTheme === 'dark' ? 'none' : 'block';
+    document.getElementById('theme-light-icon').style.display = currentTheme === 'light' ? 'none' : 'block';
+
+    /* ===== LANGUAGE ===== */
+    function toggleLang() {
+        currentLang = currentLang === 'en' ? 'ar' : 'en';
+        document.getElementById('lang-btn').textContent = currentLang === 'ar' ? 'EN' : 'AR';
+        document.documentElement.lang = currentLang === 'ar' ? 'ar' : 'en';
+        document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        fetch('/api/lang', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lang: currentLang }) });
+    }
+
+    /* ===== FEAR & GREED HELPERS ===== */
+    function getFGEmoji(val) {
+        if (val <= 20) return '😱';
+        if (val <= 40) return '😨';
+        if (val <= 60) return '😐';
+        if (val <= 80) return '😊';
+        return '🤑';
+    }
+    function getFGColor(val) {
+        if (val <= 25) return 'var(--red)';
+        if (val <= 45) return 'var(--amber)';
+        if (val <= 55) return '#eab308';
+        return 'var(--green)';
+    }
+    function getFGRotation(val) {
+        /* Map 0-100 to -90deg to +90deg */
+        return ((val / 100) * 180) - 90;
+    }
+
+    /* ===== LOAD: GLOBAL MARKET DATA ===== */
+    async function loadGlobal() {
+        try {
+            const res = await fetch('/api/global');
+            const json = await res.json();
+            if (!json.success) return;
+            const d = json.data;
+
+            document.getElementById('stat-mcap').textContent = formatCompact(d.total_market_cap_usd);
+            const changePct = d.market_cap_change_24h_pct || 0;
+            const changeEl = document.getElementById('stat-mcap-change');
+            changeEl.textContent = formatPercent(changePct);
+            changeEl.style.color = changePct >= 0 ? 'var(--green)' : 'var(--red)';
+
+            document.getElementById('stat-vol').textContent = formatCompact(d.total_volume_usd);
+            document.getElementById('stat-btc').textContent = (d.btc_dominance || 0).toFixed(1) + '%';
+
+            /* Dominance sidebar bars */
+            const btcDom = d.btc_dominance || 0;
+            const ethDom = d.eth_dominance || 0;
+            document.getElementById('btc-dom-pct').textContent = btcDom.toFixed(1) + '%';
+            document.getElementById('eth-dom-pct').textContent = ethDom.toFixed(1) + '%';
+            document.getElementById('btc-dom-bar').style.width = btcDom + '%';
+            document.getElementById('eth-dom-bar').style.width = ethDom + '%';
+        } catch (e) {
+            console.warn('Failed to load global data:', e);
+        }
+    }
+
+    /* ===== LOAD: FEAR & GREED ===== */
+    async function loadFearGreed() {
+        try {
+            const res = await fetch('/api/fear-greed');
+            const json = await res.json();
+            if (!json.success) return;
+            const d = json.data;
+            const val = d.value || 0;
+            const cls = d.classification || 'Neutral';
+
+            document.getElementById('fg-value').textContent = val;
+            const labelEl = document.getElementById('fg-label');
+            labelEl.textContent = cls;
+            labelEl.style.color = getFGColor(val);
+            labelEl.style.background = val <= 25 ? 'rgba(239,68,68,0.1)' : val >= 75 ? 'rgba(34,197,94,0.1)' : 'rgba(234,179,8,0.1)';
+
+            document.getElementById('fg-indicator').style.transform = `translateX(-50%) rotate(${getFGRotation(val)}deg)`;
+            document.getElementById('fg-emoji').textContent = getFGEmoji(val);
+        } catch (e) {
+            console.warn('Failed to load Fear & Greed:', e);
+        }
+    }
+
+    /* ===== LOAD: PRICES TABLE ===== */
+    async function loadPrices() {
+        try {
+            const res = await fetch('/api/prices');
+            const json = await res.json();
+            if (!json.success) return;
+            allCoins = json.data || [];
+            renderCoinTable(allCoins);
+            buildTicker(allCoins);
+        } catch (e) {
+            console.warn('Failed to load prices:', e);
+            document.getElementById('price-tbody').innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--text-muted)">Failed to load market data. Please try again later.</td></tr>';
+        }
+    }
+
+    function renderCoinTable(coins) {
+        const tbody = document.getElementById('price-tbody');
+        if (!coins || coins.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--text-muted)">No coins found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = coins.map((c, i) => {
+            const change = c.change_24h || 0;
+            const changeClass = change >= 0 ? 'change-positive' : 'change-negative';
+            const arrow = change >= 0 ? '&#9650;' : '&#9660;';
+            return `<tr>
+                <td><span class="coin-rank">${i + 1}</span></td>
+                <td>
+                    <div class="coin-cell">
+                        <img class="coin-img" src="${c.image || ''}" alt="${c.name}" loading="lazy" onerror="this.style.display='none'">
+                        <div>
+                            <div class="coin-name">${c.name}</div>
+                            <div class="coin-symbol">${c.symbol}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="price-val">${formatPrice(c.price)}</span></td>
+                <td><span class="change-val ${changeClass}">${arrow} ${formatPercent(change)}</span></td>
+                <td class="hide-mobile"><span class="mcap-val">${formatCompact(c.market_cap)}</span></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function filterCoins() {
+        const q = document.getElementById('coin-search').value.toLowerCase().trim();
+        if (!q) { renderCoinTable(allCoins); return; }
+        const filtered = allCoins.filter(c =>
+            c.name.toLowerCase().includes(q) ||
+            c.symbol.toLowerCase().includes(q)
+        );
+        renderCoinTable(filtered);
+    }
+
+    /* ===== TICKER BAR ===== */
+    function buildTicker(coins) {
+        const el = document.getElementById('prices-ticker');
+        if (!coins || coins.length === 0) return;
+        const items = coins.slice(0, 20).map(c => {
+            const change = c.change_24h || 0;
+            const color = change >= 0 ? 'var(--green)' : 'var(--red)';
+            return `<div class="ticker-item">
+                ${c.image ? `<img class="coin-icon" src="${c.image}" alt="" onerror="this.style.display='none'">` : ''}
+                <span style="font-weight:600;color:var(--text-secondary)">${c.symbol}</span>
+                <span class="price">${formatPrice(c.price)}</span>
+                <span class="change" style="color:${color}">${formatPercent(change)}</span>
+            </div>`;
+        }).join('');
+        el.innerHTML = items + items;
+    }
+
+    /* ===== LOAD: TRENDING ===== */
+    async function loadTrending() {
+        try {
+            const res = await fetch('/api/trending');
+            const json = await res.json();
+            if (!json.success) return;
+            const coins = (json.data && json.data.coins) || [];
+            const container = document.getElementById('trending-list');
+
+            if (coins.length === 0) {
+                container.innerHTML = '<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:16px 0">No trending data available.</p>';
+                return;
+            }
+
+            container.innerHTML = coins.slice(0, 7).map((c, i) => {
+                const rankClass = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+                return `<div class="trending-item">
+                    <span class="trending-rank ${rankClass}">${i + 1}</span>
+                    ${c.image ? `<img src="${c.image}" width="24" height="24" style="border-radius:50%;flex-shrink:0" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+                    <div class="trending-info">
+                        <div class="trending-name">${c.name}</div>
+                        <div class="trending-symbol">${c.symbol}</div>
+                    </div>
+                    ${c.market_cap_rank ? `<span class="trending-rank-badge">#${c.market_cap_rank}</span>` : ''}
+                </div>`;
+            }).join('');
+        } catch (e) {
+            console.warn('Failed to load trending:', e);
+        }
+    }
+
+    /* ===== TRADINGVIEW WIDGET ===== */
+    function initTradingView() {
+        if (typeof TradingView !== 'undefined') {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "BINANCE:BTCUSDT",
+                "interval": "60",
+                "timezone": "Etc/UTC",
+                "theme": document.documentElement.dataset.theme || "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#141929",
+                "enable_publishing": false,
+                "hide_side_toolbar": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_chart"
+            });
+        }
+    }
+
+    /* ===== INIT ===== */
+    document.addEventListener('DOMContentLoaded', () => {
+        loadGlobal();
+        loadFearGreed();
+        loadPrices();
+        loadTrending();
+        initTradingView();
+
+        /* PWA */
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+    </script>
+</body>
+</html>

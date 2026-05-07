@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News - CryptositNews</title>
+    <meta name="description" content="Browse the latest cryptocurrency news, filtered by category. Real-time updates from 50+ sources.">
+    <meta property="og:title" content="Crypto News - CryptositNews">
+    <meta property="og:description" content="Browse the latest cryptocurrency news filtered by category.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0a0e1a">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Theme Variables ── */
+        [data-theme="dark"] {
+            --bg: #0a0e1a; --bg-elevated: #0f1424; --bg-card: #141929; --bg-card-hover: #181e33;
+            --bg-input: #111728; --text-primary: #edf2f7; --text-secondary: #8b9dc3; --text-muted: #4a5e85;
+            --border: #1c2540; --border-hover: #2a3658; --accent: #3b82f6; --accent-hover: #2563eb;
+            --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --purple: #8b5cf6;
+            --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px rgba(0,0,0,0.3);
+            --ticker-bg: #080c16; --nav-bg: rgba(10,14,26,0.92);
+        }
+        [data-theme="light"] {
+            --bg: #f7f9fc; --bg-elevated: #ffffff; --bg-card: #ffffff; --bg-card-hover: #f0f4fa;
+            --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8;
+            --border: #e2e8f0; --border-hover: #cbd5e1; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+            --ticker-bg: #f1f5f9; --nav-bg: rgba(255,255,255,0.92);
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+            line-height: 1.6; overflow-x: hidden;
+        }
+
+        /* ── Ticker Bar ── */
+        .ticker-bar {
+            background: var(--ticker-bg); border-bottom: 1px solid var(--border);
+            overflow: hidden; white-space: nowrap; height: 36px;
+        }
+        .ticker-track { display: inline-flex; animation: scroll 60s linear infinite; height: 100%; align-items: center; }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .ticker-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; font-size: 12px; font-weight: 500; }
+        .ticker-item .coin-icon { width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; }
+        .ticker-item .price { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary); }
+        .ticker-item .change { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; }
+        .ticker-sep { color: var(--border); margin: 0 4px; }
+
+        /* ── Navigation ── */
+        .site-nav {
+            background: var(--nav-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+        }
+        .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+        .nav-logo-text span { color: var(--accent); }
+        .nav-live { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 8px 2px 6px; border-radius: 4px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.15); font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; }
+        .nav-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); position: relative; }
+        .nav-live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(34,197,94,0.3); animation: pulse-ring 2s ease-out infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+        .nav-link { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); text-decoration: none; transition: all 0.15s; cursor: pointer; border: none; background: none; font-family: inherit; }
+        .nav-link:hover { color: var(--text-primary); background: var(--bg-input); }
+        .nav-link.active { color: var(--accent); background: rgba(59,130,246,0.08); }
+        .nav-actions { display: flex; align-items: center; gap: 4px; }
+        .nav-btn { width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .nav-btn:hover { background: var(--bg-input); color: var(--text-primary); }
+        .nav-btn svg { width: 18px; height: 18px; }
+        .nav-divider { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
+
+        /* ── Container ── */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── Section ── */
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
+        .section-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+        .section-title-accent { display: inline-block; width: 4px; height: 20px; background: var(--accent); border-radius: 2px; margin-right: 12px; vertical-align: middle; }
+        [dir="rtl"] .section-title-accent { margin-right: 0; margin-left: 12px; }
+
+        /* ── Category Tabs ── */
+        .tabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-secondary); border: 1px solid var(--border); background: transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; font-family: inherit; }
+        .tab:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        /* ── Search Bar (inline) ── */
+        .news-search { position: relative; margin-bottom: 24px; }
+        .news-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; display: flex; align-items: center; }
+        .news-search-icon svg { width: 18px; height: 18px; }
+        [dir="rtl"] .news-search-icon { left: auto; right: 14px; }
+        .news-search-input { width: 100%; padding: 12px 14px 12px 42px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+        [dir="rtl"] .news-search-input { padding: 12px 42px 12px 14px; }
+        .news-search-input:focus { border-color: var(--accent); }
+        .news-search-input::placeholder { color: var(--text-muted); }
+
+        /* ── Results Info ── */
+        .results-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .results-count { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .results-count strong { color: var(--text-primary); }
+        .results-sort { font-size: 12px; color: var(--text-muted); }
+
+        /* ── News Card ── */
+        .news-card { display: block; padding: 20px 24px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); text-decoration: none; color: inherit; transition: all 0.2s; position: relative; }
+        .news-card:hover { border-color: var(--border-hover); background: var(--bg-card-hover); box-shadow: var(--shadow); }
+        .news-card + .news-card { margin-top: 8px; }
+        .news-card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .news-tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .news-tag-market { background: rgba(100,116,139,0.1); color: #64748b; }
+        .news-tag-regulation { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        .news-tag-defi { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+        .news-tag-security { background: rgba(239,68,68,0.1); color: #ef4444; }
+        .news-tag-ai_crypto { background: rgba(16,185,129,0.1); color: #10b981; }
+        .news-tag-exchange { background: rgba(251,191,36,0.1); color: #f59e0b; }
+        .news-tag-nft { background: rgba(236,72,153,0.1); color: #ec4899; }
+        .news-tag-important { background: rgba(251,191,36,0.12); color: #f59e0b; display: flex; align-items: center; gap: 3px; }
+        .news-sentiment { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .news-card-title { font-size: 15px; font-weight: 700; line-height: 1.45; margin-bottom: 8px; letter-spacing: -0.01em; }
+        .news-card:hover .news-card-title { color: var(--accent); }
+        .news-card-excerpt { font-size: 13px; color: var(--text-secondary); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .news-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .news-source { display: flex; align-items: center; gap: 8px; }
+        .news-source-avatar { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
+        .news-source-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .news-time { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        .news-bookmark { width: 32px; height: 32px; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+        .news-bookmark:hover { background: var(--bg-input); color: var(--text-primary); }
+        .news-bookmark.bookmarked svg { fill: var(--amber); color: var(--amber); }
+        .news-bookmark svg { width: 16px; height: 16px; }
+
+        /* ── Sentiment Badge ── */
+        .sentiment-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; background: var(--bg-input); }
+        .sentiment-badge.positive { color: var(--green); }
+        .sentiment-badge.negative { color: var(--red); }
+        .sentiment-badge.bullish { color: var(--green); }
+        .sentiment-badge.bearish { color: var(--red); }
+        .sentiment-badge.neutral { color: var(--text-muted); }
+
+        /* ── Important News Card ── */
+        .news-card.important { border-left: 3px solid var(--amber); }
+        [dir="rtl"] .news-card.important { border-left: none; border-right: 3px solid var(--amber); }
+
+        /* ── News Grid ── */
+        .news-layout { display: grid; grid-template-columns: 1fr 320px; gap: 40px; }
+        @media (max-width: 1024px) { .news-layout { grid-template-columns: 1fr; } }
+
+        /* ── Sidebar ── */
+        .sidebar-card { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); overflow: hidden; }
+        .sidebar-card + .sidebar-card { margin-top: 16px; }
+        .sidebar-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .sidebar-card-header h3 { font-size: 13px; font-weight: 700; }
+        .sidebar-card-body { padding: 16px 18px; }
+
+        /* ── Load More ── */
+        .load-more { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-top: 16px; }
+        .load-more:hover { border-color: var(--border-hover); color: var(--text-primary); background: var(--bg-card); }
+        .load-more:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Skeleton ── */
+        .skeleton { background: var(--bg-input); border-radius: 6px; animation: pulse-skeleton 1.5s ease-in-out infinite; }
+        @keyframes pulse-skeleton { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* ── Empty State ── */
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-state-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-secondary); }
+        .empty-state-desc { font-size: 13px; color: var(--text-muted); }
+
+        /* ── Toast ── */
+        .toast-container { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 20px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 600; color: var(--text-primary); animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards; }
+        @keyframes toast-in { from { transform: translateY(-8px); opacity: 0; } }
+        @keyframes toast-out { to { transform: translateY(-8px); opacity: 0; } }
+
+        /* ── Search Overlay ── */
+        .search-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; padding: 100px 24px 24px; }
+        .search-overlay.open { display: block; }
+        .search-box { max-width: 600px; margin: 0 auto; }
+        .search-input { width: 100%; padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); font-size: 16px; font-family: inherit; outline: none; box-shadow: var(--shadow-lg); }
+        .search-input:focus { border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-results { margin-top: 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); box-shadow: var(--shadow-lg); max-height: 400px; overflow-y: auto; }
+        .search-result { display: block; padding: 14px 20px; text-decoration: none; color: inherit; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        .search-result:last-child { border-bottom: none; }
+        .search-result:hover { background: var(--bg-card-hover); }
+        .search-result-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .search-result-meta { font-size: 11px; color: var(--text-muted); }
+
+        /* ── Bookmarks Panel ── */
+        .bookmarks-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 320px; background: var(--bg-elevated); border-left: 1px solid var(--border); z-index: 55; padding: 24px; overflow-y: auto; display: none; }
+        .bookmarks-panel.open { display: block; }
+        [dir="rtl"] .bookmarks-panel { right: auto; left: 0; border-left: none; border-right: 1px solid var(--border); }
+        .bookmark-item { display: block; padding: 10px 12px; border-radius: 6px; font-size: 13px; color: var(--text-secondary); text-decoration: none; transition: background 0.1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bookmark-item:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+        /* ── Footer ── */
+        .site-footer { border-top: 1px solid var(--border); margin-top: 48px; padding: 40px 0 24px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+        @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+        .footer-brand { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+        .footer-brand span { color: var(--accent); }
+        .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 300px; }
+        .footer-heading { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+        .footer-link { display: block; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0; transition: color 0.15s; }
+        .footer-link:hover { color: var(--accent); }
+        .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .footer-copy { font-size: 12px; color: var(--text-muted); }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+        .breadcrumb a:hover { color: var(--accent); }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        /* ── RTL ── */
+        [dir="rtl"] .ticker-track { animation-direction: reverse; }
+
+        /* ── Mobile Nav ── */
+        @media (max-width: 768px) {
+            .nav-links { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ═══ TOP TICKER BAR ═══ -->
+    <div class="ticker-bar">
+        <div id="prices-ticker" class="ticker-track">
+            <div class="ticker-item" style="color:var(--text-muted)">Loading prices...</div>
+        </div>
+    </div>
+
+    <!-- ═══ NAVIGATION ═══ -->
+    <nav class="site-nav">
+        <div class="nav-inner">
+            <div style="display:flex;align-items:center;gap:24px;">
+                <a href="/" class="nav-logo">
+                    <div class="nav-logo-icon">
+                        <svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="nav-logo-text">Crypto<span>sit</span>News</span>
+                    <span class="nav-live"><span class="nav-live-dot"></span>Live</span>
+                </a>
+                <div class="nav-links" id="desktop-nav">
+                    <a href="/" class="nav-link" data-i18n="nav_home">Home</a>
+                    <a href="/news" class="nav-link active" data-i18n="nav_news">News</a>
+                    <a href="/market" class="nav-link" data-i18n="nav_market">Market</a>
+                    <a href="/telegram" class="nav-link">Telegram</a>
+                    <a href="/about" class="nav-link" data-i18n="nav_about">About</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button onclick="toggleSearch()" class="nav-btn" title="Search">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+                <button onclick="toggleBookmarksPanel()" class="nav-btn" style="position:relative" title="Bookmarks">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    <span id="bookmark-count" class="nav-badge" style="display:none">0</span>
+                </button>
+                <div class="nav-divider"></div>
+                <button onclick="toggleLang()" id="lang-btn" class="nav-btn" style="width:auto;padding:0 10px;font-size:11px;font-weight:700;letter-spacing:0.05em" title="Language">
+                    {{ 'EN' if lang == 'ar' else 'AR' }}
+                </button>
+                <button onclick="toggleTheme()" id="theme-btn" class="nav-btn" title="Theme">
+                    <svg id="theme-dark-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ SEARCH OVERLAY ═══ -->
+    <div id="search-bar" class="search-overlay">
+        <div class="search-box">
+            <input id="search-input" type="text" placeholder="Search news..." class="search-input" oninput="debounceSearch()" onkeydown="if(event.key==='Escape')toggleSearch()">
+            <div id="search-results" class="search-results"></div>
+        </div>
+    </div>
+
+    <!-- ═══ BOOKMARKS PANEL ═══ -->
+    <div id="bookmarks-panel" class="bookmarks-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <h3 style="font-size:15px;font-weight:700" data-i18n="bookmarks">Bookmarks</h3>
+            <button onclick="toggleBookmarksPanel()" style="background:var(--bg-input);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:14px">&#10005;</button>
+        </div>
+        <div id="bookmarks-list"></div>
+        <p id="no-bookmarks" style="font-size:13px;color:var(--text-muted);text-align:center;padding:40px 0" data-i18n="no_bookmarks">No bookmarks yet.</p>
+    </div>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="container" style="padding-top:32px;padding-bottom:48px">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/" data-i18n="nav_home">Home</a>
+            <span>/</span>
+            <span data-i18n="nav_news" style="color:var(--text-secondary)">News</span>
+        </div>
+
+        <!-- Page Header -->
+        <div class="section-header" style="margin-bottom:24px">
+            <h1 class="section-title"><span class="section-title-accent"></span><span data-i18n="all_news">All News</span></h1>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="news-search">
+            <span class="news-search-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </span>
+            <input id="inline-search" type="text" class="news-search-input" placeholder="Search articles..." data-i18n-placeholder="search_placeholder" oninput="debounceInlineSearch()" onkeydown="if(event.key==='Enter'){doInlineSearch();}">
+        </div>
+
+        <!-- Content Grid -->
+        <div class="news-layout">
+            <!-- Main Feed -->
+            <div>
+                <!-- Category Tabs -->
+                <div class="tabs" id="category-tabs" style="margin-bottom:20px">
+                    <button onclick="filterCategory('all')" class="tab active" data-cat="all" data-i18n="all">All</button>
+                    <button onclick="filterCategory('important')" class="tab" data-cat="important">&#9889; Important</button>
+                    <button onclick="filterCategory('market')" class="tab" data-cat="market" data-i18n="nav_market">Crypto</button>
+                    <button onclick="filterCategory('regulation')" class="tab" data-cat="regulation">&#9878; Regulation</button>
+                    <button onclick="filterCategory('defi')" class="tab" data-cat="defi">DeFi</button>
+                    <button onclick="filterCategory('nft')" class="tab" data-cat="nft">NFT</button>
+                    <button onclick="filterCategory('security')" class="tab" data-cat="security">&#128737; Security</button>
+                    <button onclick="filterCategory('ai_crypto')" class="tab" data-cat="ai_crypto">&#129302; AI</button>
+                    <button onclick="filterCategory('exchange')" class="tab" data-cat="exchange">&#127974; Exchange</button>
+                </div>
+
+                <!-- Results Info -->
+                <div class="results-info" id="results-info" style="display:none">
+                    <span class="results-count" id="results-count"></span>
+                    <span class="results-sort" id="results-sort" data-i18n="sorted_newest">Sorted by newest</span>
+                </div>
+
+                <!-- News Feed -->
+                <div id="news-feed">
+                    <div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div>
+                    <div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div>
+                    <div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div>
+                    <div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div>
+                    <div class="skeleton" style="height:108px;width:100%"></div>
+                </div>
+
+                <!-- Load More -->
+                <button onclick="loadMoreNews()" id="load-more-btn" class="load-more" style="display:none" data-i18n="load_more">Load More</button>
+            </div>
+
+            <!-- Sidebar -->
+            <aside>
+                <!-- Active Filter Info -->
+                <div class="sidebar-card" id="filter-info-card">
+                    <div class="sidebar-card-header">
+                        <svg width="16" height="16" fill="none" stroke="var(--accent)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                        <h3 data-i18n="active_filters">Active Filters</h3>
+                    </div>
+                    <div class="sidebar-card-body" id="filter-info-body">
+                        <p style="font-size:13px;color:var(--text-muted)" data-i18n="showing_all">Showing all news</p>
+                    </div>
+                </div>
+
+                <!-- AI Market Intelligence -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <span style="color:var(--purple);font-size:16px">&#10022;</span>
+                        <h3 data-i18n="ai_intelligence">AI Market Intelligence</h3>
+                        <span style="margin-left:auto;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:700;color:var(--purple);background:rgba(139,92,246,0.1);text-transform:uppercase;letter-spacing:0.06em">AI</span>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div id="ai-intel" style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+                            <div class="skeleton" style="height:48px;width:100%;margin-bottom:8px"></div>
+                            <div class="skeleton" style="height:48px;width:75%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <span style="font-size:16px">&#9993;</span>
+                        <h3 data-i18n="newsletter">Newsletter</h3>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6" data-i18n="newsletter_desc">Get daily crypto news digest in your inbox.</p>
+                        <form id="newsletter-form" onsubmit="subscribeNewsletter(event)" style="display:flex;flex-direction:column;gap:8px">
+                            <input id="newsletter-email" type="email" placeholder="your@email.com" class="form-input" required>
+                            <button type="submit" class="form-btn" data-i18n="subscribe">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <svg width="16" height="16" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        <h3 data-i18n="quick_links">Quick Links</h3>
+                    </div>
+                    <div class="sidebar-card-body" style="display:flex;flex-direction:column;gap:6px">
+                        <a href="/rss" class="footer-link" style="padding:6px 0;border-bottom:1px solid var(--border)">RSS Feed</a>
+                        <a href="/market" class="footer-link" style="padding:6px 0;border-bottom:1px solid var(--border)" data-i18n="nav_market">Market</a>
+                        <a href="/health" class="footer-link" style="padding:6px 0">Health Status</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">Crypto<span>sit</span>News</div>
+                    <p class="footer-desc" style="margin-top:8px">Your trusted source for real-time cryptocurrency news, market intelligence, and AI-powered analysis from 50+ sources.</p>
+                </div>
+                <div>
+                    <div class="footer-heading">Resources</div>
+                    <a href="/rss" class="footer-link">RSS Feed</a>
+                    <a href="/sitemap.xml" class="footer-link">Sitemap</a>
+                    <a href="/health" class="footer-link">Health Status</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Pages</div>
+                    <a href="/" class="footer-link" data-i18n="nav_home">Home</a>
+                    <a href="/news" class="footer-link" data-i18n="nav_news">News</a>
+                    <a href="/market" class="footer-link" data-i18n="nav_market">Market</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Platform</div>
+                    <span class="footer-link" style="cursor:default">PWA Enabled</span>
+                    <span class="footer-link" style="cursor:default">SSE Live</span>
+                    <span class="footer-link" style="cursor:default">Multi-language</span>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span class="footer-copy">&copy; 2024 CryptositNews. All rights reserved.</span>
+                <span class="footer-copy">Powered by AI</span>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* Additional shared styles used by JS */
+        .form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-input); color: var(--text-primary); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+        .form-input:focus { border-color: var(--accent); }
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-btn { width: 100%; padding: 10px 16px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .form-btn:hover { background: var(--accent-hover); }
+        .nav-badge { position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; background: var(--red); border-radius: 8px; font-size: 9px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+    </style>
+
+    <script>
+    /* ===== I18N ===== */
+    const i18n = {
+        en:{ nav_home:"Home",nav_news:"News",nav_market:"Market",nav_about:"About",all:"All",all_news:"All News",important:"Important",market:"Market",regulation:"Regulation",security:"Security",exchange:"Exchange",ai_intelligence:"AI Market Intelligence",trending:"Trending",newsletter:"Newsletter",newsletter_desc:"Get daily crypto news digest in your inbox.",subscribe:"Subscribe",bookmarks:"Bookmarks",no_bookmarks:"No bookmarks yet.",loading:"Loading...",load_more:"Load More",search_placeholder:"Search articles...",bookmark_added:"Bookmark added!",bookmark_removed:"Bookmark removed!",subscribed:"Subscribed!",copied:"Link copied!",active_filters:"Active Filters",showing_all:"Showing all news",showing_category:"Showing {category} news",sorted_newest:"Sorted by newest",no_results:"No articles found",no_results_desc:"Try a different category or search term.",results_found:"{count} articles found",quick_links:"Quick Links" },
+        ar:{ nav_home:"الرئيسية",nav_news:"الأخبار",nav_market:"السوق",nav_about:"حول",all:"الكل",all_news:"جميع الأخبار",important:"مهم",market:"السوق",regulation:"تنظيم",security:"أمان",exchange:"منصات تداول",ai_intelligence:"ذكاء السوق الاصطناعي",trending:"رائج",newsletter:"النشرة البريدية",newsletter_desc:"احصل على ملخص أخبار العملات يومياً.",subscribe:"اشتراك",bookmarks:"المحفوظات",no_bookmarks:"لا توجد محفوظات بعد.",loading:"جاري التحميل...",load_more:"تحميل المزيد",search_placeholder:"البحث في المقالات...",bookmark_added:"تمت الإضافة!",bookmark_removed:"تمت الإزالة!",subscribed:"تم الاشتراك!",copied:"تم نسخ الرابط!",active_filters:"الفلاتر النشطة",showing_all:"عرض جميع الأخبار",showing_category:"أخبار {category}",sorted_newest:"مرتبة من الأحدث",no_results:"لا توجد مقالات",no_results_desc:"جرب فئة أو مصطلح بحث مختلف.",results_found:"{count} مقال",quick_links:"روابط سريعة" }
+    };
+    let currentLang = "{{ lang }}" || "en";
+    function t(k, params){ let v=(i18n[currentLang]||{})[k] || i18n.en[k] || k; if(params) Object.keys(params).forEach(p=>{ v=v.replace('{'+p+'}',params[p]); }); return v; }
+    function applyI18n(){ document.querySelectorAll("[data-i18n]").forEach(el=>{ const k=el.getAttribute("data-i18n"); const v=t(k); if(el.tagName==="INPUT")el.placeholder=v; else el.textContent=v; }); document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{ el.placeholder=t(el.getAttribute("data-i18n-placeholder")); }); document.documentElement.lang=currentLang==="ar"?"ar":"en"; document.documentElement.dir=currentLang==="ar"?"rtl":"ltr"; }
+
+    /* ===== THEME ===== */
+    let currentTheme = "{{ theme }}" || "dark";
+    function toggleTheme(){ currentTheme=currentTheme==="dark"?"light":"dark"; document.documentElement.setAttribute("data-theme",currentTheme); document.getElementById("theme-dark-icon").style.display=currentTheme==="dark"?"none":"block"; document.getElementById("theme-light-icon").style.display=currentTheme==="light"?"none":"block"; fetch("/api/theme",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({theme:currentTheme})}); }
+
+    /* ===== LANGUAGE ===== */
+    function toggleLang(){ currentLang=currentLang==="en"?"ar":"en"; document.getElementById("lang-btn").textContent=currentLang==="ar"?"EN":"AR"; applyI18n(); fetch("/api/lang",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lang:currentLang})}); }
+
+    /* ===== TOAST ===== */
+    function showToast(msg,type="success"){ const c=document.getElementById("toast-container"); const d=document.createElement("div"); d.className="toast"; d.textContent=msg; c.appendChild(d); setTimeout(()=>d.remove(),3000); }
+
+    /* ===== API ===== */
+    async function g(url,opts){ try{ const r=await fetch(url,opts||{}); if(!r.ok)throw new Error("HTTP "+r.status); return await r.json(); }catch(e){ console.error("API:",url,e); return null; } }
+
+    /* ===== FORMATTERS ===== */
+    function fmtPrice(p){ if(p==null)return"$0"; p=Number(p); if(p>=1)return"$"+p.toLocaleString(undefined,{maximumFractionDigits:2}); if(p>=0.001)return"$"+p.toFixed(4); return"$"+p.toFixed(8); }
+    function timeAgo(d){ if(!d)return""; const now=new Date(),dt=new Date(d); if(isNaN(dt))return""; const s=Math.floor((now-dt)/1000); if(s<60)return"just now"; if(s<3600)return Math.floor(s/60)+"m"; if(s<86400)return Math.floor(s/3600)+"h"; return Math.floor(s/86400)+"d"; }
+
+    /* ===== BOOKMARKS ===== */
+    function getBookmarks(){ try{return JSON.parse(localStorage.getItem("crypto_bookmarks")||"[]");}catch(e){return[];} }
+    function saveBookmarks(b){ localStorage.setItem("crypto_bookmarks",JSON.stringify(b)); updateBookmarkCount(); }
+    function toggleBookmark(id,title){ let bm=getBookmarks(); const i=bm.findIndex(b=>b.id===id); if(i>=0){bm.splice(i,1);showToast(t("bookmark_removed"));}else{bm.unshift({id,title,time:new Date().toISOString()});showToast(t("bookmark_added"));} saveBookmarks(bm); renderBookmarks(); document.querySelectorAll('.bm-btn[data-id="'+id+'"]').forEach(b=>b.classList.toggle("bookmarked",i<0)); }
+    function updateBookmarkCount(){ const c=getBookmarks().length; const b=document.getElementById("bookmark-count"); if(c>0){b.textContent=c;b.style.display="flex";}else b.style.display="none"; }
+    function renderBookmarks(){ const bm=getBookmarks(); const l=document.getElementById("bookmarks-list"); const e=document.getElementById("no-bookmarks"); if(!bm.length){l.innerHTML="";e.style.display="block";return;} e.style.display="none"; l.innerHTML=bm.map(b=>'<a href="/article/'+b.id+'" class="bookmark-item" title="'+b.title+'">'+b.title+'</a>').join(""); }
+    function toggleBookmarksPanel(){ document.getElementById("bookmarks-panel").classList.toggle("open"); if(document.getElementById("bookmarks-panel").classList.contains("open"))renderBookmarks(); }
+
+    /* ===== SEARCH ===== */
+    let searchTimeout, inlineSearchTimeout;
+    function toggleSearch(){ const el=document.getElementById("search-bar"); el.classList.toggle("open"); if(el.classList.contains("open"))document.getElementById("search-input").focus(); }
+    function debounceSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(doSearch,250); }
+    async function doSearch(){ const q=document.getElementById("search-input").value.trim(); const c=document.getElementById("search-results"); if(q.length<2){c.innerHTML="";return;} const d=await g("/api/search?q="+encodeURIComponent(q)+"&limit=10"); if(!d||!d.results||!d.results.length){c.innerHTML='<p style="padding:20px;font-size:13px;color:var(--text-muted)">No results found</p>';return;} c.innerHTML=d.results.map(n=>'<a href="/article/'+n.id+'" class="search-result"><p class="search-result-title">'+n.title+'</p><p class="search-result-meta">'+(n.source||"")+" &middot; "+timeAgo(n.published)+'</p></a>').join(""); }
+
+    /* ===== INLINE SEARCH ===== */
+    function debounceInlineSearch(){ clearTimeout(inlineSearchTimeout); inlineSearchTimeout=setTimeout(doInlineSearch,400); }
+    function doInlineSearch(){ const q=document.getElementById("inline-search").value.trim(); if(q.length<2){ if(isSearchMode){ isSearchMode=false; loadNews(); } return; } searchQuery=q; isSearchMode=true; newsOffset=0; loadNews(); }
+
+    /* ===== CATEGORY ===== */
+    let currentCategory="all", newsOffset=0, isSearchMode=false, searchQuery="", totalLoaded=0;
+    async function filterCategory(cat){
+        currentCategory=cat; newsOffset=0; isSearchMode=false; searchQuery="";
+        document.getElementById("inline-search").value="";
+        document.querySelectorAll("#category-tabs .tab").forEach(b=>{ b.classList.toggle("active",b.getAttribute("data-cat")===cat); });
+        updateFilterInfo();
+        await loadNews();
+    }
+
+    function updateFilterInfo(){
+        const el=document.getElementById("filter-info-body");
+        const info=document.getElementById("results-info");
+        if(currentCategory==="all"&&!isSearchMode){
+            el.innerHTML='<p style="font-size:13px;color:var(--text-muted)">'+t("showing_all")+"</p>";
+        } else if(isSearchMode){
+            el.innerHTML='<p style="font-size:13px;color:var(--text-secondary)">Search: <strong style="color:var(--accent)">"'+searchQuery+'"</strong></p><button onclick="clearSearch()" style="margin-top:8px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--text-secondary);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.borderColor=\'var(--border-hover)\'" onmouseout="this.style.borderColor=\'var(--border)\'">Clear</button>';
+        } else {
+            const catLabels={important:"Important",market:"Crypto",regulation:"Regulation",defi:"DeFi",nft:"NFT",security:"Security",ai_crypto:"AI",exchange:"Exchange"};
+            const label=catLabels[currentCategory]||currentCategory;
+            el.innerHTML='<p style="font-size:13px;color:var(--text-secondary)">'+t("showing_category",{category:label})+"</p>";
+        }
+    }
+
+    function clearSearch(){
+        isSearchMode=false; searchQuery=""; newsOffset=0;
+        document.getElementById("inline-search").value="";
+        updateFilterInfo();
+        loadNews();
+    }
+
+    /* ===== NEWS ===== */
+    async function loadNews(append=false){
+        const container=document.getElementById("news-feed");
+        const loadBtn=document.getElementById("load-more-btn");
+        if(!append){
+            container.innerHTML='<div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div><div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div><div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div><div class="skeleton" style="height:108px;width:100%;margin-bottom:8px"></div><div class="skeleton" style="height:108px;width:100%"></div>';
+            loadBtn.style.display="none";
+        } else {
+            loadBtn.disabled=true; loadBtn.textContent=t("loading");
+        }
+
+        let data;
+        if(isSearchMode){
+            data=await g("/api/search?q="+encodeURIComponent(searchQuery)+"&limit=20&offset="+newsOffset);
+            if(data&&data.results){ data.news=data.results; }
+        } else {
+            const cat=currentCategory==="important"?"all":currentCategory;
+            const imp=currentCategory==="important"?"true":"false";
+            data=await g("/api/news?limit=20&offset="+newsOffset+"&category="+cat+"&important="+imp);
+        }
+
+        if(!data||!data.news||!data.news.length){
+            if(!append){
+                container.innerHTML='<div class="empty-state"><div class="empty-state-icon">&#128240;</div><div class="empty-state-title">'+t("no_results")+'</div><div class="empty-state-desc">'+t("no_results_desc")+"</div></div>";
+                document.getElementById("results-info").style.display="none";
+            } else {
+                loadBtn.style.display="none";
+            }
+            loadBtn.disabled=false; loadBtn.textContent=t("load_more");
+            return;
+        }
+
+        const bm=getBookmarks();
+        const tagMap={regulation:"news-tag-regulation",defi:"news-tag-defi",nft:"news-tag-nft",layer1:"news-tag-market",layer2:"news-tag-market",meme:"news-tag-market",ai_crypto:"news-tag-ai_crypto",mining:"news-tag-market",stablecoin:"news-tag-market",gaming:"news-tag-market",exchange:"news-tag-exchange",security:"news-tag-security",adoption:"news-tag-market",market:"news-tag-market"};
+
+        let html="";
+        data.news.forEach(function(n){
+            const isBm=bm.some(function(b){return b.id===n.id;});
+            const tagClass=tagMap[n.category]||"news-tag-market";
+            const impClass=n.important?"important":"";
+            const sentColor=(n.ai_sentiment==="positive"||n.ai_sentiment==="bullish")?"var(--green)":"var(--red)";
+            const sentDot=n.ai_sentiment?'<span class="news-sentiment" style="background:'+sentColor+'" title="'+n.ai_sentiment+'"></span>':"";
+            const sentClass=n.ai_sentiment?(n.ai_sentiment==="neutral"?"neutral":(n.ai_sentiment==="positive"||n.ai_sentiment==="bullish")?"positive":"negative"):"";
+            const sentBadge=n.ai_sentiment?'<span class="sentiment-badge '+sentClass+'">'+n.ai_sentiment+'</span>':"";
+
+            html+='<a href="/article/'+n.id+'" class="news-card '+impClass+'">';
+            html+='<div class="news-card-meta">';
+            html+=sentDot;
+            html+='<span class="news-tag '+tagClass+'">'+(n.category||"market")+"</span>";
+            html+=sentBadge;
+            if(n.important) html+='<span class="news-tag news-tag-important">&#9889; Important</span>';
+            html+="</div>";
+            html+='<div class="news-card-title">'+n.title+"</div>";
+            if(n.summary){
+                var excerpt=n.summary.substring(0,160);
+                if(n.summary.length>160) excerpt+="...";
+                html+='<div class="news-card-excerpt">'+excerpt+"</div>";
+            }
+            html+='<div class="news-card-footer">';
+            html+='<div class="news-source">';
+            html+='<span class="news-source-avatar">'+((n.source||"?")[0])+"</span>";
+            html+='<span class="news-source-name">'+(n.source||"")+"</span>";
+            if(n.published||n.time_ago){
+                html+='<span class="news-time">&middot; '+(n.time_ago||timeAgo(n.published))+"</span>";
+            }
+            html+="</div>";
+            html+='<button onclick="event.preventDefault();toggleBookmark('+n.id+',\''+(n.title||"").replace(/'/g,"\\'")+"')\" class=\"news-bookmark bm-btn "+(isBm?"bookmarked":"")+'" data-id="'+n.id+'">';
+            html+='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>';
+            html+="</button>";
+            html+="</div></a>";
+        });
+
+        if(append) container.insertAdjacentHTML("beforeend",html);
+        else container.innerHTML=html;
+
+        newsOffset+=data.news.length;
+        totalLoaded+=data.news.length;
+
+        /* Results info */
+        const infoEl=document.getElementById("results-info");
+        const countEl=document.getElementById("results-count");
+        if(isSearchMode||(currentCategory!=="all")){
+            infoEl.style.display="flex";
+            countEl.innerHTML="<strong>"+totalLoaded+"</strong> "+t("results_found").replace("{count}","").trim();
+        } else {
+            infoEl.style.display="none";
+        }
+
+        loadBtn.style.display=data.news.length<20?"none":"block";
+        loadBtn.disabled=false;
+        loadBtn.textContent=t("load_more");
+    }
+
+    function loadMoreNews(){ loadNews(true); }
+
+    /* ===== PRICES ===== */
+    async function loadPrices(){
+        const d=await g("/api/prices");
+        if(!d||!d.prices) return;
+        const tick=document.getElementById("prices-ticker");
+        const coins=Object.entries(d.prices).slice(0,12);
+        const colors={BTC:"#f7931a",ETH:"#627eea",BNB:"#f3ba2f",SOL:"#9945ff",XRP:"#23292f",ADA:"#0033ad",DOGE:"#c3a634",DOT:"#e6007a",MATIC:"#8247e5",AVAX:"#e84142",LINK:"#2a5ada",UNI:"#ff007a"};
+        let h="";
+        coins.forEach(function(entry){
+            var sym=entry[0], p=entry[1];
+            var ch=p.usd_24h_change||0; var sign=ch>=0?"+":""; var cc=ch>=0?"var(--green)":"var(--red)"; var bg=colors[sym]||"#6366f1";
+            h+='<div class="ticker-item"><span class="coin-icon" style="background:'+bg+'">'+sym.substring(0,2)+'</span><span style="font-weight:600;color:var(--text-secondary)">'+sym+"</span><span class=\"price\">"+fmtPrice(p.usd)+'</span><span class="change" style="color:'+cc+'">'+sign+ch.toFixed(2)+"%</span></div><span class=\"ticker-sep\">&#124;</span>";
+        });
+        tick.innerHTML=h+h;
+    }
+
+    /* ===== AI INTEL ===== */
+    async function loadAIIntel(){
+        const d=await g("/api/market-intelligence");
+        const el=document.getElementById("ai-intel");
+        if(d&&d.intelligence){ el.innerHTML="<p style=\"line-height:1.7\">"+d.intelligence+"</p>"; }
+        else{ el.innerHTML='<p style="color:var(--text-muted)">Market intelligence is being generated...</p>'; }
+    }
+
+    /* ===== NEWSLETTER ===== */
+    async function subscribeNewsletter(e){
+        e.preventDefault();
+        var em=document.getElementById("newsletter-email").value;
+        if(!em)return;
+        var d=await fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em})}).then(function(r){return r.json();});
+        if(d&&d.success){ showToast(t("subscribed")); document.getElementById("newsletter-email").value=""; }
+        else showToast(d&&d.message?d.message:"Error","error");
+    }
+
+    /* ===== URL PARAMS ===== */
+    function readUrlParams(){
+        var params=new URLSearchParams(window.location.search);
+        var cat=params.get("category");
+        if(cat){
+            currentCategory=cat;
+            newsOffset=0;
+            document.querySelectorAll("#category-tabs .tab").forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-cat")===cat); });
+        }
+        var q=params.get("q");
+        if(q){
+            searchQuery=q;
+            isSearchMode=true;
+            document.getElementById("inline-search").value=q;
+        }
+        updateFilterInfo();
+    }
+
+    /* ===== INIT ===== */
+    document.getElementById("theme-dark-icon").style.display=currentTheme==="dark"?"none":"block";
+    document.getElementById("theme-light-icon").style.display=currentTheme==="light"?"none":"block";
+    updateBookmarkCount();
+    applyI18n();
+    if(window.innerWidth>=768) document.getElementById("desktop-nav").style.display="flex";
+    window.addEventListener("resize",function(){ document.getElementById("desktop-nav").style.display=window.innerWidth>=768?"flex":"none"; });
+
+    window.addEventListener("load",function(){
+        readUrlParams();
+        loadPrices();
+        loadNews();
+        loadAIIntel();
+    });
+
+    /* Keyboard shortcut: / to focus search */
+    document.addEventListener("keydown",function(e){
+        if(e.key==="/"&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA"){
+            e.preventDefault();
+            document.getElementById("inline-search").focus();
+        }
+        if(e.key==="Escape"){
+            var overlay=document.getElementById("search-bar");
+            if(overlay.classList.contains("open")) toggleSearch();
+        }
+    });
+
+    if("serviceWorker"in navigator) navigator.serviceWorker.register("/sw.js").catch(function(){});
+    </script>
+</body>
+</html>

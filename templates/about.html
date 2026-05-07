@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'dark' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptositNews - About Us | Real-time Crypto News & Market Intelligence</title>
+    <meta name="description" content="Learn about CryptositNews - aggregating crypto news from 40+ sources with AI-powered analysis and real-time delivery.">
+    <meta property="og:title" content="CryptositNews - About Us">
+    <meta property="og:description" content="Aggregating crypto news from 40+ sources with AI-powered analysis and real-time delivery.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0a0e1a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Theme Variables ── */
+        [data-theme="dark"] {
+            --bg: #0a0e1a; --bg-elevated: #0f1424; --bg-card: #141929; --bg-card-hover: #181e33;
+            --bg-input: #111728; --text-primary: #edf2f7; --text-secondary: #8b9dc3; --text-muted: #4a5e85;
+            --border: #1c2540; --border-hover: #2a3658; --accent: #3b82f6; --accent-hover: #2563eb;
+            --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --purple: #8b5cf6;
+            --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px rgba(0,0,0,0.3);
+            --ticker-bg: #080c16; --nav-bg: rgba(10,14,26,0.92);
+        }
+        [data-theme="light"] {
+            --bg: #f7f9fc; --bg-elevated: #ffffff; --bg-card: #ffffff; --bg-card-hover: #f0f4fa;
+            --bg-input: #f1f5f9; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8;
+            --border: #e2e8f0; --border-hover: #cbd5e1; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+            --ticker-bg: #f1f5f9; --nav-bg: rgba(255,255,255,0.92);
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+            line-height: 1.6; overflow-x: hidden;
+        }
+
+        /* ── Ticker Bar ── */
+        .ticker-bar {
+            background: var(--ticker-bg); border-bottom: 1px solid var(--border);
+            overflow: hidden; white-space: nowrap; height: 36px;
+        }
+        .ticker-track { display: inline-flex; animation: scroll 60s linear infinite; height: 100%; align-items: center; }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .ticker-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; font-size: 12px; font-weight: 500; }
+        .ticker-item .price { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary); }
+        .ticker-item .change { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; }
+
+        /* ── Navigation ── */
+        .site-nav {
+            background: var(--nav-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+        }
+        .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+        .nav-logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+        .nav-logo-text span { color: var(--accent); }
+        .nav-live { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 8px 2px 6px; border-radius: 4px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.15); font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; }
+        .nav-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); position: relative; }
+        .nav-live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(34,197,94,0.3); animation: pulse-ring 2s ease-out infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+        .nav-link { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); text-decoration: none; transition: all 0.15s; cursor: pointer; border: none; background: none; font-family: inherit; }
+        .nav-link:hover { color: var(--text-primary); background: var(--bg-input); }
+        .nav-link.active { color: var(--accent); background: rgba(59,130,246,0.1); }
+        .nav-actions { display: flex; align-items: center; gap: 4px; }
+        .nav-btn { width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .nav-btn:hover { background: var(--bg-input); color: var(--text-primary); }
+        .nav-btn svg { width: 18px; height: 18px; }
+        .nav-divider { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
+
+        /* ── Mobile Menu ── */
+        .mobile-menu-btn { display: none; width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; align-items: center; justify-content: center; }
+        .mobile-menu-btn svg { width: 20px; height: 20px; }
+        .mobile-nav { display: none; flex-direction: column; gap: 4px; padding: 16px 24px 20px; background: var(--bg-elevated); border-bottom: 1px solid var(--border); }
+        .mobile-nav.open { display: flex; }
+        .mobile-nav .nav-link { font-size: 14px; padding: 10px 12px; }
+        @media (max-width: 768px) {
+            .desktop-links { display: none !important; }
+            .mobile-menu-btn { display: flex; }
+        }
+
+        /* ── Container ── */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── Page Hero ── */
+        .page-hero { padding: 80px 0 60px; text-align: center; }
+        @media (max-width: 768px) { .page-hero { padding: 48px 0 36px; } }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.15); font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
+        .hero-badge svg { width: 14px; height: 14px; }
+        .hero-title { font-size: 48px; font-weight: 900; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 16px; }
+        .hero-title span { color: var(--accent); }
+        @media (max-width: 768px) { .hero-title { font-size: 32px; } }
+        .hero-desc { font-size: 17px; color: var(--text-secondary); max-width: 640px; margin: 0 auto 32px; line-height: 1.7; }
+        @media (max-width: 768px) { .hero-desc { font-size: 15px; } }
+
+        /* ── Section ── */
+        .section { padding: 64px 0; }
+        @media (max-width: 768px) { .section { padding: 40px 0; } }
+        .section-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .section-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+        @media (max-width: 768px) { .section-title { font-size: 24px; } }
+        .section-subtitle { font-size: 15px; color: var(--text-secondary); max-width: 560px; line-height: 1.7; }
+
+        /* ── Mission Section ── */
+        .mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 40px; }
+        @media (max-width: 768px) { .mission-grid { grid-template-columns: 1fr; gap: 32px; } }
+        .mission-text h3 { font-size: 22px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.02em; }
+        .mission-text p { font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
+        .mission-text ul { list-style: none; padding: 0; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .mission-text li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .mission-text li svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; color: var(--green); }
+        .mission-visual { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); padding: 32px; }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+        .metric-row + .metric-row { border-top: 1px solid var(--border); }
+        .metric-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+        .metric-value { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+        .metric-value span { color: var(--accent); }
+
+        /* ── Feature Cards ── */
+        .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+        @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
+        .feature-card { padding: 28px 24px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); transition: all 0.2s; }
+        .feature-card:hover { border-color: var(--border-hover); background: var(--bg-card-hover); box-shadow: var(--shadow); }
+        .feature-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .feature-icon svg { width: 22px; height: 22px; }
+        .feature-icon-blue { background: rgba(59,130,246,0.1); color: var(--accent); }
+        .feature-icon-green { background: rgba(34,197,94,0.1); color: var(--green); }
+        .feature-icon-amber { background: rgba(245,158,11,0.1); color: var(--amber); }
+        .feature-icon-purple { background: rgba(139,92,246,0.1); color: var(--purple); }
+        .feature-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+        .feature-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+        /* ── Tech Stack ── */
+        .tech-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 40px; }
+        @media (max-width: 768px) { .tech-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 480px) { .tech-grid { grid-template-columns: repeat(2, 1fr); } }
+        .tech-card { padding: 24px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); text-align: center; transition: all 0.2s; }
+        .tech-card:hover { border-color: var(--border-hover); background: var(--bg-card-hover); box-shadow: var(--shadow); }
+        .tech-card-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+        .tech-card-icon svg { width: 24px; height: 24px; color: var(--text-primary); }
+        .tech-card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .tech-card-role { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+        /* ── Stats Counters ── */
+        .stats-section { background: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; gap: 16px; } }
+        .stat-card { text-align: center; padding: 40px 24px; }
+        @media (max-width: 768px) { .stat-card { padding: 24px; } }
+        .stat-card + .stat-card { border-left: 1px solid var(--border); }
+        @media (max-width: 768px) { .stat-card + .stat-card { border-left: none; border-top: 1px solid var(--border); } }
+        .stat-number { font-size: 48px; font-weight: 900; letter-spacing: -0.04em; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+        @media (max-width: 768px) { .stat-number { font-size: 36px; } }
+        .stat-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+        .stat-sublabel { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+        /* ── Contact Section ── */
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+        @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+        .contact-card { padding: 32px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); display: flex; align-items: flex-start; gap: 20px; transition: all 0.2s; text-decoration: none; color: inherit; }
+        .contact-card:hover { border-color: var(--border-hover); background: var(--bg-card-hover); box-shadow: var(--shadow); }
+        .contact-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .contact-icon svg { width: 24px; height: 24px; }
+        .contact-icon-blue { background: rgba(59,130,246,0.1); color: var(--accent); }
+        .contact-icon-green { background: rgba(34,197,94,0.1); color: var(--green); }
+        .contact-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .contact-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .contact-value { font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+
+        /* ── Footer ── */
+        .site-footer { border-top: 1px solid var(--border); margin-top: 0; padding: 40px 0 24px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+        @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+        .footer-brand { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+        .footer-brand span { color: var(--accent); }
+        .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 300px; }
+        .footer-heading { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+        .footer-link { display: block; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0; transition: color 0.15s; }
+        .footer-link:hover { color: var(--accent); }
+        .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .footer-copy { font-size: 12px; color: var(--text-muted); }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        /* ── RTL ── */
+        [dir="rtl"] .ticker-track { animation-direction: reverse; }
+        @media (max-width: 768px) {
+            .stat-card:last-child { border-left: none; }
+            .stat-card:first-child { border-top: none; }
+            [dir="rtl"] .contact-card { flex-direction: row-reverse; text-align: right; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ TOP TICKER BAR ═══ -->
+    <div class="ticker-bar">
+        <div id="prices-ticker" class="ticker-track">
+            <div class="ticker-item" style="color:var(--text-muted)">Loading prices...</div>
+        </div>
+    </div>
+
+    <!-- ═══ NAVIGATION ═══ -->
+    <nav class="site-nav">
+        <div class="nav-inner">
+            <div style="display:flex;align-items:center;gap:24px;">
+                <a href="/" class="nav-logo">
+                    <div class="nav-logo-icon">
+                        <svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="nav-logo-text">Crypto<span>sit</span>News</span>
+                    <span class="nav-live"><span class="nav-live-dot"></span>Live</span>
+                </a>
+                <div class="nav-links desktop-links" style="display:flex;">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/about" class="nav-link active">About</a>
+                    <a href="/telegram" class="nav-link">Telegram</a>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button class="mobile-menu-btn" onclick="document.getElementById('mobile-nav').classList.toggle('open')" aria-label="Menu">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <div class="nav-divider" style="display:none;" class="mobile-only"></div>
+                <button onclick="toggleTheme()" id="theme-btn" class="nav-btn" title="Theme">
+                    <svg id="theme-dark-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg id="theme-light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <!-- Mobile Nav -->
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/about" class="nav-link active">About</a>
+        <a href="/telegram" class="nav-link">Telegram</a>
+    </div>
+
+    <!-- ═══ HERO ═══ -->
+    <section class="page-hero">
+        <div class="container">
+            <div class="hero-badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                About Us
+            </div>
+            <h1 class="hero-title">About <span>CryptositNews</span></h1>
+            <p class="hero-desc">We aggregate, analyze, and deliver cryptocurrency news from 40+ sources in real time, powered by AI and built for traders who need to stay ahead.</p>
+        </div>
+    </section>
+
+    <!-- ═══ MISSION ═══ -->
+    <section class="section" style="border-top:1px solid var(--border);">
+        <div class="container">
+            <div class="mission-grid">
+                <div class="mission-text">
+                    <div class="section-label">Our Mission</div>
+                    <h3>Democratizing crypto intelligence</h3>
+                    <p>The cryptocurrency market never sleeps, and neither do we. CryptositNews was built to solve a simple problem: crypto news is scattered across dozens of sources, making it nearly impossible to stay informed in real time.</p>
+                    <p>We built an automated system that continuously monitors 40+ news sources, uses AI to analyze and categorize each article, and delivers the most important stories to you the moment they break.</p>
+                    <ul>
+                        <li>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Aggregating crypto news from 40+ trusted sources
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            AI-powered analysis and sentiment scoring
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Real-time delivery via web, Telegram, and SSE
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Multi-language support (English and Arabic)
+                        </li>
+                    </ul>
+                </div>
+                <div class="mission-visual">
+                    <div class="metric-row">
+                        <span class="metric-label">News Sources</span>
+                        <span class="metric-value"><span>40+</span> monitored</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Update Frequency</span>
+                        <span class="metric-value">Every <span>60s</span></span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg. Delivery Time</span>
+                        <span class="metric-value">&lt; <span>60s</span></span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Languages</span>
+                        <span class="metric-value"><span>2</span> supported</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Analysis Engine</span>
+                        <span class="metric-value"><span>OpenAI</span> powered</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FEATURES SUMMARY ═══ -->
+    <section class="section">
+        <div class="container">
+            <div style="text-align:center;">
+                <div class="section-label">Platform Features</div>
+                <h2 class="section-title">What sets us apart</h2>
+                <p class="section-subtitle" style="margin:8px auto 0;">A comprehensive crypto intelligence platform built for speed, accuracy, and reliability.</p>
+            </div>
+            <div class="features-grid">
+                <!-- Feature 1: 40+ Sources -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-blue">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </div>
+                    <div class="feature-title">40+ News Sources</div>
+                    <p class="feature-desc">We monitor top-tier crypto publications, blogs, and official announcements to ensure comprehensive coverage.</p>
+                </div>
+                <!-- Feature 2: AI Analysis -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-purple">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div class="feature-title">AI Analysis</div>
+                    <p class="feature-desc">Every article is processed by AI for sentiment scoring, category tagging, and concise summarization.</p>
+                </div>
+                <!-- Feature 3: Real-time -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-green">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <div class="feature-title">Real-time Delivery</div>
+                    <p class="feature-desc">News arrives in under 60 seconds using Server-Sent Events, Telegram bots, and PWA push notifications.</p>
+                </div>
+                <!-- Feature 4: Multi-language -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-amber">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                    </div>
+                    <div class="feature-title">Multi-language</div>
+                    <p class="feature-desc">Full English and Arabic support with AI-powered translation that preserves context and accuracy.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ STATS COUNTERS ═══ -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" data-target="50000" data-suffix="+">0</div>
+                    <div class="stat-label">Total Articles</div>
+                    <div class="stat-sublabel">Aggregated and analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" data-target="40" data-suffix="+">0</div>
+                    <div class="stat-label">Sources Monitored</div>
+                    <div class="stat-sublabel">Across major crypto publications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" data-target="200" data-suffix="+">0</div>
+                    <div class="stat-label">Daily Updates</div>
+                    <div class="stat-sublabel">New articles every single day</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ TECH STACK ═══ -->
+    <section class="section">
+        <div class="container">
+            <div style="text-align:center;">
+                <div class="section-label">Built With</div>
+                <h2 class="section-title">Our technology stack</h2>
+                <p class="section-subtitle" style="margin:8px auto 0;">Modern, reliable technologies powering real-time crypto intelligence.</p>
+            </div>
+            <div class="tech-grid">
+                <!-- Python -->
+                <div class="tech-card">
+                    <div class="tech-card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    </div>
+                    <div class="tech-card-name">Python</div>
+                    <div class="tech-card-role">Core Language</div>
+                </div>
+                <!-- Flask -->
+                <div class="tech-card">
+                    <div class="tech-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </div>
+                    <div class="tech-card-name">Flask</div>
+                    <div class="tech-card-role">Web Framework</div>
+                </div>
+                <!-- PostgreSQL -->
+                <div class="tech-card">
+                    <div class="tech-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    </div>
+                    <div class="tech-card-name">PostgreSQL</div>
+                    <div class="tech-card-role">Database</div>
+                </div>
+                <!-- OpenAI -->
+                <div class="tech-card">
+                    <div class="tech-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div class="tech-card-name">OpenAI</div>
+                    <div class="tech-card-role">AI Engine</div>
+                </div>
+                <!-- Telegram API -->
+                <div class="tech-card">
+                    <div class="tech-card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    </div>
+                    <div class="tech-card-name">Telegram API</div>
+                    <div class="tech-card-role">Notifications</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CONTACT ═══ -->
+    <section class="section" id="contact" style="border-top:1px solid var(--border);">
+        <div class="container">
+            <div style="text-align:center;">
+                <div class="section-label">Contact</div>
+                <h2 class="section-title">Get in touch</h2>
+                <p class="section-subtitle" style="margin:8px auto 0;">Have a question, suggestion, or partnership inquiry? We'd love to hear from you.</p>
+            </div>
+            <div class="contact-grid">
+                <!-- Email -->
+                <a href="mailto:contact@cryptositnews.com" class="contact-card" style="text-decoration:none;">
+                    <div class="contact-icon contact-icon-blue">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="contact-title">Email Us</div>
+                        <div class="contact-desc">For general inquiries, partnerships, or technical support. We typically respond within 24 hours.</div>
+                        <div class="contact-value">
+                            contact@cryptositnews.com
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </div>
+                    </div>
+                </a>
+                <!-- Telegram -->
+                <a href="https://t.me/cryptositnews" target="_blank" rel="noopener noreferrer" class="contact-card" style="text-decoration:none;">
+                    <div class="contact-icon contact-icon-green">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    </div>
+                    <div>
+                        <div class="contact-title">Telegram</div>
+                        <div class="contact-desc">Join our Telegram channel for the fastest updates, or message us directly for quick questions.</div>
+                        <div class="contact-value">
+                            @cryptositnews
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">Crypto<span>sit</span>News</div>
+                    <p class="footer-desc" style="margin-top:8px">Your trusted source for real-time cryptocurrency news, market intelligence, and AI-powered analysis from 40+ sources.</p>
+                </div>
+                <div>
+                    <div class="footer-heading">Pages</div>
+                    <a href="/" class="footer-link">Home</a>
+                    <a href="/about" class="footer-link">About</a>
+                    <a href="/telegram" class="footer-link">Telegram</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Features</div>
+                    <span class="footer-link" style="cursor:default">Live Prices</span>
+                    <span class="footer-link" style="cursor:default">AI Analysis</span>
+                    <span class="footer-link" style="cursor:default">Price Alerts</span>
+                </div>
+                <div>
+                    <div class="footer-heading">Platform</div>
+                    <span class="footer-link" style="cursor:default">PWA Enabled</span>
+                    <span class="footer-link" style="cursor:default">SSE Live</span>
+                    <span class="footer-link" style="cursor:default">Multi-language</span>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span class="footer-copy">&copy; 2024 CryptositNews. All rights reserved.</span>
+                <span class="footer-copy">Powered by AI</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══ SCRIPTS ═══ -->
+    <script>
+        /* ===== Theme Toggle ===== */
+        let currentTheme = "{{ theme }}" || "dark";
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            const dk = document.getElementById('theme-dark-icon');
+            const lt = document.getElementById('theme-light-icon');
+            if (dk && lt) { dk.style.display = currentTheme === 'dark' ? 'none' : 'block'; lt.style.display = currentTheme === 'dark' ? 'block' : 'none'; }
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.content = currentTheme === 'dark' ? '#0a0e1a' : '#f7f9fc';
+        }
+        function toggleTheme() { currentTheme = currentTheme === 'dark' ? 'light' : 'dark'; document.cookie = 'theme=' + currentTheme + ';path=/;max-age=31536000'; applyTheme(); }
+        applyTheme();
+
+        /* ===== Animated Counters ===== */
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number[data-target]');
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const suffix = counter.getAttribute('data-suffix') || '';
+                const duration = 2000;
+                const startTime = performance.now();
+
+                function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
+
+                function updateCounter(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easedProgress = easeOutQuart(progress);
+                    const current = Math.floor(easedProgress * target);
+                    counter.textContent = current.toLocaleString() + suffix;
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target.toLocaleString() + suffix;
+                    }
+                }
+                requestAnimationFrame(updateCounter);
+            });
+        }
+
+        /* ===== Intersection Observer for Stats ===== */
+        const statsSection = document.querySelector('.stats-section');
+        if (statsSection) {
+            let hasAnimated = false;
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !hasAnimated) {
+                        hasAnimated = true;
+                        animateCounters();
+                    }
+                });
+            }, { threshold: 0.3 });
+            observer.observe(statsSection);
+        }
+
+        /* ===== Ticker Prices ===== */
+        (function() {
+            const ticker = document.getElementById('prices-ticker');
+            if (!ticker) return;
+            const coins = ['BTC','ETH','BNB','SOL','XRP','ADA','DOGE','AVAX','DOT','MATIC'];
+            const display = coins.map(c => '<div class="ticker-item" data-coin="' + c + '"><span style="color:var(--text-muted)">' + c + '</span> <span class="price">...</span> <span class="change">...</span></div>').join('');
+            ticker.innerHTML = display + display;
+            fetch('/api/market/prices').then(r => r.json()).then(data => {
+                if (!data.prices) return;
+                const items = ticker.querySelectorAll('.ticker-item[data-coin]');
+                const seen = new Set();
+                items.forEach(el => {
+                    const coin = el.getAttribute('data-coin');
+                    if (seen.has(coin)) return;
+                    seen.add(coin);
+                    const p = data.prices[coin];
+                    if (!p) return;
+                    el.querySelector('.price').textContent = '$' + (p.usd >= 1 ? p.usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : p.usd.toFixed(6));
+                    const changeEl = el.querySelector('.change');
+                    if (p.usd_24h_change !== undefined) {
+                        const val = p.usd_24h_change.toFixed(2);
+                        changeEl.textContent = (val >= 0 ? '+' : '') + val + '%';
+                        changeEl.style.color = val >= 0 ? 'var(--green)' : 'var(--red)';
+                    }
+                });
+            }).catch(() => {});
+            setTimeout(() => { ticker.innerHTML = ticker.innerHTML + ticker.innerHTML; }, 100);
+        })();
+    </script>
+</body>
+</html>
