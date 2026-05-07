@@ -1,14 +1,11 @@
 """
 web.py - Flask web server
-الصفحات: Home, News, Article, Market, Bot, About
-APIs: News, Prices, Fear&Greed, Global, Trending, Market
-SEO: Sitemap, Robots, RSS
-Admin: Clear, Init
 """
 
 from flask import Flask, render_template, jsonify, request, Response
 import os
 import time
+import traceback
 import requests
 import re
 from database import (
@@ -22,7 +19,16 @@ from config import SITE_URL, SITE_NAME, GSC_META_TAG, ADMIN_KEY, TELEGRAM_CHANNE
 app = Flask(__name__)
 app.jinja_env.filters['time_ago'] = time_ago
 app.jinja_env.filters['format_number'] = format_number
-init_db()
+
+# ✅ تفعيل عرض الأخطاء في الإنتاج
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
+try:
+    init_db()
+    DB_OK = True
+except Exception as e:
+    DB_OK = False
+    print(f"❌ DB init failed: {e}")
 
 # ============================================================
 # Helpers
@@ -70,6 +76,57 @@ def parse_int_param(name: str, default: int, minimum: int = None, maximum: int =
 
 def get_filtered_news_page(category: str, search: str, page: int, per_page: int):
     return get_news(page=page, per_page=per_page, search=search or None, category=category)
+
+
+# ============================================================
+# ✅ صفحة تشخيص — احذفها بعد ما تشوف المشكلة
+# ============================================================
+
+@app.route("/debug")
+def debug_page():
+    """صفحة تشخيص سريعة"""
+    info = {
+        "db_ok": DB_OK,
+        "db_type": "PostgreSQL" if USE_POSTGRES else "SQLite",
+        "site_url": SITE_URL,
+        "site_name": SITE_NAME,
+        "templates_dir": os.path.abspath(app.template_folder),
+        "templates_exist": {},
+        "db_stats": None,
+        "error": None,
+    }
+    
+    # تحقق من القوالب
+    for t in ["base.html", "index.html", "news.html", "article.html", "market.html", "bot.html", "about.html"]:
+        path = os.path.join(app.template_folder, t)
+        info["templates_exist"][t] = os.path.isfile(path)
+    
+    # تحقق من الداتابيز
+    try:
+        info["db_stats"] = get_stats()
+    except Exception as e:
+        info["error"] = str(e)
+    
+    # محاولة render
+    try:
+        test = render_template("index.html",
+            news=[], stats={"total": 0, "today": 0, "sources": []},
+            intel={"ai_signal": {"coin": "N/A", "signal": "Neutral", "confidence": 0, "reason": ""},
+                   "ai_signals": [], "sentiment": {"bullish": 50, "bearish": 50}, "whale_activity": []},
+            trending=[], page=1, pages=1, total=0,
+            search="", active_tab="",
+            gsc_meta="", site_url=SITE_URL, site_name=SITE_NAME,
+            telegram_channel=TELEGRAM_CHANNEL,
+        )
+        info["render_ok"] = True
+        info["render_length"] = len(test)
+    except Exception as e:
+        info["render_ok"] = False
+        info["render_error"] = str(e)
+        info["render_traceback"] = traceback.format_exc()
+    
+    return jsonify(info)
+
 
 # ============================================================
 # Market Intelligence
@@ -158,10 +215,19 @@ def get_cached_intel() -> dict:
     cached = page_cache_get("global_intel")
     if cached:
         return cached
-    latest_batch, _ = get_news(page=1, per_page=60)
-    intel = compute_market_intelligence(latest_batch)
+    try:
+        latest_batch, _ = get_news(page=1, per_page=60)
+        intel = compute_market_intelligence(latest_batch)
+    except Exception:
+        intel = {
+            "ai_signal": {"coin": "N/A", "signal": "Neutral", "confidence": 0, "reason": ""},
+            "ai_signals": [],
+            "sentiment": {"bullish": 50, "bearish": 50},
+            "whale_activity": [],
+        }
     page_cache_set("global_intel", intel)
     return intel
+
 
 # ============================================================
 # Pages
@@ -169,80 +235,96 @@ def get_cached_intel() -> dict:
 
 @app.route("/")
 def index():
-    page = parse_int_param("page", default=1, minimum=1)
-    search = request.args.get("q", "").strip()
-    active_tab = request.args.get("tab", "").strip()
-    cache_key = f"home_{page}_{search}_{active_tab}"
-    cached = page_cache_get(cache_key)
-    if cached and not search:
-        return cached
+    try:
+        page = parse_int_param("page", default=1, minimum=1)
+        search = request.args.get("q", "").strip()
+        active_tab = request.args.get("tab", "").strip()
+        cache_key = f"home_{page}_{search}_{active_tab}"
+        cached = page_cache_get(cache_key)
+        if cached and not search:
+            return cached
 
-    per_page = 20
-    if active_tab and active_tab != "all":
-        news, total = get_filtered_news_page(active_tab, search, page, per_page)
-    else:
-        news, total = get_news(page=page, per_page=per_page, search=search or None)
+        per_page = 20
+        if active_tab and active_tab != "all":
+            news, total = get_filtered_news_page(active_tab, search, page, per_page)
+        else:
+            news, total = get_news(page=page, per_page=per_page, search=search or None)
 
-    stats = get_stats() or {"total": 0, "today": 0, "sources": []}
-    pages = max(1, (total + 19) // 20)
-    intel = get_cached_intel()
-    trending = get_trending_news(5)
+        stats = get_stats() or {"total": 0, "today": 0, "sources": []}
+        pages = max(1, (total + 19) // 20)
+        intel = get_cached_intel()
+        
+        try:
+            trending = get_trending_news(5)
+        except Exception:
+            trending = []
 
-    rendered = render_template("index.html",
-        news=news, stats=stats, intel=intel, trending=trending,
-        page=page, pages=pages, total=total,
-        search=search, active_tab=active_tab,
-        gsc_meta=GSC_META_TAG, site_url=SITE_URL, site_name=SITE_NAME,
-        telegram_channel=TELEGRAM_CHANNEL,
-    )
-    if not search:
-        page_cache_set(cache_key, rendered)
-    return rendered
+        rendered = render_template("index.html",
+            news=news, stats=stats, intel=intel, trending=trending,
+            page=page, pages=pages, total=total,
+            search=search, active_tab=active_tab,
+            gsc_meta=GSC_META_TAG, site_url=SITE_URL, site_name=SITE_NAME,
+            telegram_channel=TELEGRAM_CHANNEL,
+        )
+        if not search:
+            page_cache_set(cache_key, rendered)
+        return rendered
+    except Exception as e:
+        traceback.print_exc()
+        return f"<h1>Error</h1><pre>{traceback.format_exc()}</pre>", 500
 
 
 @app.route("/news")
 def news_page():
-    page = parse_int_param("page", default=1, minimum=1)
-    search = request.args.get("q", "").strip()
-    active_tab = request.args.get("tab", "").strip()
-    cache_key = f"news_page_{page}_{search}_{active_tab}"
-    cached = page_cache_get(cache_key)
-    if cached and not search:
-        return cached
+    try:
+        page = parse_int_param("page", default=1, minimum=1)
+        search = request.args.get("q", "").strip()
+        active_tab = request.args.get("tab", "").strip()
+        cache_key = f"news_page_{page}_{search}_{active_tab}"
+        cached = page_cache_get(cache_key)
+        if cached and not search:
+            return cached
 
-    per_page = 24
-    if active_tab and active_tab != "all":
-        news, total = get_filtered_news_page(active_tab, search, page, per_page)
-    else:
-        news, total = get_news(page=page, per_page=per_page, search=search or None)
+        per_page = 24
+        if active_tab and active_tab != "all":
+            news, total = get_filtered_news_page(active_tab, search, page, per_page)
+        else:
+            news, total = get_news(page=page, per_page=per_page, search=search or None)
 
-    stats = get_stats() or {"total": 0, "today": 0, "sources": []}
-    pages = max(1, (total + per_page - 1) // per_page)
+        stats = get_stats() or {"total": 0, "today": 0, "sources": []}
+        pages = max(1, (total + per_page - 1) // per_page)
 
-    rendered = render_template("news.html",
-        news=news, stats=stats,
-        page=page, pages=pages, total=total,
-        search=search, active_tab=active_tab,
-        site_url=SITE_URL, site_name=SITE_NAME,
-        telegram_channel=TELEGRAM_CHANNEL,
-    )
-    if not search:
-        page_cache_set(cache_key, rendered)
-    return rendered
+        rendered = render_template("news.html",
+            news=news, stats=stats,
+            page=page, pages=pages, total=total,
+            search=search, active_tab=active_tab,
+            site_url=SITE_URL, site_name=SITE_NAME,
+            telegram_channel=TELEGRAM_CHANNEL,
+        )
+        if not search:
+            page_cache_set(cache_key, rendered)
+        return rendered
+    except Exception as e:
+        traceback.print_exc()
+        return f"<h1>Error</h1><pre>{traceback.format_exc()}</pre>", 500
 
 
 @app.route("/news/<path:news_id>")
 def article_page(news_id):
-    item = get_news_by_id(news_id)
-    if not item:
-        return "Not Found", 404
-    related, _ = get_news(page=1, per_page=6, category=item.get("category"))
-    related = [r for r in related if r["id"] != news_id][:4]
-    return render_template("article.html",
-        item=item, related=related,
-        site_url=SITE_URL, site_name=SITE_NAME,
-        gsc_meta=GSC_META_TAG, telegram_channel=TELEGRAM_CHANNEL,
-    )
+    try:
+        item = get_news_by_id(news_id)
+        if not item:
+            return "Not Found", 404
+        related, _ = get_news(page=1, per_page=6, category=item.get("category"))
+        related = [r for r in related if r["id"] != news_id][:4]
+        return render_template("article.html",
+            item=item, related=related,
+            site_url=SITE_URL, site_name=SITE_NAME,
+            gsc_meta=GSC_META_TAG, telegram_channel=TELEGRAM_CHANNEL,
+        )
+    except Exception as e:
+        traceback.print_exc()
+        return f"<h1>Error</h1><pre>{traceback.format_exc()}</pre>", 500
 
 
 @app.route("/market")
@@ -268,6 +350,7 @@ def about_page():
         contact_email=CONTACT_EMAIL,
         telegram_channel=TELEGRAM_CHANNEL,
     )
+
 
 # ============================================================
 # RSS Feed
@@ -311,6 +394,7 @@ def rss_feed():
     page_cache_set("rss_feed", rss)
     return Response(rss, mimetype="application/rss+xml")
 
+
 # ============================================================
 # APIs
 # ============================================================
@@ -330,7 +414,10 @@ def api_news():
 
 @app.route("/api/trending-news")
 def api_trending_news():
-    trending = get_trending_news(10)
+    try:
+        trending = get_trending_news(10)
+    except Exception:
+        trending = []
     return jsonify(trending)
 
 
@@ -475,7 +562,8 @@ def api_trending():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "db": DB_OK})
+
 
 # ============================================================
 # Admin
@@ -517,6 +605,7 @@ def admin_init():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # ============================================================
 # SEO
 # ============================================================
@@ -547,4 +636,4 @@ def robots():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)
