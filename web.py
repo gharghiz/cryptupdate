@@ -185,12 +185,13 @@ def index():
     pages = max(1, (total + 19) // 20)
     intel = get_cached_intel()
     top_story = None
-    for item in news:
-        title = item.get("title", "")
-        if is_breaking(title) or is_high_impact(title):
-            top_story = item
-            break
-    if not top_story and news:
+    breaking_items = [i for i in news if is_breaking(i.get("title", ""))]
+    high_items = [i for i in news if is_high_impact(i.get("title", ""))]
+    if breaking_items:
+        top_story = breaking_items[0]
+    elif high_items:
+        top_story = high_items[0]
+    elif news:
         top_story = news[0]
 
     rendered = render_template("index.html",

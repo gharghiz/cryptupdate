@@ -124,6 +124,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 
 /* NEWS CARD */
 .news-card{background:var(--card);border:1px solid rgba(255,255,255,.03);border-radius:10px;padding:.9rem 1rem;cursor:pointer;position:relative;overflow:hidden;animation:fadeUp .3s ease both;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s;will-change:transform;}
+.news-card.important{padding:1.05rem 1.1rem;border-color:rgba(0,229,255,.22);box-shadow:0 0 0 1px rgba(0,229,255,.1);}
 .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;transition:background .15s;}
 .news-card:hover{transform:translateY(-3px) scale(1.005);border-color:var(--border-h);box-shadow:0 12px 40px rgba(0,0,0,.4);}
 .nc-bitcoin:hover{box-shadow:0 0 25px rgba(247,147,26,.15);}
@@ -301,6 +302,9 @@ footer a{color:var(--purple);text-decoration:none;}
     </div>
   </div>
 </section>
+<section style="padding:.65rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(0,229,255,.06);font-family:var(--mono);font-size:.68rem;">
+  🧠 <b>Today’s Market Summary:</b> {{ intel.ai_signal.coin }} {{ intel.ai_signal.signal|lower }} with {{ intel.sentiment.bullish }}% bullish sentiment driven by {{ intel.ai_signal.trigger|lower }}.
+</section>
 <section style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,14,30,.55);">
   <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;">
     <div class="widget" style="margin-bottom:0;">
@@ -318,8 +322,9 @@ footer a{color:var(--purple);text-decoration:none;}
     <div class="widget" style="margin-bottom:0;">
       <div class="widget-title">🔥 Top Story</div>
       {% if top_story %}
-      <div class="card-title" style="font-size:1rem;">{{ top_story.title }}</div>
-      <div class="fg-sub" style="margin-top:.6rem;">Why it matters: {{ top_story.reason or top_story.summary or "Institutional flow / risk sentiment impact." }}</div>
+      <div class="card-title" style="font-size:1.08rem;line-height:1.35;">{{ top_story.title }}</div>
+      <div class="ai-preview" style="margin-top:.6rem;"><b>AI:</b> {{ top_story.summary or intel.ai_signal.reason }}</div>
+      <div class="fg-sub" style="margin-top:.6rem;"><b>Why it matters:</b> {{ top_story.reason or "Market-moving sentiment and liquidity impact." }}</div>
       {% else %}
       <div class="fg-sub">No top story detected.</div>
       {% endif %}
@@ -350,7 +355,7 @@ footer a{color:var(--purple);text-decoration:none;}
     {% set tw_url = "https://twitter.com/intent/tweet?text=" + (item.title | urlencode) + "&url=" + (site_url + "/news/" + item.id | urlencode) %}
     {% set tg_url = "https://t.me/share/url?url=" + (site_url + "/news/" + item.id | urlencode) + "&text=" + (item.title | urlencode) %}
 
-    <article class="news-card nc-{{ cat }}"
+    <article class="news-card nc-{{ cat }} {% if item.reason or item.summary or 'breaking' in t or 'urgent' in t %}important{% endif %}"
              style="animation-delay:{{ idx * 0.04 }}s"
              onclick="window.location='/news/{{ item.id }}'">
       <div class="card-top">
@@ -380,14 +385,13 @@ footer a{color:var(--purple);text-decoration:none;}
 
     {% if not active_tab %}
       {# ALL MODE — grouped #}
-      {% set breaking_news = [] %}{% set moving_news = [] %}{% set ai_picks = [] %}{% set btc_news = [] %}{% set eth_news = [] %}{% set other_news = [] %}
+      {% set breaking_news = [] %}{% set moving_news = [] %}{% set ai_picks = [] %}{% set coin_focus = [] %}{% set other_news = [] %}
       {% for item in news %}
         {% set t = item.title|lower %}
         {% if 'breaking' in t or 'urgent' in t %}{% if breaking_news.append(item) %}{% endif %}
-        {% elif item.reason or ('etf' in t or 'sec' in t or 'hack' in t or 'lawsuit' in t) %}{% if moving_news.append(item) %}{% endif %}
+        {% elif 'etf' in t or 'sec' in t or 'hack' in t or 'lawsuit' in t or 'liquidation' in t or 'fed' in t %}{% if moving_news.append(item) %}{% endif %}
         {% elif item.summary or item.reason %}{% if ai_picks.append(item) %}{% endif %}
-        {% elif 'bitcoin' in t or ' btc ' in t %}{% if btc_news.append(item) %}{% endif %}
-        {% elif 'ethereum' in t or ' eth ' in t %}{% if eth_news.append(item) %}{% endif %}
+        {% elif intel.ai_signal.coin|lower in t or intel.ai_signal.secondary_coin|lower in t %}{% if coin_focus.append(item) %}{% endif %}
         {% else %}{% if other_news.append(item) %}{% endif %}
         {% endif %}
       {% endfor %}
@@ -396,8 +400,7 @@ footer a{color:var(--purple);text-decoration:none;}
         ('breaking','🚨','Breaking Now',breaking_news,True),
         ('market','📈','Market Moving',moving_news,True),
         ('defi','🧠','AI Picks',ai_picks,False),
-        ('bitcoin','₿','Bitcoin Focus',btc_news,False),
-        ('ethereum','Ξ','Ethereum Focus',eth_news,False),
+        ('bitcoin','🪙','Coin Focus',coin_focus,False),
         ('altcoin','📰','More Signals',other_news,True),
       ] %}
       {% for cat_key,cat_icon,cat_label,cat_news,is_list in smart_sections %}
@@ -481,13 +484,6 @@ footer a{color:var(--purple);text-decoration:none;}
       </div>
 
       <div class="widget">
-        <div class="widget-title">💰 Live Prices</div>
-        {% for sym in ['BTC','ETH','SOL','BNB','XRP'] %}
-        <div class="price-row"><span class="coin-sym">{{ sym }}</span><span class="up" id="sp{{ sym }}">—</span></div>
-        {% endfor %}
-      </div>
-
-      <div class="widget">
         <div class="widget-title">🤖 AI Market Signal</div>
         <div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-bottom:.45rem;">Your daily edge: decision-ready sentiment signal.</div>
         <div id="aiSignalWrap">
@@ -517,24 +513,12 @@ footer a{color:var(--purple);text-decoration:none;}
           <div class="skeleton" style="width:75%;height:14px;"></div>
         </div>
       </div>
-
       <div class="widget">
         <div class="widget-title">🐋 Whale Activity</div>
         <div id="whaleActivity" style="font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.6;">
           <div class="skeleton" style="width:95%;height:12px;margin-bottom:5px;"></div>
           <div class="skeleton" style="width:86%;height:12px;margin-bottom:5px;"></div>
           <div class="skeleton" style="width:78%;height:12px;"></div>
-        </div>
-      </div>
-
-      <div class="widget" id="fgWidget">
-        <div class="widget-title">😱 Fear & Greed Index</div>
-        <div class="fg-wrap">
-          <div class="fg-value" id="fgValue">—</div>
-          <div class="fg-label" id="fgLabel"><span class="skeleton" style="display:inline-block;width:95px;height:13px;"></span></div>
-          <div class="fg-gauge"><div class="fg-fill" id="fgFill" style="width:0%"></div></div>
-          <div class="fg-scale"><span>Fear</span><span>Neutral</span><span>Greed</span></div>
-          <div class="fg-sub" id="fgSub"></div>
         </div>
       </div>
 
