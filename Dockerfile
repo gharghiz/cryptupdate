@@ -33,7 +33,11 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')" || exit 1
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", \"8000\")}/health')" || exit 1
+
+# Copy start script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Default: run with gunicorn (Railway uses Procfile)
-CMD ["gunicorn", "wsgi:app", "--workers", "2", "--threads", "4", "--timeout", "120", "--bind", "0.0.0.0:${PORT:-8000}"]
+CMD ["/app/start.sh"]
