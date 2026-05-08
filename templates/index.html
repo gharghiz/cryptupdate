@@ -37,7 +37,7 @@
 }
 :root { --blue:#2f6bff; --green:#18b26b; --red:#e24a4a; --mono:'DM Mono',monospace; --display:'Cabinet Grotesk',sans-serif; --accent:var(--blue); --purple:var(--blue); --gold:var(--blue); }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden;line-height:1.45;}
+body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden;line-height:1.45;animation:pageIn .35s ease;}@keyframes pageIn{from{opacity:.0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .signal-float{position:fixed;right:14px;bottom:14px;z-index:999;background:rgba(18,18,30,.88);border:1px solid rgba(0,229,255,.22);border-radius:10px;padding:.5rem .7rem;font-family:var(--mono);font-size:.62rem;box-shadow:0 12px 30px rgba(0,0,0,.35);}
 
 /* HEADER */
@@ -138,7 +138,7 @@ header{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--surf
 .mini-bear{color:var(--red);border-color:rgba(255,51,102,.35);}
 .mini-neu{color:var(--gold);border-color:rgba(255,215,0,.35);}
 .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;transition:background .15s;}
-.news-card:hover{transform:translateY(-2px);border-color:rgba(0,229,255,.25);box-shadow:0 8px 20px rgba(0,0,0,.22);}
+.news-card:hover{transform:translateY(-3px) translateX(4px);border-color:rgba(47,107,255,.22);box-shadow:0 10px 18px rgba(0,0,0,.16);}
 .nc-bitcoin::before{background:#f7931a;} .nc-ethereum::before{background:#627eea;}
 .nc-defi::before{background:var(--green);} .nc-nft::before{background:#ff6b6b;}
 .nc-regulation::before{background:var(--gold);} .nc-market::before{background:var(--accent);}
@@ -271,14 +271,14 @@ footer a{color:var(--purple);text-decoration:none;}
     <a class="logo" href="/"><div class="logo-mark">₿</div><span class="logo-name">Cryptosit<em>IQ</em></span></a>
     <div class="live-pill"><div class="live-dot"></div>LIVE</div>
     <div class="ai-pill">🧠 AI</div>
-    <form class="search-wrap" method="get" action="/"><span class="s-icon">⌕</span><input type="text" name="q" placeholder="Search news, coins, signals..." value="{{ search }}" list="searchHints"></form>
+    <form class="search-wrap" method="get" action="/"><span class="s-icon">⌕</span><input type="text" name="q" placeholder="Search coins, news..." value="{{ search }}" list="searchHints"></form>
     <datalist id="searchHints"><option>BTC</option><option>Ethereum</option><option>ETF news</option></datalist>
     <div class="header-actions">
       <span id="headBtc" class="alpha-badge">BTC —</span>
       <span id="headGold" class="alpha-badge">GOLD —</span>
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+      <a class="tg-btn" href="https://t.me/CryptositNews" target="_blank" title="Telegram">Telegram</a>
       <a class="icon-btn" href="https://x.com" target="_blank" title="X">𝕏</a>
-      <a class="icon-btn" href="https://t.me/CryptositNews" target="_blank" title="Telegram">✈️</a>
     </div>
   </div>
 </header>
@@ -287,7 +287,7 @@ footer a{color:var(--purple);text-decoration:none;}
   <div class="ticker-label">LIVE</div>
   <div class="ticker-inner">
     <div class="ticker-track">
-      {% for sym,idx in [('BTC',1),('ETH',2),('SOL',3),('BNB',4),('XRP',5),('BTC',6),('ETH',7),('SOL',8),('BNB',9),('XRP',10)] %}
+      {% for sym,idx in [('BTC',1),('ETH',2),('SOL',3),('BTC',6),('ETH',7),('SOL',8)] %}
       <span class="t-item"><span class="sym">{{ sym }}</span> <span id="tk{{ idx }}">—</span></span>
       {% endfor %}
     </div>
@@ -311,10 +311,10 @@ footer a{color:var(--purple);text-decoration:none;}
 <div class="nav-tabs">
   <button class="tab-btn {% if not active_tab %}active{% endif %}" onclick="goTab('')">All</button>
   <button class="tab-btn {% if active_tab=='breaking' %}active{% endif %}" onclick="goTab('breaking')">Breaking</button>
-  <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">Market Moving</button>
+  <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">Market</button>
   <button class="tab-btn {% if active_tab=='defi' %}active{% endif %}" onclick="goTab('defi')">AI Picks</button>
-  <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">BTC Focus</button>
-  <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">Macro Impact</button>
+  <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">BTC</button>
+  <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">Macro</button>
 </div>
 
 <section class="hero">
@@ -638,8 +638,8 @@ function clearPreference(){localStorage.removeItem('preferred_tab');goTab('');}
 })();
 
 // Prices
-const COINS = [{sym:'BTC',id:'bitcoin'},{sym:'ETH',id:'ethereum'},{sym:'SOL',id:'solana'},{sym:'BNB',id:'binancecoin'},{sym:'XRP',id:'ripple'}];
-const TICKER_MAP = {BTC:[1,6],ETH:[2,7],SOL:[3,8],BNB:[4,9],XRP:[5,10]};
+const COINS = [{sym:'BTC',id:'bitcoin'},{sym:'ETH',id:'ethereum'},{sym:'SOL',id:'solana'}];
+const TICKER_MAP = {BTC:[1,6],ETH:[2,7],SOL:[3,8]};
 
 async function loadPrices() {
   try {
@@ -663,7 +663,7 @@ async function loadPrices() {
     });
   } catch(e){}
 }
-loadPrices(); setInterval(loadPrices, 60000);
+loadPrices(); setInterval(loadPrices, 10000);
 let macroState = {gold:2350,dxy:104.2,nasdaq:18200};
 function renderMacro(){
   const gCh=(Math.random()-.5)*6, dCh=(Math.random()-.5)*.25, nCh=(Math.random()-.5)*120;
@@ -693,7 +693,7 @@ async function loadTerminalTicker(){
     const hg = document.getElementById('headGold'); if(hg) hg.textContent = `GOLD $${gold.toFixed(0)}`;
   }catch(e){}
 }
-loadTerminalTicker(); setInterval(loadTerminalTicker, 5000);
+loadTerminalTicker(); setInterval(loadTerminalTicker, 10000);
 
 // Fear & Greed
 async function loadFearGreed() {
