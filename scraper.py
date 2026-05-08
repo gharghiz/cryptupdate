@@ -11,14 +11,14 @@ from utils import logger, clean_title, clean_url
 from config import RSS_FEEDS
 
 session = requests.Session()
-retry = Retry(total=2, backoff_factor=0.6, status_forcelist=[429,500,502,503,504], allowed_methods=["GET"])
+retry = Retry(total=1, backoff_factor=0.4, status_forcelist=[429,500,502,503,504], allowed_methods=["GET"])
 session.mount("http://", HTTPAdapter(max_retries=retry))
 session.mount("https://", HTTPAdapter(max_retries=retry))
 session.headers.update({"User-Agent": "Mozilla/5.0 (compatible; CryptositIQBot/1.0)", "Accept":"application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.8"})
 
 def fetch_feed(feed: dict) -> list:
     try:
-        resp = session.get(feed["url"], timeout=12)
+        resp = session.get(feed["url"], timeout=(4, 6))
         resp.raise_for_status()
         parsed = feedparser.parse(resp.content)
         if getattr(parsed, "bozo", False):
@@ -45,7 +45,7 @@ def fetch_feed(feed: dict) -> list:
 def fetch_all_news() -> list:
     """جلب الأخبار من جميع المصادر بشكل parallel — أسرع ×3"""
     all_news = []
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         futures = {executor.submit(fetch_feed, feed): feed for feed in RSS_FEEDS}
         for future in as_completed(futures):
             try:
