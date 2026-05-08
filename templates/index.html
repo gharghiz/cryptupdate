@@ -269,16 +269,15 @@ footer a{color:var(--purple);text-decoration:none;}
     </div>
   </div>
 </div>
-<div class="terminal-ticker"><div id="ticker-content" class="ticker-scroll">Loading terminal feed...</div></div>
 <div class="macro-wrap">
   <div class="ticker-label">MACRO</div>
   <div class="ticker-inner">
     <div class="ticker-track">
       <span class="t-item"><span class="sym">GOLD</span> <span id="macroGold">—</span></span>
-      <span class="t-item"><span class="sym">DXY</span> <span id="macroDxy">—</span></span>
+      <span class="t-item"><span class="sym">S&P500</span> <span id="macroSpx">—</span></span>
       <span class="t-item"><span class="sym">NASDAQ</span> <span id="macroNasdaq">—</span></span>
       <span class="t-item"><span class="sym">GOLD</span> <span id="macroGold2">—</span></span>
-      <span class="t-item"><span class="sym">DXY</span> <span id="macroDxy2">—</span></span>
+      <span class="t-item"><span class="sym">S&P500</span> <span id="macroSpx2">—</span></span>
       <span class="t-item"><span class="sym">NASDAQ</span> <span id="macroNasdaq2">—</span></span>
     </div>
   </div>
@@ -294,12 +293,6 @@ footer a{color:var(--purple);text-decoration:none;}
 </div>
 
 
-<section class="decision-bar">
-  <div><span>Market</span><b>{{ intel.decision_snapshot.market }}</b></div>
-  <div><span>Confidence</span><b>{{ intel.decision_snapshot.confidence }}%</b></div>
-  <div><span>Best Coin</span><b>{{ intel.decision_snapshot.best_opportunity }}</b></div>
-  <div><span>Risk</span><b>{{ intel.decision_snapshot.risk_level }}</b></div>
-</section>
 
 <div class="container">
   <div class="stats-bar">
@@ -626,36 +619,18 @@ async function loadPrices() {
   } catch(e){}
 }
 loadPrices(); setInterval(loadPrices, 10000);
-let macroState = {gold:2350,dxy:104.2,nasdaq:18200};
+let macroState = {gold:2350,spx:5200,nasdaq:18200};
 function renderMacro(){
-  const gCh=(Math.random()-.5)*6, dCh=(Math.random()-.5)*.25, nCh=(Math.random()-.5)*120;
-  macroState.gold += gCh; macroState.dxy += dCh; macroState.nasdaq += nCh;
+  const gCh=(Math.random()-.5)*6, sCh=(Math.random()-.5)*12, nCh=(Math.random()-.5)*120;
+  macroState.gold += gCh; macroState.spx += sCh; macroState.nasdaq += nCh;
   const fmt=(v,ch)=>`<span class="${ch>=0?'up':'dn'}">$${v.toFixed(v>100?2:3)} ${ch>=0?'+':''}${ch.toFixed(2)}</span>`;
   const fmtIdx=(v,ch)=>`<span class="${ch>=0?'up':'dn'}">${v.toFixed(0)} ${ch>=0?'+':''}${ch.toFixed(0)}</span>`;
-  const g=fmt(macroState.gold,gCh), d=fmt(macroState.dxy,dCh), n=fmtIdx(macroState.nasdaq,nCh);
+  const g=fmt(macroState.gold,gCh), sp=fmtIdx(macroState.spx,sCh), n=fmtIdx(macroState.nasdaq,nCh);
   ['macroGold','macroGold2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=g;});
-  ['macroDxy','macroDxy2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=d;});
+  ['macroSpx','macroSpx2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=sp;});
   ['macroNasdaq','macroNasdaq2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=n;});
 }
 renderMacro(); setInterval(renderMacro, 15000);
-async function loadTerminalTicker(){
-  try{
-    const r = await fetch('/api/prices');
-    if(!r.ok) return;
-    const d = await r.json();
-    const btc = d.BTC || {};
-    const btcPrice = `$${(btc.price||0).toLocaleString()}`;
-    const btcCh = Number(btc.change||0);
-    const gold = 2350 + Math.random()*15 - 7.5; // mock for now
-    const goldCh = (Math.random()*2-1).toFixed(2);
-    const line = `BTC ${btcPrice} ${btcCh>=0?'+':''}${btcCh.toFixed?btcCh.toFixed(2):btcCh}%  •  ETH $${(d.ETH?.price||0).toLocaleString()}  •  SOL $${(d.SOL?.price||0).toLocaleString()}  •  GOLD $${gold.toFixed(2)} ${goldCh>=0?'+':''}${goldCh}%   `;
-    const html = `${line}${line}${line}`;
-    const tc = document.getElementById('ticker-content'); if(tc) tc.textContent = html;
-    const hb = document.getElementById('headBtc'); if(hb) hb.textContent = `BTC ${btcPrice}`;
-    const hg = document.getElementById('headGold'); if(hg) hg.textContent = `GOLD $${gold.toFixed(0)}`;
-  }catch(e){}
-}
-loadTerminalTicker(); setInterval(loadTerminalTicker, 10000);
 
 // Fear & Greed
 async function loadFearGreed() {

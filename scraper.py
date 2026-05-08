@@ -4,16 +4,25 @@ scraper.py - جلب الأخبار من RSS بشكل parallel
 
 import feedparser
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from utils import logger, clean_title, clean_url
 from config import RSS_FEEDS
 
 session = requests.Session()
-session.headers.update({"User-Agent": "CryptoNewsBot/2.0"})
+retry = Retry(total=2, backoff_factor=0.6, status_forcelist=[429,500,502,503,504], allowed_methods=["GET"])
+session.mount("http://", HTTPAdapter(max_retries=retry))
+session.mount("https://", HTTPAdapter(max_retries=retry))
+session.headers.update({"User-Agent": "Mozilla/5.0 (compatible; CryptositIQBot/1.0)", "Accept":"application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.8"})
 
 def fetch_feed(feed: dict) -> list:
     try:
-        parsed = feedparser.parse(feed["url"])
+        resp = session.get(feed["url"], timeout=12)
+        resp.raise_for_status()
+        parsed = feedparser.parse(resp.content)
+        if getattr(parsed, "bozo", False):
+            logger.warning(f"⚠️ feed parse warning {feed['name']}: {getattr(parsed, 'bozo_exception', 'unknown')}")
         news = []
         for entry in parsed.entries[:25]:
             news_id = entry.get("id") or entry.get("link", "")

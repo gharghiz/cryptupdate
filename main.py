@@ -35,6 +35,14 @@ def check_env():
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         logger.error("❌ TELEGRAM_BOT_TOKEN أو TELEGRAM_CHAT_ID ناقصين!")
         sys.exit(1)
+    try:
+        r = requests.get(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getMe", timeout=8)
+        if r.ok and r.json().get("ok"):
+            logger.info("✅ Telegram token valid")
+        else:
+            logger.warning(f"⚠️ Telegram token check failed: {r.status_code} {r.text[:120]}")
+    except Exception as e:
+        logger.warning(f"⚠️ Telegram connectivity check failed: {e}")
     logger.info("✅ جميع المفاتيح موجودة")
 
 # ============================================================
@@ -113,20 +121,21 @@ def process_item(args):
         return None
 
     msg, ai = format_message(item)
-    message_id = send_message(msg)
+    # حفظ خبر الموقع دائما حتى لو تيليغرام متعطل
+    save_news(
+        news_id, title, item["source"],
+        summary=ai.get("summary", ""),
+        sentiment=ai.get("sentiment", ""),
+        reason=ai.get("reason", "")
+    )
 
+    message_id = send_message(msg)
     if message_id:
-        # حفظ في الجدولين
         mark_telegram_posted(news_id)
-        save_news(
-            news_id, title, item["source"],
-            summary=ai.get("summary", ""),
-            sentiment=ai.get("sentiment", ""),
-            reason=ai.get("reason", "")
-        )
         return title
 
-    return None
+    logger.warning(f"⚠️ تعذر النشر تيليغرام للخبر: {title[:80]}")
+    return title
 
 # ============================================================
 # Main cycle
