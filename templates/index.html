@@ -86,7 +86,7 @@ header{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--surf
 
 /* CONTAINER */
 .container{max-width:1400px;margin:0 auto;padding:1.5rem;}
-.layout{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:start;}
+.layout{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;}
 
 /* STATS */
 .stats-bar{display:flex;gap:.55rem;margin-bottom:1.3rem;flex-wrap:wrap;}
@@ -198,6 +198,8 @@ header{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--surf
 .bar-fill{height:100%;background:var(--purple);border-radius:1px;}
 .source-c{font-family:var(--mono);font-size:.65rem;color:var(--accent);}
 
+.widget-empty{background:#111827;border:1px solid rgba(148,163,184,.2);border-radius:10px;padding:14px;color:#94a3b8;font-size:.8rem}
+
 /* LOAD MORE */
 .load-more-wrap{text-align:center;margin-top:1.5rem;}
 .load-more-btn{background:var(--card);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:.5rem 1.5rem;border-radius:6px;cursor:pointer;transition:all .2s;}
@@ -263,7 +265,7 @@ footer a{color:var(--purple);text-decoration:none;}
   <div class="ticker-label">LIVE</div>
   <div class="ticker-inner">
     <div class="ticker-track">
-      {% for sym,idx in [('BTC',1),('ETH',2),('SOL',3),('BTC',6),('ETH',7),('SOL',8)] %}
+      {% for sym,idx in [('BTC',1),('ETH',2),('SOL',3)] %}
       <span class="t-item"><span class="sym">{{ sym }}</span> <span id="tk{{ idx }}">—</span></span>
       {% endfor %}
     </div>
@@ -276,10 +278,7 @@ footer a{color:var(--purple);text-decoration:none;}
       <span class="t-item"><span class="sym">GOLD</span> <span id="macroGold">—</span></span>
       <span class="t-item"><span class="sym">S&P500</span> <span id="macroSpx">—</span></span>
       <span class="t-item"><span class="sym">NASDAQ</span> <span id="macroNasdaq">—</span></span>
-      <span class="t-item"><span class="sym">GOLD</span> <span id="macroGold2">—</span></span>
-      <span class="t-item"><span class="sym">S&P500</span> <span id="macroSpx2">—</span></span>
-      <span class="t-item"><span class="sym">NASDAQ</span> <span id="macroNasdaq2">—</span></span>
-    </div>
+          </div>
   </div>
 </div>
 
@@ -291,8 +290,6 @@ footer a{color:var(--purple);text-decoration:none;}
   <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">BTC</button>
   <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">Macro</button>
 </div>
-
-
 
 <div class="container">
   <div class="stats-bar">
@@ -355,28 +352,15 @@ footer a{color:var(--purple);text-decoration:none;}
     {% endmacro %}
 
     {% if not active_tab %}
-      {# ALL MODE — grouped #}
-      {% set breaking_news = [] %}{% set moving_news = [] %}{% set ai_picks = [] %}{% set coin_focus = [] %}{% set other_news = [] %}
-      {% for item in news %}
-        {% set t = item.title|lower %}
-        {% if item.is_breaking %}{% if breaking_news.append(item) %}{% endif %}
-        {% elif item.is_market_moving %}{% if moving_news.append(item) %}{% endif %}
-        {% elif item.is_ai_pick %}{% if ai_picks.append(item) %}{% endif %}
-        {% elif intel.ai_signal.coin|lower in t or intel.ai_signal.secondary_coin|lower in t %}{% if coin_focus.append(item) %}{% endif %}
-        {% else %}{% if other_news.append(item) %}{% endif %}
-        {% endif %}
-      {% endfor %}
+      {% set latest_news = news[:5] %}
+      {% set breaking_news = news|selectattr('is_breaking')|list %}
+      {% set moving_news = news|selectattr('is_market_moving')|list %}
+      {% set ai_picks = news|selectattr('is_ai_pick')|list %}
 
-      {% set smart_sections = [
-        ('breaking','•','Breaking News',breaking_news,True),
-        ('market','📈','Market Moving',moving_news,True),
-        ('defi','🧠','AI Picks',ai_picks,False),
-        ('bitcoin','•','BTC Focus',coin_focus,False),
-        ('regulation','•','Macro Impact',other_news,True),
-      ] %}
-      {% for cat_key,cat_icon,cat_label,cat_news,is_list in smart_sections %}
-        {% if cat_news %}{{ render_widget_list(cat_label, cat_icon, cat_news, cat_key) }}{% endif %}
-      {% endfor %}
+      {{ render_widget_list('Breaking News', '•', (breaking_news if breaking_news else latest_news), 'breaking') }}
+      {{ render_widget_list('Market Moving', '•', (moving_news if moving_news else latest_news), 'market') }}
+      {{ render_widget_list('AI Picks', '•', (ai_picks if ai_picks else latest_news), 'defi') }}
+      {% if not news %}<div class="widget-empty">No data available</div>{% endif %}
 
     {% else %}
       {# SINGLE CATEGORY #}
@@ -594,7 +578,7 @@ function clearPreference(){localStorage.removeItem('preferred_tab');goTab('');}
 
 // Prices
 const COINS = [{sym:'BTC',id:'bitcoin'},{sym:'ETH',id:'ethereum'},{sym:'SOL',id:'solana'}];
-const TICKER_MAP = {BTC:[1,6],ETH:[2,7],SOL:[3,8]};
+const TICKER_MAP = {BTC:[1],ETH:[2],SOL:[3]};
 
 async function loadPrices() {
   try {
@@ -626,9 +610,9 @@ function renderMacro(){
   const fmt=(v,ch)=>`<span class="${ch>=0?'up':'dn'}">$${v.toFixed(v>100?2:3)} ${ch>=0?'+':''}${ch.toFixed(2)}</span>`;
   const fmtIdx=(v,ch)=>`<span class="${ch>=0?'up':'dn'}">${v.toFixed(0)} ${ch>=0?'+':''}${ch.toFixed(0)}</span>`;
   const g=fmt(macroState.gold,gCh), sp=fmtIdx(macroState.spx,sCh), n=fmtIdx(macroState.nasdaq,nCh);
-  ['macroGold','macroGold2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=g;});
-  ['macroSpx','macroSpx2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=sp;});
-  ['macroNasdaq','macroNasdaq2'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=n;});
+  ['macroGold'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=g;});
+  ['macroSpx'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=sp;});
+  ['macroNasdaq'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML=n;});
 }
 renderMacro(); setInterval(renderMacro, 15000);
 
@@ -758,4 +742,3 @@ async function toggleAllTranslations() {
 </script>
 </body>
 </html>
-
