@@ -568,13 +568,6 @@ function goTab(tab) {
   url.searchParams.delete('page');
   window.location = url;
 }
-function setPreference(tab){localStorage.setItem('preferred_tab',tab);goTab(tab);}
-function clearPreference(){localStorage.removeItem('preferred_tab');goTab('');}
-(() => {
-  const pref = localStorage.getItem('preferred_tab');
-  const currentTab = new URL(window.location).searchParams.get('tab');
-  if(pref && !currentTab && window.location.pathname === '/') goTab(pref);
-})();
 
 // Prices
 const COINS = [{sym:'BTC',id:'bitcoin'},{sym:'ETH',id:'ethereum'},{sym:'SOL',id:'solana'}];

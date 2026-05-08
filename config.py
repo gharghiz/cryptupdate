@@ -9,7 +9,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 # Timing
-INTERVAL_MINUTES = int(os.environ.get("INTERVAL_MINUTES", "15"))
+INTERVAL_MINUTES = int(os.environ.get("INTERVAL_MINUTES", "10"))
 
 # OpenAI
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -106,7 +106,16 @@ RSS_FEEDS = [
     {"name": "Google News Altcoins", "url": "https://news.google.com/rss/search?q=altcoin+market+when:1d&hl=en-US&gl=US&ceid=US:en"},
     {"name": "Google News AI Crypto", "url": "https://news.google.com/rss/search?q=ai+crypto+when:1d&hl=en-US&gl=US&ceid=US:en"},
     {"name": "Google News Blockchain", "url": "https://news.google.com/rss/search?q=blockchain+when:1d&hl=en-US&gl=US&ceid=US:en"},
-    {"name": "Google News Crypto Markets", "url": "https://news.google.com/rss/search?q=crypto+markets+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Bitcoin ETF", "url": "https://news.google.com/rss/search?q=bitcoin+etf+approval+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Ethereum ETF", "url": "https://news.google.com/rss/search?q=ethereum+etf+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Crypto Exchange", "url": "https://news.google.com/rss/search?q=crypto+exchange+hack+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Crypto Whale", "url": "https://news.google.com/rss/search?q=bitcoin+whale+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Layer 2", "url": "https://news.google.com/rss/search?q=layer+2+crypto+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Meme Coins", "url": "https://news.google.com/rss/search?q=meme+coin+market+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Crypto Mining", "url": "https://news.google.com/rss/search?q=bitcoin+mining+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Web3", "url": "https://news.google.com/rss/search?q=web3+funding+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Stablecoin Regulation", "url": "https://news.google.com/rss/search?q=stablecoin+regulation+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Google News Bitcoin Price", "url": "https://news.google.com/rss/search?q=bitcoin+price+surge+when:1d&hl=en-US&gl=US&ceid=US:en"},
 ]
 
 # Keywords
@@ -174,7 +183,7 @@ PRICE_CHECK_INTERVAL  = int(os.environ.get("PRICE_CHECK_INTERVAL", "15"))
 SIMILARITY_THRESHOLD = 0.85
 
 # Posting
-MAX_POSTS_PER_CYCLE  = 10
+MAX_POSTS_PER_CYCLE  = int(os.environ.get("MAX_POSTS_PER_CYCLE", "20"))
 DELAY_BETWEEN_POSTS  = 2
 MAX_RETRIES_TELEGRAM = 3
 
