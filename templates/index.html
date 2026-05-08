@@ -35,17 +35,13 @@
   --bg:#f0f0f8; --surface:#fff; --card:#fff; --card-h:#f5f5ff;
   --border:#e0e0f0; --border-h:#c0c0e0; --text:#1a1a2e; --muted:#8888aa; --shadow:rgba(0,0,0,.08);
 }
-:root {
-  --accent:#00e5ff; --green:#00c97a; --red:#ff3366;
-  --purple:#00e5ff; --gold:#00e5ff; --orange:#00e5ff;
-  --mono:'DM Mono',monospace; --display:'Cabinet Grotesk',sans-serif;
-}
+:root { --blue:#2f6bff; --green:#18b26b; --red:#e24a4a; --mono:'DM Mono',monospace; --display:'Cabinet Grotesk',sans-serif; --accent:var(--blue); --purple:var(--blue); --gold:var(--blue); }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:radial-gradient(1200px 500px at 20% -10%, rgba(124,77,255,.14), transparent 55%),radial-gradient(900px 420px at 80% -15%, rgba(0,229,255,.12), transparent 60%),var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden;line-height:1.45;}
+body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden;line-height:1.45;}
 .signal-float{position:fixed;right:14px;bottom:14px;z-index:999;background:rgba(18,18,30,.88);border:1px solid rgba(0,229,255,.22);border-radius:10px;padding:.5rem .7rem;font-family:var(--mono);font-size:.62rem;box-shadow:0 12px 30px rgba(0,0,0,.35);}
 
 /* HEADER */
-header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);background:color-mix(in srgb,var(--surface) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);box-shadow:0 2px 12px var(--shadow);}
+header{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--surface) 92%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
 .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:1rem;height:62px;padding:0 1.5rem;}
 .logo{display:flex;align-items:center;gap:.5rem;text-decoration:none;flex-shrink:0;}
 .logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;color:#000;}
@@ -58,8 +54,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .live-pill{animation:pulseLive 2.4s ease-in-out infinite;}
 @keyframes pulseLive{0%,100%{box-shadow:0 0 0 rgba(0,201,122,0)}50%{box-shadow:0 0 16px rgba(0,201,122,.25)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.search-wrap{flex:1;position:relative;max-width:380px;}
-.search-wrap input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:.4rem .9rem .4rem 2rem;border-radius:6px;outline:none;transition:border-color .2s;}
+.search-wrap{flex:1;position:relative;max-width:620px;}
+.search-wrap input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.8rem;padding:.7rem .95rem .7rem 2rem;border-radius:10px;outline:none;transition:border-color .2s;}
 .search-wrap input:focus{border-color:var(--purple);}
 .search-wrap input::placeholder{color:var(--muted);}
 .s-icon{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.78rem;}
@@ -78,7 +74,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(14,14,26,.88);backgroun
 .t-item .sym{color:var(--text);font-weight:500;}
 .macro-wrap{background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 92%, var(--accent) 8%),var(--surface));border-bottom:1px solid var(--border);height:30px;overflow:hidden;display:flex;align-items:center;}
 .up{color:var(--green);} .dn{color:var(--red);}
-.terminal-ticker{overflow:hidden;white-space:nowrap;border-bottom:1px solid #1f2a3a;padding:6px 12px;background:rgba(8,12,22,.8);font-family:var(--mono);font-size:.64rem}
+.terminal-ticker{overflow:hidden;white-space:nowrap;border-bottom:1px solid var(--border);padding:6px 12px;background:color-mix(in srgb,var(--surface) 94%, transparent);font-family:var(--mono);font-size:.64rem}
 .ticker-scroll{display:inline-block;min-width:200%;animation:ticker 28s linear infinite;}
 
 /* NAV TABS */
@@ -253,14 +249,26 @@ footer a{color:var(--purple);text-decoration:none;}
   .container{padding:1rem;}
   .hero{padding:1rem;}
 }
+
+
+.hero{padding:1.6rem 1.5rem;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--surface) 94%, transparent)}
+.hero-inner{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;align-items:center}
+.hero h1{font-size:clamp(1.4rem,3vw,2.1rem);margin-bottom:.5rem}
+.hero p{font-family:var(--mono);color:var(--muted);font-size:.72rem;margin-bottom:1rem}
+.hero-actions{display:flex;gap:.6rem}
+.hero-visual{min-height:96px;background:linear-gradient(135deg, rgba(47,107,255,.06), transparent);border-radius:12px}
+.decision-bar{position:sticky;top:98px;z-index:85;display:flex;gap:1rem;flex-wrap:wrap;padding:.65rem 1.5rem;border-bottom:1px solid var(--border);backdrop-filter:blur(8px);background:color-mix(in srgb,var(--surface) 90%, transparent);font-family:var(--mono);font-size:.65rem}
+.decision-bar div{display:flex;gap:.3rem}.decision-bar span{color:var(--muted)}
+.widget{background:var(--card);border:1px solid var(--border);box-shadow:none}
+.tab-btn.active{background:rgba(47,107,255,.1);color:var(--blue);border-color:rgba(47,107,255,.2)}
+.up{color:var(--green)} .dn{color:var(--red)}
+
 </style>
 </head>
 <body>
-<div class="signal-float">🧠 {{ intel.ai_signal.signal }} · {{ intel.ai_signal.coin }} · {{ intel.ai_signal.confidence }}%</div>
-
 <header>
   <div class="header-inner">
-    <a class="logo" href="/"><div class="logo-mark">₿</div><span class="logo-name">Cryptosit<em>IQ</em></span><span class="alpha-badge">ALPHA</span></a>
+    <a class="logo" href="/"><div class="logo-mark">₿</div><span class="logo-name">Cryptosit<em>IQ</em></span></a>
     <div class="live-pill"><div class="live-dot"></div>LIVE</div>
     <div class="ai-pill">🧠 AI</div>
     <form class="search-wrap" method="get" action="/"><span class="s-icon">⌕</span><input type="text" name="q" placeholder="Search news, coins, signals..." value="{{ search }}" list="searchHints"></form>
@@ -301,71 +309,34 @@ footer a{color:var(--purple);text-decoration:none;}
 </div>
 
 <div class="nav-tabs">
-  <button class="tab-btn {% if not active_tab %}active{% endif %}" onclick="goTab('')">🌐 All</button>
-  <button class="tab-btn {% if active_tab=='breaking' %}active{% endif %}" onclick="goTab('breaking')">🚨 Breaking</button>
-  <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">📈 Market Moving</button>
-  <button class="tab-btn {% if active_tab=='defi' %}active{% endif %}" onclick="goTab('defi')">🧠 AI Picks</button>
-  <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">🪙 BTC Focus</button>
-  <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">🌍 Macro Impact</button>
-</div>
-<div style="padding:.5rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:.5rem;flex-wrap:wrap;">
-  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('bitcoin')">تابع BTC فقط</button>
-  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('defi')">تابع DeFi</button>
-  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="setPreference('breaking')">تابع Breaking</button>
-  <button class="load-more-btn" style="padding:.3rem .7rem;" onclick="clearPreference()">إلغاء التخصيص</button>
+  <button class="tab-btn {% if not active_tab %}active{% endif %}" onclick="goTab('')">All</button>
+  <button class="tab-btn {% if active_tab=='breaking' %}active{% endif %}" onclick="goTab('breaking')">Breaking</button>
+  <button class="tab-btn {% if active_tab=='market' %}active{% endif %}" onclick="goTab('market')">Market Moving</button>
+  <button class="tab-btn {% if active_tab=='defi' %}active{% endif %}" onclick="goTab('defi')">AI Picks</button>
+  <button class="tab-btn {% if active_tab=='bitcoin' %}active{% endif %}" onclick="goTab('bitcoin')">BTC Focus</button>
+  <button class="tab-btn {% if active_tab=='regulation' %}active{% endif %}" onclick="goTab('regulation')">Macro Impact</button>
 </div>
 
-<section style="padding:1.4rem 1.5rem;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,77,255,.1),rgba(0,229,255,.06));">
-  <div style="max-width:1400px;margin:0 auto;display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+<section class="hero">
+  <div class="hero-inner">
     <div>
-      <div style="font-family:var(--mono);font-size:.62rem;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;">AI Crypto Intelligence Platform</div>
-      <h1 style="font-size:clamp(1.2rem,3vw,2rem);line-height:1.25;">Real-Time Crypto Intelligence Powered by AI</h1>
-      <p style="font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:.4rem;">Fast summaries, trading context, and signal-first news flow.</p>
+      <h1>Real-Time Crypto Intelligence Powered by AI</h1>
+      <p>Track market-moving crypto headlines, AI-ranked signals, and macro context in one clean workspace.</p>
+      <div class="hero-actions">
+        <a class="tg-cta" href="https://t.me/CryptositNews" target="_blank">Follow Telegram</a>
+        <a class="load-more-btn" href="#mainFeed" style="text-decoration:none;display:inline-block;">Browse News</a>
+      </div>
     </div>
-    <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
-      <a class="tg-cta" href="https://t.me/CryptositNews" target="_blank">🔔 Follow Telegram</a>
-      <a class="load-more-btn" href="#mainFeed" style="text-decoration:none;display:inline-block;">📰 Browse News</a>
-      <button class="load-more-btn" onclick="saveBookmark()">🔖 Bookmark</button>
-    </div>
+    <div class="hero-visual"></div>
   </div>
 </section>
-<section style="padding:.65rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(0,229,255,.06);font-family:var(--mono);font-size:.68rem;">
-  🧠 <b>Today’s Market Summary:</b> {{ intel.ai_signal.coin }} {{ intel.ai_signal.signal|lower }} with {{ intel.sentiment.bullish }}% bullish sentiment driven by {{ intel.ai_signal.trigger|lower }}.
-</section>
-<section style="position:sticky;top:96px;z-index:85;padding:.65rem 1.5rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.66rem;background:var(--surface);">
-  🧠 <b>Decision Snapshot:</b> Market: <b>{{ intel.decision_snapshot.market }}</b> | Confidence: <b>{{ intel.decision_snapshot.confidence }}%</b> | Best: <b>{{ intel.decision_snapshot.best_opportunity }}</b> | Risk: <b>{{ intel.decision_snapshot.risk_level }}</b> | TF: <b>{{ intel.decision_snapshot.timeframe }}</b> | <span id="lastUpdatedAgo" data-ts="{{ intel.last_update }}">updated 0s ago</span>
-</section>
-<section style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(10,14,30,.55);">
-  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.5fr .7fr;gap:1.4rem;">
-    <div class="widget" style="margin-bottom:0;padding:1.35rem;animation:fadeUp .5s ease;">
-      <div class="widget-title">🧠 Market Brain</div>
-      <div class="ai-preview"><b>{{ '↑' if intel.ai_signal.signal == 'Bullish' else '↓' }} {{ intel.ai_signal.coin }} / {{ intel.ai_signal.secondary_coin }} → {{ intel.ai_signal.signal }}</b> · Confidence {{ intel.ai_signal.confidence }}%</div>
-      <div class="price-row"><span class="coin-sym">Trend</span><span class="up">{{ intel.trend.direction }}</span></div>
-      <div class="price-row"><span class="coin-sym">Strength</span><span class="up">{{ intel.trend.strength }}</span></div>
-      <div class="price-row"><span class="coin-sym">Shift</span><span class="up">{{ intel.trend.shift }}</span></div>
-      <div class="price-row"><span class="coin-sym">Bullish</span><span class="up">{{ intel.sentiment.bullish }}%</span></div>
-      <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:.4rem;"><div style="height:100%;width:{{ intel.sentiment.bullish }}%;background:linear-gradient(90deg,#00c97a,#7dffbe);"></div></div>
-      <div class="price-row"><span class="coin-sym">Bearish</span><span class="dn">{{ intel.sentiment.bearish }}%</span></div>
-      <div style="height:6px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:.4rem;"><div style="height:100%;width:{{ intel.sentiment.bearish }}%;background:linear-gradient(90deg,#ff3366,#ff8aa7);"></div></div>
-      <div class="fg-sub">Reason: {{ intel.ai_signal.reason }}</div>
-      <div class="fg-sub">Timeframes: {{ intel.ai_signal.timeframe }} / {{ intel.ai_signal.mid_timeframe }}</div>
-      <div class="fg-sub">Trigger: {{ intel.ai_signal.trigger }}</div>
-      <div class="fg-sub"><b>What to watch next:</b> {{ intel.ai_signal.watch }}</div>
-    </div>
-    <div class="widget" style="margin-bottom:0;padding:1rem 1.05rem;">
-      <div class="widget-title">🔥 Top Story</div>
-      {% if top_story %}
-      <div class="card-title" style="font-size:.94rem;line-height:1.4;">{{ top_story.title }}</div>
-      <div class="ai-preview" style="margin-top:.6rem;"><b>AI:</b> {{ top_story.summary or intel.ai_signal.reason }}</div>
-      <div class="fg-sub" style="margin-top:.6rem;"><b>Why it matters:</b> {{ top_story.reason or "Market-moving sentiment and liquidity impact." }}</div>
-      <div class="fg-sub"><b>Market Impact:</b> {% if top_story.is_breaking %}High{% elif top_story.is_market_moving %}Medium{% else %}Low{% endif %}</div>
-      <div class="fg-sub"><b>Possible Impact:</b> {% if intel.ai_signal.signal == 'Bullish' %}bullish continuation{% else %}bearish pressure{% endif %}</div>
-      <div class="fg-sub"><b>Watch level:</b> {{ intel.ai_signal.watch }}</div>
-      {% else %}
-      <div class="fg-sub">No top story detected.</div>
-      {% endif %}
-    </div>
-  </div>
+
+<section class="decision-bar">
+  <div><span>Market</span><b>{{ intel.decision_snapshot.market }}</b></div>
+  <div><span>Confidence</span><b>{{ intel.decision_snapshot.confidence }}%</b></div>
+  <div><span>Best Coin</span><b>{{ intel.decision_snapshot.best_opportunity }}</b></div>
+  <div><span>Risk</span><b>{{ intel.decision_snapshot.risk_level }}</b></div>
+  <div><span>Timeframe</span><b>{{ intel.decision_snapshot.timeframe }}</b></div>
 </section>
 
 <div class="container">
@@ -442,11 +413,11 @@ footer a{color:var(--purple);text-decoration:none;}
       {% endfor %}
 
       {% set smart_sections = [
-        ('breaking','🚨','Breaking Now',breaking_news,True),
+        ('breaking','•','Breaking News',breaking_news,True),
         ('market','📈','Market Moving',moving_news,True),
         ('defi','🧠','AI Picks',ai_picks,False),
-        ('bitcoin','🪙','Coin Focus',coin_focus,False),
-        ('altcoin','📰','More Signals',other_news,True),
+        ('bitcoin','•','BTC Focus',coin_focus,False),
+        ('regulation','•','Macro Impact',other_news,True),
       ] %}
       {% for cat_key,cat_icon,cat_label,cat_news,is_list in smart_sections %}
         {% if cat_news %}{{ render_widget_list(cat_label, cat_icon, cat_news, cat_key) }}{% endif %}
@@ -523,23 +494,6 @@ footer a{color:var(--purple);text-decoration:none;}
           <span style="color:var(--muted)">{{ intel.opportunity.reason }}</span>
         </div>
       </div>
-      <div class="widget">
-        <div class="widget-title">🧠 Market Context</div>
-        <div class="fg-sub" style="font-size:.66rem;line-height:1.7;">
-          Risk-{{ 'on' if intel.ai_signal.signal == 'Bullish' else 'off' }} environment driven by {{ intel.ai_signal.coin }} strength and {{ 'weak dollar bias' if intel.sentiment.bullish > 55 else 'defensive flows' }}.
-        </div>
-      </div>
-      <div class="widget">
-        <div class="widget-title">📅 Top Events Today</div>
-        <div class="fg-sub">• Fed speech <span class="dn">(High)</span></div>
-        <div class="fg-sub">• ETF flow update <span class="up">(High)</span></div>
-        <div class="fg-sub">• CPI watch window <span class="dn">(Medium)</span></div>
-      </div>
-
-
-      
-
-      
     </aside>
   </div>
 </div>
@@ -867,3 +821,4 @@ async function toggleAllTranslations() {
 </script>
 </body>
 </html>
+
